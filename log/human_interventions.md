@@ -95,3 +95,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **Then (two more notes, during the fixes):** keep the window in its taped, cracked state from N10 on (later shots showed an unbroken window); and at N31 the shop's walls flicker.
 - **Note from the human:** "continuity: the window should stay in that state from there on out (it looks like it doesn't from the rest of your shots afterwards)" / "in addition to that continuity note: at N31, the "shop"'s walls are flickering"
 - **Rule:** R1 (rejecting parts of a render, with reasons).
+
+## 2026-10-24T11:57 — C4 v2 review: N36 music box, N37/N38 rail and reveal — R1
+
+- **What:** At N36 the music box isn't held long enough and barely reads as a music box. At N37/N38 the crib rail hides too much of the probe: pan a little more. The probe appears out of thin air: have it open the blanket with its arms.
+- **Note from the human:** "N36: the music box is not held for long enough, and the fact that it is a music box in the first place is barely visible" / "N37/N38: the railing is obscuring the probe a bit too much -- pan a little more. now, the probe is just appearing out of thin air -- see about having it open the blanket with its arms"
+- **Rule:** R1 (rejecting parts of a render, with reasons).
