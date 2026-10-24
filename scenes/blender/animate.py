@@ -29,8 +29,8 @@ What drives what (brief, "Running devices", shot list and texture pass; config/i
   moat          appears at N22
   velvet rope   in front of the door from N29
   shop          tag COMING SOON until N36, then AVAILABLE; the screen lights for the real pages (N33, N34)
-  probe         hidden until N38, when it lies in the blanket's nest (the nest shape key switches with it); its glint
-                widens as the iris opens (N38); the crib's glint goes out as it does
+  probe         under the quilt's two folds until N38, when its arms push them open; its glint widens as the iris
+                opens; the crib's glint goes out as it does
 """
 import json
 import math
@@ -318,18 +318,20 @@ def moat_rope_shop(S):
                                         (SHOT["N35"], 1.0), (SHOT["N35"] + 1.0, 0.0)])
 
 
-REVEAL_EARLY = 0.5  # s before N38 that the probe (and the blanket's nest) switch in
-
-
 def probe(S):
+    """The reveal (N38; human, C4 v2 review: it appeared out of thin air): the probe lies in its nest under the quilt
+    all along. Its arms reach out from under the folds and push them open, front and back, then lie forward on the
+    blanket; the iris opens (sing) as the glint under the fold goes out."""
+    import nursery
     p = S["probe"]["probe"]
     cr = S["crib"]["root"]
     t = SHOT["N38"]
-    visible(p, t - REVEAL_EARLY)
-    keys(cr, "nest", [(0.0, 0.0, "CONSTANT"), (t - REVEAL_EARLY, 1.0, "CONSTANT")], interp="CONSTANT")
+    for arm in ("arm_l", "arm_r"):
+        keys(p, arm, [(0.0, 0.0, "CONSTANT"), (t - 0.7, 0.0), (t + 0.4, 1.0), (t + 1.7, nursery.PROBE_ARMS)])
+    keys(cr, "open", [(0.0, 0.0, "CONSTANT"), (t - 0.4, 0.0), (t + 1.0, 1.0)])
     keys(p, "led", [(0.0, 0.0, "CONSTANT"), (t - 0.5, 0.3), (t + 1.0, 1.0)])
-    keys(p, "sing", [(0.0, 0.0, "CONSTANT"), (t, 0.0), (t + 1.6, 0.55)])
-    keys(cr, "glint", [(0.0, 0.6, "CONSTANT"), (t - 0.2, 0.7), (t + 0.6, 0.0)])
+    keys(p, "sing", [(0.0, 0.0, "CONSTANT"), (t + 0.4, 0.0), (t + 2.0, 0.55)])
+    keys(cr, "glint", [(0.0, 0.6, "CONSTANT"), (t - 0.6, 0.7), (t + 0.3, 0.0)])
 
 
 def all_(S):

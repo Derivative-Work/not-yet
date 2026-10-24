@@ -320,3 +320,30 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - `archive/renders/c4_anchors_v4_rejected_c4-review/`
 - **Outputs:** `renders/c4/c4_animatic_v2.mp4` (252 s), `renders/c4/c4_anchor_sheet_v2.jpg`.
 - **Status:** **C4 v2 is ready for review.**
+
+## 2026-10-24T13:11 — C4 v3: the music box held and readable, the rail cleared, the arms open the blanket
+
+From the C4 v2 review (`log/human_interventions.md`, 11:57).
+
+- **N36 (the music box):**
+  - The box now faces the room, at scale 2, with its lid open on a hinge at 104° and a felt lining. A small warm key light falls on its comb and cylinder.
+  - The camera arrives at N36 + 1.2 s at 40 mm and holds on the box until N37 + 1.8 s (about 7.5 s, v2 about 2 s), drifting only a few centimetres. Then it turns toward the walls.
+- **N37/N38 (the rail):** the camera rises over the rail and looks down into the crib from 1.98 m to 1.84 m at 45 mm to 56 mm, so the rail crosses only the bottom of the frame.
+- **N38 (the reveal):**
+  - The quilt over the probe is now two folds hinged along the crib's length.
+  - From N38 − 0.7 s the probe's arms reach up and forward, and the folds open (prop `open`, N38 − 0.4 s to N38 + 1.0 s). The arms then settle on the blanket.
+  - The LED comes up as the folds open. The probe sits in its nest, and nothing passes through the felt.
+  - At 720p the arms read only faintly while the folds open: they're under and behind the lips.
+- **N32:** the COMING SOON tag moved to the hall side of the rail, clear of the crib, and it reads.
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v3 --step 2` (3,510 frames)
+  - `… -- --out renders/c4/anchors_v6 --anchors`
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v3 2 renders/c4/c4_animatic_v3.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v6 renders/c4/c4_anchor_sheet_v3.jpg 6`
+  - Review stills are in `renders/c4/review_v3a`–`v3c`.
+- **Archived:**
+  - `archive/renders/c4/c4_animatic_v2_rejected_c4-v2-review.mp4`
+  - `archive/renders/c4/c4_anchor_sheet_v2_rejected_c4-v2-review.jpg`
+  - `archive/renders/c4_anchors_v5_rejected_c4-v2-review/`
+- **Outputs:** `renders/c4/c4_animatic_v3.mp4` (252 s), `renders/c4/c4_anchor_sheet_v3.jpg`.
+- **Status:** **C4 v3 is ready for review.**

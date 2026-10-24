@@ -28,7 +28,7 @@ ANCHOR = {s["id"]: s["t"] for s in TM["shots"] if s["t"] is not None}
 
 PROBE = (-0.07, 1.05, 0.93)       # the crib probe's centre (nursery.crib_probe)
 NOTE = (1.13, -2.08, 1.66)        # the sticky note on the glass beside the door
-MBOX = (1.62, -0.03, 1.33)        # the music box on the dresser
+MBOX = (1.64, -0.03, 1.3)         # the music box on the dresser (its mechanism)
 SHOP_CRIB = (11.9, 0.35, 1.15)
 SCREEN = (12.28, -1.1, 1.55)
 NEIGHBOR = (-1.4, 54.7, 7.9)
@@ -80,7 +80,7 @@ KEYS = [
     ("N29", 0.0, (-0.3, -6.1, 2.75), (0.0, 0.0, 2.0), 28),       # wide: the glass room in the hall
     ("N30", 0.0, (0.5, -4.8, 1.45), (0.0, -2.2, 1.3), 35),       # two locks: the dial and the velvet rope
     ("N31", 0.0, (4.6, -2.7, 1.5), SHOP_CRIB, 34),               # across the hall to the shop window
-    ("N32", 0.0, (10.75, 0.0, 1.85), (11.95, 0.1, 1.2), 55),  # over the rail: the mittens, the waiver
+    ("N32", 0.0, (10.75, 0.05, 1.85), (11.95, 0.16, 1.22), 52),  # over the rail: the mittens, the waiver
     # The screen fills most of the frame and holds to the end of N34's bar (human, C4 review: closer, longer).
     ("N33", 0.0, (10.75, -1.02, 1.55), SCREEN, 42),              # the real model page
     ("N33", 3.0, (10.88, -1.09, 1.55), SCREEN, 45),
@@ -90,12 +90,16 @@ KEYS = [
     ("N35", 3.6, (2.4, -3.9, 1.62), NOTE, 42),                   # the open door's edge
     ("N35", 5.4, (0.6, -2.3, 1.52), (0.9, -0.8, 1.5), 32),
     ("N35", 6.3, (0.98, -1.4, 1.55), (1.4, 0.0, 1.35), 32),
-    ("N36", 1.2, (1.15, -0.55, 1.45), MBOX, 40),                 # the music box's coin slot (animate: N36 + 1.6)
-    ("N37", 0.0, (0.75, -0.45, 1.65), (-0.4, 1.2, 2.6), 24),     # walls crowded with stars, frost gone
-    ("N38", 0.0, (0.2, 0.42, 1.7), PROBE, 45),                   # the push reaches the crib: the reveal
-    ("N39", 0.0, (0.14, 0.52, 1.62), PROBE, 50),
-    ("N40", 0.0, (0.11, 0.58, 1.56), PROBE, 55),
-    ("N40", 2.0, (0.1, 0.6, 1.54), PROBE, 56),
+    # The music box, close and held into N37 (human, C4 v2 review): its comb, drum and lid, the coin slot on its side.
+    ("N36", 1.2, (1.1, -0.64, 1.8), MBOX, 40),                   # the coin slot (animate: coin at N36 + 1.6)
+    ("N36", 3.5, (1.08, -0.66, 1.78), MBOX, 42),
+    ("N37", 1.8, (1.05, -0.68, 1.78), MBOX, 43),
+    ("N37", 4.2, (0.75, -0.45, 1.65), (-0.4, 1.2, 2.6), 24),     # walls crowded with stars, frost gone
+    # The push reaches the crib, high enough to look down past the rail (human, C4 v2 review): the reveal.
+    ("N38", 0.0, (0.2, 0.42, 1.98), PROBE, 45),
+    ("N39", 0.0, (0.14, 0.55, 1.92), PROBE, 50),
+    ("N40", 0.0, (0.11, 0.62, 1.86), PROBE, 55),
+    ("N40", 2.0, (0.1, 0.64, 1.84), PROBE, 56),
 ]
 
 

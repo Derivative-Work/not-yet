@@ -639,13 +639,16 @@ def nest_z(r):
     return 0.455 + r + 0.001
 
 
-def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None):
+def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, quilt=None):
     """A painted crib (1.3 x 0.7 m, rails 0.95 m) with a mattress and a blanket that breathes ("breath"). Under the
     blanket's head end, the probe's green LED shows as a glint ("glint"); the probe itself is not built here (C2).
     nest = (x, y, r): a shape key "nest" (0 the plain hump .. 1) presses a cup into the blanket for a sphere of radius r
     at crib-local (x, y, nest_z(r)), the felt rising to its equator: the reveal's probe lies in it (N38) instead of
     passing through the felt (human, C4 review). cover = (x, y, r): the blanket is a mound over such a sphere, so
-    the shop twin's chassis stays covered while its arms come out from under it."""
+    the shop twin's chassis stays covered while its arms come out from under it. quilt = (x, y, r), with a nest: two
+    folds of quilt lie closed over the nest, a mound hiding the sphere; "open" (0..1) turns them back, the front one
+    toward the room (-Y) and the back one away, flattening as they go (the reveal, N38: the probe opens them with its
+    arms; human, C4 v2 review). They pivot outside the sphere, so no fold passes through it."""
     out = {}
     root = K.empty(name, loc, parent)
     root.rotation_euler = (0, 0, rot_z)
@@ -750,12 +753,62 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None):
         cx, cy, r = nest
         root["nest_breath"] = 0.02 * breath_w(cx / (L - 0.1) + 0.5, cy / (W - 0.02) + 0.5)
     out["blanket"] = bl
+    glint_at = (-L / 2 + 0.07, 0.04, 0.47)  # just under the blanket's head-end lip
+    if quilt:
+        cx, cy, r = quilt
+        K.prop(root, "open", 0.0)
+        root["nest"] = 1.0  # the probe lies in its nest all along, under the quilt
+        HY, H, RW = 0.15, 2 * r + 0.05, 1.6 * r  # the folds' pivots off the centre, the mound's height and width
+        x0, x1 = -(L - 0.1) / 2, cx + 0.24
+
+        def uvof(x, y):
+            return x / (L - 0.1) + 0.5, y / (W - 0.02) + 0.5
+
+        def quilt_z(x, y):
+            u, v = uvof(x, y)
+            d = math.hypot(x - cx, y - cy)
+            return max(flat(u, v) + H * math.exp(-(d / RW) ** 4), nest_top(u, v) + 0.018)
+
+        for side in (-1, 1):  # -1 the front fold (toward the room), 1 the back
+            yh = cy + side * HY
+            zh = quilt_z(cx, yh)
+            hinge = K.empty(f"{name}.fold_hinge{side}", (cx, yh, zh), root)
+            K.drive(hinge, "rotation_euler", 0, root, "open", f"{-side * 2.9} * x")
+            K.drive(hinge, "location", 2, root, "breath", f"{zh:.4f} + {root['nest_breath']:.4f} * x")
+            fb = bmesh.new()
+            nx_, ny_ = 40, 16
+            fv = {}
+            for i in range(nx_ + 1):
+                for j in range(ny_ + 1):
+                    x = x0 + (x1 - x0) * i / nx_
+                    y = yh + (cy - yh) * j / ny_
+                    fv[i, j] = fb.verts.new((x - cx, y - yh, quilt_z(x, y) - zh))
+            for i in range(nx_):
+                for j in range(ny_):
+                    q = (fv[i, j], fv[i + 1, j], fv[i + 1, j + 1], fv[i, j + 1])
+                    fb.faces.new(q if side < 0 else q[::-1])
+            bmesh.ops.solidify(fb, geom=fb.faces[:], thickness=0.015)
+            fm = bpy.data.meshes.new(f"{name}.fold{side}")
+            fb.to_mesh(fm)
+            fb.free()
+            fo = K.link(bpy.data.objects.new(f"{name}.fold{side}", fm))
+            fo.parent = hinge
+            fo.data.materials.append(bl.data.materials[0])
+            K.smooth(fo)
+            # As it turns back it lies down: its height above the pivot shrinks to 15%.
+            fo.shape_key_add(name="rest")
+            fk = fo.shape_key_add(name="flat")
+            for v in fk.data:
+                v.co.z *= 0.15
+            K.drive(fk, "value", None, root, "open", "x")
+        glint_at = (cx, cy - HY - 0.012, quilt_z(cx, cy - HY) - 0.012)  # under the front fold's lip
     if glint:
         # The green standby LED, seen through a fold of the blanket at the head end: a tiny emitter and a faint light.
         g = sphere(f"{name}.glint", K.mat_emission(f"{name}.glint", "standby", 30.0, root, "glint", floor=0.0),
-                   (-L / 2 + 0.07, 0.04, 0.47), 0.006, root, 12)  # just under the blanket's head-end lip
+                   glint_at, 0.006, root, 12)
         g.visible_shadow = False
-        gl = light(f"{name}.glint_light", "POINT", (-L / 2 + 0.08, 0.04, 0.5), 0.0, "standby", 0.01, parent=root)
+        gl = light(f"{name}.glint_light", "POINT", (glint_at[0] + 0.01, glint_at[1], glint_at[2] + 0.03), 0.0,
+                   "standby", 0.01, parent=root)
         gl.data.specular_factor = 0.3
         K.drive(gl.data, "energy", None, root, "glint", "0.25 * x")
     out["root"] = root
@@ -1036,7 +1089,9 @@ def dresser(name, loc, rot_z=0.0, parent=None):
             (0.88, 0.01, 0.2), root, bev=0.006)
         sphere(f"{name}.knob{k}", K.mat_chrome(f"{name}.knob"), (0, -0.245, 0.17 + k * 0.24), 0.014, root, 12)
     box(f"{name}.top", paint, (0, 0, 0.81), (1.0, 0.5, 0.025), root, bev=0.008)
-    mb = K.music_box(f"{name}.musicbox", (-0.18, -0.02, 0.825), scale=1.6, rot_z=0.15, parent=root)
+    # Turned to show the room its comb and drum, three-quarter on to the camera's N36 approach (human, C4 v2 review:
+    # it barely read as a music box), and a little bigger.
+    mb = K.music_box(f"{name}.musicbox", (-0.18, -0.02, 0.825), scale=2.0, rot_z=math.pi + 0.05, parent=root)
     for o in bpy.data.objects:
         if o.name.startswith(f"{name}.musicbox.tip") or o.name == f"{name}.musicbox.knob":
             for m in o.data.materials:
@@ -1058,6 +1113,15 @@ def dresser(name, loc, rot_z=0.0, parent=None):
     # Recolour its lacquer case from the Lab's dark blue to the nursery's pastel, so it belongs to this room.
     case = bpy.data.objects[f"{name}.musicbox.case"]
     case.data.materials[0] = mat_paint(f"{name}.mb_case", "pastel", 0.3)
+    # Its lid, open on a hinge along the back edge, lined in felt: the silhouette of a music box, not a mechanism.
+    lid_h = K.empty(f"{name}.mb_lid_hinge", (0, 0.056, 0.072), mb)
+    lid_h.rotation_euler = (math.radians(-104), 0, 0)
+    box(f"{name}.mb_lid", case.data.materials[0], (0, -0.055, 0.006), (0.17, 0.11, 0.012), lid_h, bev=0.004)
+    box(f"{name}.mb_lid_lining", mat_felt(f"{name}.mb_lining", "felt_blue"), (0, -0.055, -0.0005), (0.15, 0.09, 0.002),
+        lid_h)
+    # A small warm key on the dresser top, so the box reads at N36.
+    light(f"{name}.mb_key", "SPOT", (-0.45, -0.45, 1.35), 6.0, "comfort", 0.05, target=(-0.18, -0.02, 0.9),
+          spot=(0.6, 0.4), specular=0.5, parent=root)
     # The baby monitor camera: a small rounded unit on a stand, a lens, a green standby pip.
     mon = K.empty(f"{name}.monitor", (0.3, 0.02, 0.825), root)
     mon.rotation_euler = (0, 0, 2.3)
@@ -1104,7 +1168,8 @@ def nursery(room):
     out = {}
     rug("nursery.rug", (0, 0.2, 0.006), 1.35, room)
     c = crib("crib", (0.35, 1.05, 0), rot_z=0.0, parent=room,
-             nest=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE))
+             nest=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE),
+             quilt=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE))
     out["crib"] = c
     out["mobile"] = mobile("mobile", (0.35 - 0.2, 1.05, 1.72), room)
     # The mobile's arm: up from the crib's back rail, over to the mobile.
@@ -1316,7 +1381,8 @@ def shop_window():
     c = crib("shop.crib", (0.95, 0.35, 0.6), rot_z=math.pi / 2, parent=root,
              cover=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE))
     out["crib"] = c
-    tag = K.empty("shop.tag", (0.6, 0.35 - 0.6, 0.6 + 0.8), root)
+    # On the rail's hall side, between the posts (human, C4 v2 review: the crib hid it at N32).
+    tag = K.empty("shop.tag", (0.555, 0.33, 0.6 + 0.82), root)
     tag.rotation_euler = (math.pi / 2, 0, -math.pi / 2 + 0.1)
     K.mesh_obj("shop.tag_card", bpy.ops.mesh.primitive_plane_add, K.mat_matte("tag", "paper"), tag, size=0.2).scale = (
         1.0, 0.55, 1)
