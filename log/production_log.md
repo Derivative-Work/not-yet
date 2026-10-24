@@ -351,3 +351,20 @@ From the C4 v2 review (`log/human_interventions.md`, 11:57).
 ## 2026-10-24T13:20 — C4 v3 review received
 
 N17's laptop screen to show warnings/CVEs; N32's clipboard clips through the bed. See `log/human_interventions.md`.
+
+## 2026-10-24T14:05 — N17's advisory feed: the real bugs from the lyrics, sources checked
+
+- **The human asked** which CVEs the first pass showed (they were made up) and asked for the ones the words allude to.
+- **The allusions,** per the drafting chat's verse notes:
+  - Verse 1, "twenty-seven-year ghosts": Mythos Preview's 27-year-old OpenBSD bug.
+  - Bridge, "the old crack under most of the net": PHP2Shell.
+- **Checked on 2026-10-24:**
+  - **PHP2Shell:** CVE-2026-109618 and CVE-2026-109619, two critical PHP remote code execution flaws (CVSS v4.0 9.2), fixed in PHP 8.5.12, 8.4.27, 8.3.36 and 8.2.35. Sources: Help Net Security (2026-10-21), Bitsight, Tanium and Huntress.
+  - **The OpenBSD bug:** a TCP SACK bug with no CVE. Anthropic's write-up (anthropic.com/research/mythos-preview) calls it "A 27-year-old OpenBSD bug" and links OpenBSD's fix, `pub/OpenBSD/patches/7.8/common/025_sack.patch.sig` (7.8 errata 025, 2026-03-25; 7.7 errata 031).
+- **The page now lists:**
+  - CVE-2026-109618 and CVE-2026-109619, both CRITICAL (header: "2 critical").
+  - "OpenBSD errata 025", marked "27 years old".
+  - Five noise rows: WARNING unused var / deprecated, and AI report unverified / duplicate / ???.
+  - No IDs are made up.
+- **Legibility:** the rows are set in Inter, because JetBrains Mono's dotted zero read as an 8 at 720p ("2826"). Checked in `renders/c4/review_v4e`–`v4f`.
+- **The first v4 full render** (frames_v4) was stopped before it finished, to pick up this change. Its frames will be overwritten by the restart; frame sequences are not archived.

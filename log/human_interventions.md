@@ -110,3 +110,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** At N17 the laptop screen should show something about warnings or CVEs. At N32 the clipboard clips through the bed.
 - **Note from the human:** "N17: let's have the laptop screen have something about warnings or CVEs open on it" / "N32: the clipboard is clipping through the bed"
 - **Rule:** R1 (rejecting parts of a render, with reasons). The screen content is a human creative direction within R1's reasons; the brief leaves the laptop's screen unspecified.
+
+## 2026-10-24T14:05 — C4 v3 review, follow-up: the CVEs on the laptop — R1
+
+- **What:** The laptop's advisory IDs (made up, in the first pass) must be the ones the lyrics allude to.
+- **Note from the human:** "Which CVEs are those? Make sure it's the ones alluded to in the words"
+- **Rule:** R1 (rejecting part of a render, with a reason).
