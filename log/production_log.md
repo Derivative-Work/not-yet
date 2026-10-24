@@ -228,3 +228,43 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Archived:** `archive/audio/sfx/pen_scratch_rejected_not-a-pen.wav`, `archive/scripts/pen_scratch_rejected_not-a-pen.py`, `archive/renders/c3/outro_pen_scratch_preview_rejected_synth.wav`
 - **Level:** the mean over the scratch is −29.6 dB, against −32.9 dB for the track alone. The final level is set by ear at C5, on the mastered track.
 - **Why:** Human interventions, 03:25 (R1, plus an exception for a recorded sound).
+
+## 2026-10-24T05:10:00-04:00 — C4: the animatic
+
+- **What:** The whole camera move at final timing, every anchor hit, low-res on the GTX 970: 640×360, Eevee at 8 samples, every second frame (3,510 frames in 51 min, 0.87 s/frame).
+- **Set additions** (`scenes/blender/sets/nursery.py`):
+  - The basement: the maintainer from behind, desk, lamp, laptop, peanut and donation jars, a 220-sheet paper avalanche with glowing sheets, and the mail slot with its flap, falling sheets and cold light through it.
+  - Outside and in the hall: the moat (reflective ring with faint edges), the navy velvet rope on brass posts, the falling ticket and the drift against the glass.
+  - The street: the road and the town's crack, the porch lights keyed per house, the far hills with 16 amber windows, the neighbor's walking glow.
+  - The shop: the twin's mittened forearms over the blanket edge and the waiver clipboard with pen and string, the AVAILABLE tag, the screen placeholder.
+  - The nursery: the music box's coin slot, the floor gaps, the ceiling call graph, and the mobile's ticket stacks.
+  - Stars, call graph, crack and gaps use one reveal material: per-face birth and dim times against a frame-driven clock clamped at the pen scratch, so the stars freeze with one clamp.
+- **Animation** (`scenes/blender/animate.py`): everything is keyed from the timing map and the C3 events. Nothing is keyed by hand. The module docstring has the full map. Highlights:
+  - Comb: plucks on every music-box note (1,149).
+  - Stars: 278 born on the melody, building per section, none on a key word; 4 dim.
+  - Chair: one rock per bar; it stops at the pen scratch, where the stars freeze.
+  - Mobile: steps on downbeats; its pieces lower on "bank", "browser", "cloud" and "week".
+  - Moon: the moonlight clock (58° to 16°).
+- **Camera** (`scenes/blender/camera_path.py`):
+  - 49 keyed poses on the shot anchors, centripetal Catmull–Rom through time, baked per frame. It never stops or eases at a key.
+  - It passes the door's 20° crack three times.
+  - It cuts away through the plinth twice: the floor layers are hidden while the eye is inside them (81.9–82.5 s, 104.1–105.3 s).
+  - Speed: median 0.15 m/s, p95 0.9, max 1.57 m/s, on the crossings to and from the shop. It isn't constant (brief). I evened it once: the crossings start earlier, the return has one key fewer, and N29 moved closer.
+- **Iterations** (archived under `archive/renders/`):
+  - Anchors v1: the note was 0.4 m too high (room-local coordinates), the basement was near-black, the moat invisible, and N09/N10 looked edge-on into the glass.
+  - v2: the note text faced inward and N18 was black.
+  - v3: N18's slot sat inside the ceiling slab.
+  - Animatic v1: no cutaway, so 82 s showed solid beige inside the rug and plinth.
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/anchors_v4 --anchors`
+  - `… -- --out renders/c4/frames_v1 --step 2`, then `… --from 80 --to 86` and `--from 103 --to 107` after the cutaway
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v1 2 renders/c4/c4_animatic.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v4 renders/c4/c4_anchor_sheet.jpg 6`
+- **Outputs:**
+  - Code and config: `scenes/blender/{animatic,animate,camera_path}.py`, `scenes/blender/sets/nursery.py`, `scripts/{animatic_assemble,contact_sheet}.py`, `config/instrument_map.json`
+  - Renders: `renders/c4/c4_animatic.mp4` (252 s, with the track, the pen scratch and burned-in review captions: lyrics lighting word by word, shot IDs, the N02 label, placeholders for the 2D outro shots), `renders/c4/c4_anchor_sheet.jpg`
+- **Not in C4, for C5:**
+  - Real reflections in the glass (the texture pass's foreshadowing, and N09/N10's taped window). These need planar probes.
+  - The projector's slow rotation sweeping the stars, dust in the beam, breaths brightening the projector, the baby monitor's screen.
+  - The real pages at N33/N34 (R composite), the 2D outro (N41–N44), the vertical framing, and the thumbnail view re-aligned to the moved neighbor.
+- **Status:** **C4 is ready for review.**

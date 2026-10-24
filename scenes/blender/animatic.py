@@ -46,6 +46,23 @@ births = animate.all_(S)
 black = animate.OUT["black"]
 f_end = A.frame(black)
 cam = camera_path.build(K, bpy, 0, f_end)
+# The cutaway through the plinth (brief, N14-N15 and N19): while the eye passes the floor's layers (z -0.15..0.55),
+# the layers it would be inside are hidden, so the frame opens from the nursery straight into the basement.
+CUT = ["plinth", "nursery.rug", "floor", "base.ceiling", "floor_gaps"] + [f"plinth.band{k}" for k in range(4)]
+inside = [f for f in range(f_end + 1) if -0.15 <= camera_path.pose(f / A.FPS)[0].z <= 0.55]
+spans = []
+for f in inside:
+    if spans and f == spans[-1][1] + 1:
+        spans[-1][1] = f
+    else:
+        spans.append([f, f])
+for nm in CUT:
+    o = bpy.data.objects[nm]
+    pts = [(0, 0.0, "CONSTANT")]
+    for f0, f1 in spans:
+        pts += [(f0 - 1, 1.0, "CONSTANT"), (f1 + 2, 0.0, "CONSTANT")]
+    A.write_keys(o, "hide_render", pts, interp="CONSTANT")
+print("cutaway frames:", [(a / A.FPS, b / A.FPS) for a, b in spans], flush=True)
 K.bloom(scene)
 K.rebind_drivers()
 K.refresh()
