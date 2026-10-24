@@ -54,3 +54,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human rejected the C3 preview and approved installing beat_this, which the permission classifier had blocked.
 - **Note from the human:** "As with Sandbox Rhapsody this is still hard for me to read -- a score is best, like it generated for that step. That said, it seems the beat detection was not good, which would make it difficult to generate a legible score, and it seems there is significant crosstalk based off this alone. Go ahead with beat_this"
 - **Rule:** R1 (rejecting a render, reasons in words). Approving a tool install is a technical decision the agent couldn't make alone (R3).
+
+## 2026-10-24T02:05 — C3 re-review: notes accurate enough; the "Celesta" staff is the music box — R1
+
+- **What:** The human judged the notes accurate enough for a convincing video, as in Sandbox Rhapsody. They identified the instrument labelled Celesta in the score (the Percussion stem) as the music box, and asked how much the beat and measure accuracy matters.
+- **Note from the human:** "The notes seem accurate enough to make a convincing video (which was good enough for Sandbox). What you have marked in the score as notated for Celesta *is* the music box. How much does the beat/measure accuracy actually matter for this"
+- **Rule:** R1 (judging a render); identifying an instrument by ear is a correction of the timing data's labels (R2).
