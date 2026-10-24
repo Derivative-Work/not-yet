@@ -84,3 +84,10 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Note for the shot list:** straight on, the backlit blue four panes are very close to the current Windows logo. N09 and N10 show the window as a reflection at an angle (brief), which keeps it a window. That gets checked at C4. The brief's set description still says "tall window"; I'll update the doc once you approve v2.
 - **Why:** Human interventions, C1 rejection (R1).
 - **Status:** **C1 v2 is ready for review.**
+
+## 2026-10-23T22:45:00-04:00 — C1 approved: 30 fps; brief updated for the four-pane windows
+
+- **What:** The human approved C1 v2 at 30 fps. I set `fps` to 30 and added `motion_blur_shutter` 0.5 in `config/look.json`, and updated the style spec's frame-rate section and C1 outcome. In the brief I changed three "tall window" phrases: the street bullet now describes the four-pane windows and the reason for them, N23 says "back window", and the moonlight clock says "back window". Re-exported the brief mirror.
+- **Commands:** docs `update` on the brief (rev 24 → 27, three `find` replacements); docs `read` of the prose node, then `scripts/doc_to_md.py <read result> docs/brief.md`
+- **Outputs:** `config/look.json`, `style/style_spec.md`, `docs/brief.md`
+- **Why:** Human interventions, C1 approval (R1).

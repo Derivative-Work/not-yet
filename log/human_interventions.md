@@ -36,3 +36,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human reviewed the C1 sheet and asked for changes in words, not by hand.
 - **Note from the human:** "it could be a little darker. I'm also not sold on the "tall window" -- it seems like it would be difficult to make the play on Microsoft Windows at "windows are never quite mended" with this format"
 - **Rule:** R1 (rejecting a render, with the reason in words). The agent makes the change (production log, C1 v2).
+
+## 2026-10-23T22:40 — C1 v2 approved at 30 fps — R1
+
+- **What:** The human approved C1 v2 and chose 30 fps over the proposed 60.
+- **Note from the human:** "this one is fine at 30fps. keep going"
+- **Rule:** R1 (approving a plan and a render).

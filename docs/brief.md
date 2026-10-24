@@ -1,4 +1,4 @@
-<!-- Exported by the agent from https://claude.ai/artifact/3bSKv5TAFQ4JJLZi5NC6on at doc rev 24, 2026-10-23, with scripts/doc_to_md.py (from Sandbox Rhapsody). The live doc is the source of truth; re-export if it changes. -->
+<!-- Exported by the agent from https://claude.ai/artifact/3bSKv5TAFQ4JJLZi5NC6on at doc rev 27, 2026-10-23, with scripts/doc_to_md.py (from Sandbox Rhapsody). The live doc is the source of truth; re-export if it changes. -->
 
 # Not Yet: Set, Shot List and Production Brief
 
@@ -148,7 +148,7 @@ One Blender scene: a glass nursery standing on a low plinth in a dark, museum-li
 - **The glass room.** About 4 m square, walls of clear glass on a thin steel frame, frost along their bottom edge. Its door is Sandbox Rhapsody's vault door, repainted pastel, the dial still on it, with the sticky note `NOT FOR THE PUBLIC :)`.
 - **The nursery inside.** A crib with a blanket that rises and falls, the mobile above it, a star-projector night-light on a side table, a music box on a shelf, and an empty rocking chair.
 - **The basement.** Directly under the glass room, reached by a cutaway through the plinth: a low room, one desk lamp, a laptop and a paper avalanche of printed tickets.
-- **The street.** Through a tall window at the back of the hall: a row of small houses on a hill, porch lights on, and one upstairs window that matters (the neighbor's).
+- **The street.** Through a big four-pane window at the back of the hall (every hall window is a four-pane cross window, so the chorus's "windows" can carry the Microsoft Windows play; the taped one behind the camera is the same shape): a row of small houses on a hill, porch lights on, and one upstairs window that matters (the neighbor's).
 - **The shop window.** Across the hall, facing the glass room: a lit display window with an identical crib, a price tag on the rail, a twin probe with mittens over its arms, and a small screen in the display for verse 4's real pages.
 
 **Color roles** (hex values come from the style spec)
@@ -201,7 +201,7 @@ Forty-three segments (N01 retired) anchored to v3.1's lines; exact frames come f
 | N20 | Chorus 2 | "The patches take time and the ground isn't steady;" | Lamp light leaks up through the floor gaps; one star dims: the fix came from the basement | — | B |
 | N21 | Chorus 2 | "We'll wake you when all of the windows are mended…" | The sticky note peels further | — | B |
 | N22 | Chorus 2 | "…and the moat, while we're at it, defended." | Glimpse outside the glass: a thin ring of still water has appeared around the plinth | — | B |
-| N23 | Bridge | "Hush, can you hear it? A light down the street," | Turn toward the hall's tall window. Up on the hill, one window lights amber | — | B |
+| N23 | Bridge | "Hush, can you hear it? A light down the street," | Turn toward the hall's back window. Up on the hill, one window lights amber | — | B |
 | N24 | Bridge | "The neighbor's kid's up on its bare little feet;" | The amber light moves along the sill | — | B |
 | N25 | Bridge | "It found the old crack under most of the net," | A fine crack runs down the road and branches under every house | — | B |
 | N26 | Bridge | "And the town killed its lights; some aren't back on yet." | Porch lights go out house by house; most return, a few stay dark | — | B |
@@ -238,7 +238,7 @@ Visual interest inside the frame, layered onto the shot list without changing a 
 
 - **Stars sweep over objects,** not just walls: the crib rail, the chair, the vault dial. At most one lens flare per section.
 - **Mobile shadows.** The projector sits behind the mobile, so the guests' shapes loom over the stars from N11 and grow as the pieces lower in N12.
-- **The moonlight clock.** A patch of moonlight from the tall hall window starts at the window's base in N02 and creeps across the floor for the whole song, reaching the crib at N38.
+- **The moonlight clock.** A patch of moonlight from the back window starts at the window's base in N02 and creeps across the floor for the whole song, reaching the crib at N38.
 - **Dust in the projector beam,** drifting slowly throughout.
 
 **Accumulation**

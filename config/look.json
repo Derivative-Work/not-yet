@@ -1,6 +1,7 @@
 {
   "_doc": "The video's look as numbers, read by scenes/blender/lib/sr_kit.py (vendored from Sandbox Rhapsody) and scenes/blender/sets/nursery.py. Every value comes from style/style_spec.md part 2; change them there first. Keys the Sandbox Rhapsody kit needs (void, floor, horizon, key, fill, rim, chrome, probe, lens, shadow, amber, glass, lab*, note, paper, brass, copper) are kept, retuned for this video.",
-  "fps": 60,
+  "fps": 30,
+  "motion_blur_shutter": 0.5,
   "agx_look": "AgX - Base Contrast",
   "exposure": -0.4,
   "palette": {

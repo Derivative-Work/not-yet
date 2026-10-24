@@ -19,16 +19,11 @@ on the hill and a tungsten slit under the floor. Nothing is saturated except tho
 
 ## Frame rate and format
 
-- **60 fps**, as in Sandbox Rhapsody.
-  - The video is one slow, continuous push past steel mullions and glass edges (the texture pass's arc). At 30 fps,
-    thin verticals sliding slowly across the frame step visibly.
-  - It snaps MIDI onsets to 8.3 ms, which matters for the comb plucks and star births.
-  - It matches the series.
-- **Cost:** 246.36 s of song is 14,782 frames, plus the black, the CRT line and the cards (2D, cheap). At 720p and 64
-  samples on this GTX 970, a frame of the full set takes about 21 s including the build; most of that is the build,
-  which a sequence render pays once.
-  - The 4K final runs on the RTX 5090. Budget from Sandbox Rhapsody's figures there: 8.5 s per 4K test frame.
-  - If the 4K budget is too long, 30 fps with Eevee motion blur halves it, at some risk of judder on the mullions. This is a C1 question for the human.
+- **30 fps, with Eevee motion blur (shutter 0.5)**, approved at C1 (human, 2026-10-23: "this one is fine at 30fps").
+  - The C1 draft proposed 60 fps, as in Sandbox Rhapsody, so that thin mullions sliding past the slow push wouldn't
+    step. Motion blur covers that at half the frames: 7,391 for 246.36 s, plus the 2D cards.
+  - MIDI onsets snap to 16.7 ms. That's fine for a lullaby's plucks; the chair, mobile and comb all animate on the beat.
+  - Watch at C4: the mullions on the arcing push. If they step, raise the shutter before raising the frame rate.
 - **Format:** 3840×2160 (16:9) for the main video; drafts at 1280×720 (`config/render_profiles.json`, `draft720`).
   The vertical cut (N23 to N41) reframes a wider render, set at C4.
 
@@ -164,9 +159,9 @@ no pop or overshoot (unlike Ghost in the Machine and Sandbox Rhapsody), and line
 is set in Inter's lighter weight. The N34 check marks are drawn in a different hand (Instrument Serif Italic,
 in `paper`; green is the probe's alone).
 
-## Open for C1 review (v2)
+## C1 outcome
 
-- 60 fps against 30 fps with motion blur (cost above).
-- The pastel: lavender `#c8c0e4`.
+Approved at v2 (2026-10-23), at 30 fps with the lavender door. Carried forward:
+
 - The glint isn't visible in either test frame. The close frame's angle hides the crib's head end. It is easy to
   show and isn't a colour question; it gets checked with the probe at C2.
