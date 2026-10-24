@@ -13,7 +13,8 @@ custom properties for the note-driven library (sr_anim), all 0-1 unless noted:
   room root  "frost" (1 = full band, 0 = clear glass)
   crib       "breath" (blanket rise), "glint" (the probe's LED through the blanket)
   chair      "rock" (-1..1, the rocking angle), "blanket_slip"
-  door       "open" (0 shut .. 1 = a crack, 12 degrees), "note_peel"
+  door       "open" (0 shut .. 1 = a crack, 20 degrees: wide enough for the camera to pass the free edge)
+  note       "peel" (0 flat .. 1 lifted), on the glass beside the door
   mobile     "turn" (revolutions), "lower" (per piece: "lower_bank", "lower_globe", "lower_cloud", "lower_flag")
   stars      "count" (0..1 of the full scatter shown)
   neighbor   "amber" (the upstairs window)
@@ -35,7 +36,7 @@ ROOM = 2.0          # glass room half-width
 ROOM_H = 2.8        # glass room height
 TOP = PL_H + ROOM_H
 HILL = 8.0          # the street's hill: low enough that sky silhouettes the back window's cross mullion
-MOON_AT = (13.5, 94.0, 16.9)  # in the back window's upper-left pane from the wide C1 camera
+MOON_AT = (-18.5, 94.0, 23.3)  # in the back window's upper-left pane from inside the room (the bridge, N23-N27)
 WINDOW_X = -1.0     # the back window's centre
 
 
@@ -431,12 +432,12 @@ def vault_door(room):
     # The door's heavy round frame, painted with the door; a chrome bead on its face.
     torus("door.frame_ring", pastel, (0, y, zc), R + 0.04, 0.055, room, rot=(math.pi / 2, 0, 0))
     torus("door.frame_bead", chrome, (0, y - 0.05, zc), R + 0.04, 0.012, room, rot=(math.pi / 2, 0, 0))
-    # The door itself, on a hinge at the opening's left edge; "open" swings it inward up to 12 degrees.
+    # The door itself, on a hinge at the opening's left edge; "open" swings it inward up to 20 degrees.
     hinge = K.empty("door.hinge", (-R, y, zc), room)
     root = K.empty("door", (0, 0, 0), None)
     K.prop(root, "open", 0.0)
     K.prop(root, "note_peel", 0.0)
-    K.drive(hinge, "rotation_euler", 2, root, "open", "-0.2094 * x")
+    K.drive(hinge, "rotation_euler", 2, root, "open", "-0.3491 * x")
     out["door"] = root
     slab = cyl("door.slab", pastel, (R, 0, 0), R - 0.01, 0.16, hinge, rot=(math.pi / 2, 0, 0), verts=128)
     torus("door.rim", chrome, (R, -0.08, 0), R - 0.03, 0.03, hinge, rot=(math.pi / 2, 0, 0))
@@ -464,14 +465,18 @@ def vault_door(room):
                  (0.003, 0.002, 0.014 if k % 6 else 0.024), dial)
         tk.rotation_euler = (0, -a + math.pi / 2, 0)
     cyl("door.dial_knob", chrome, (0, -0.03, 0), 0.04, 0.03, dial, rot=(math.pi / 2, 0, 0), verts=32)
-    # The sticky note, a little crooked, at adult eye height on the door's face.
-    note = K.empty("door.note", (R + 0.34, -0.085, 0.16), hinge)
+    # The sticky note, a little crooked, on the glass beside the door (brief, section 3: "on the nursery's glass
+    # door"): from outside it reads (N07); from inside it shows mirrored, peeling (N21); it falls at N35. It hangs
+    # from its top edge (the pivot), so "peel" lifts it away from the glass.
+    note = K.empty("note", (1.13, y - 0.004, 1.74), room)
+    K.prop(note, "peel", 0.0)
+    K.drive(note, "rotation_euler", 0, note, "peel", "1.5708 - 0.9 * x")
     note.rotation_euler = (math.pi / 2, 0.06, 0)
     out["note"] = note
-    K.mesh_obj("door.note_paper", bpy.ops.mesh.primitive_plane_add, K.mat_matte("sticky", "note"), note, size=0.2,
-               rotation=(0, 0, 0)).scale = (1, 1, 1)
-    K.text("door.note_text", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, 0.0008),
-           rot=(0, 0, 0), font="InstrumentSerif-Italic.ttf", parent=note)
+    paper = K.empty("note.paper_root", (0, -0.1, 0), note)
+    K.mesh_obj("note.paper", bpy.ops.mesh.primitive_plane_add, K.mat_matte("sticky", "note"), paper, size=0.2)
+    K.text("note.text", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, -0.0012),
+           rot=(0, math.pi, 0), font="InstrumentSerif-Italic.ttf", parent=paper)
     return out
 
 
@@ -915,20 +920,25 @@ def street():
     # Houses: a row climbing the hill, each a box with a gabled roof, a porch light and a couple of windows.
     wall = mat_stone("house_wall", "house_wall", 0.8)
     roof_m = mat_stone("house_roof", "hill", 0.7)
-    porch = K.mat_emission("porch", "comfort", 22.0)
+    lights_root = K.empty("street.lights")
+    out["lights"] = lights_root
+    out["homes"] = []
     win_dim = K.mat_emission("house_win", "comfort", 1.2)
-    homes = [(-22, 46), (-13, 50), (-5, 53), (1.5, 50), (13.5, 56), (6, 52), (17, 48), (25, 45), (-9, 63),
-             (8.5, 65), (2, 62), (14, 61), (-1.5, 59)]
-    neighbor = 4  # (13.5, 56): its upstairs window in the back window's upper-right pane from the wide C1 camera
+    homes = [(-22, 46), (-13, 50), (-6, 53), (2.5, 50), (-2.0, 56), (6, 52), (13, 55), (17, 48), (25, 45), (-9, 63),
+             (8.5, 65), (2, 62), (14, 61), (-15, 60)]
+    neighbor = 4  # (-2, 56): framed by the back window from inside the room (the bridge) and from N29's wide view
     for k, (x, y) in enumerate(homes):
         g = ground(x, y)
-        w, d, hh = 3.2, 2.6, 3.0 + (2.6 if k == neighbor else 0.6 * (k % 2))
+        w, d, hh = 3.2, 2.6, 3.0 + (1.0 if k == neighbor else 0.6 * (k % 2))
         box(f"house{k}.body", wall, (x, y, g + hh / 2), (w, d, hh))
         rf = K.mesh_obj(f"house{k}.roof", bpy.ops.mesh.primitive_cone_add, roof_m, None, vertices=4,
                         radius1=w * 0.8, depth=1.4, location=(x, y, g + hh + 0.7), rotation=(0, 0, math.pi / 4))
         rf.scale = (1, d / w, 1)
-        p = sphere(f"house{k}.porch", porch, (x + 0.8, y - d / 2 - 0.15, g + 1.0), 0.09, None, 12)
+        K.prop(lights_root, f"porch{k}", 1.0)  # N26: the town kills its lights, house by house
+        p = sphere(f"house{k}.porch", K.mat_emission(f"porch{k}", "comfort", 22.0, lights_root, f"porch{k}", floor=0.0),
+                   (x + 0.8, y - d / 2 - 0.15, g + 1.0), 0.09, None, 12)
         p.visible_shadow = False
+        out["homes"].append((x, y, g))
         if k % 3 == 1:
             box(f"house{k}.win", win_dim, (x - 0.7, y - d / 2 - 0.01, g + 1.4), (0.6, 0.02, 0.5))
         if k == neighbor:
@@ -938,7 +948,53 @@ def street():
             box("neighbor.window", wm, (x + 0.6, y - d / 2 - 0.01, g + hh - 0.9), (0.7, 0.02, 0.6))
             box("neighbor.sill", mat_stone("sill_n", "house_wall", 0.6), (x + 0.6, y - d / 2 - 0.06, g + hh - 1.22),
                 (0.85, 0.1, 0.05))
+            # N24: the light moves along the sill (the kid up on its feet): a small amber glow, "walk" 0-1 across.
+            K.prop(root, "walk", 0.0)
+            walker = sphere("neighbor.walker", K.mat_emission("neighbor_walk", "amber", 40.0, root, "amber", floor=0.0),
+                            (x + 0.32, y - d / 2 - 0.03, g + hh - 1.1), 0.06, None, 12)
+            K.drive(walker, "location", 0, root, "walk", f"{x + 0.32} + 0.56 * x")
+            walker.visible_shadow = False
             out["neighbor"] = root
+            out["neighbor_window"] = Vector((x + 0.6, y - d / 2, g + hh - 0.9))
+    # The road up the hill to the houses, and the fine crack that runs down it and branches under every house (N25).
+    road_pts = [Vector((-1.5 + 0.06 * (yy - 30), yy, ground(-1.5 + 0.06 * (yy - 30), yy) + 0.04)) for yy in range(30, 60, 2)]
+    bm = bmesh.new()
+    for a, b in zip(road_pts, road_pts[1:]):
+        nrm = Vector((1.6, 0, 0))
+        bm.faces.new([bm.verts.new(v) for v in (a - nrm, b - nrm, b + nrm, a + nrm)])
+    me = bpy.data.meshes.new("street.road")
+    bm.to_mesh(me)
+    bm.free()
+    road = K.link(bpy.data.objects.new("street.road", me))
+    road.data.materials.append(mat_stone("road", "plinth", 0.8))
+    out["road_pts"] = road_pts
+    out["ground"] = ground
+    # Far hills (N27): a second ridge behind the first, with small houses whose windows light amber one by one.
+    bm = bmesh.new()
+    nx = 60
+    vs = []
+    for i in range(nx + 1):
+        x = -150 + 300 * i / nx
+        h = 15 + 5 * math.sin(x * 0.03) + 3 * math.sin(x * 0.11)
+        vs.append((bm.verts.new((x, 125, -1)), bm.verts.new((x, 125, h))))
+    for i in range(nx):
+        bm.faces.new((vs[i][0], vs[i + 1][0], vs[i + 1][1], vs[i][1]))
+    me = bpy.data.meshes.new("street.far_hills")
+    bm.to_mesh(me)
+    bm.free()
+    far = K.link(bpy.data.objects.new("street.far_hills", me))
+    far.data.materials.append(mat_stone("far_hill", "hill", 0.9))
+    far_root = K.empty("street.far")
+    out["far"] = far_root
+    rnd = random.Random(SEEDS["main"] + 7)
+    out["far_n"] = 16
+    for k in range(16):
+        x = -60 + 120 * (k + rnd.random() * 0.6) / 16
+        h = 15 + 5 * math.sin(x * 0.03) + 3 * math.sin(x * 0.11)
+        K.prop(far_root, f"amber{k}", 0.0)
+        wdw = box(f"far{k}.window", K.mat_emission(f"far{k}", "amber", 30.0, far_root, f"amber{k}", floor=0.0),
+                  (x, 124.5, h - rnd.uniform(1.0, 3.0)), (0.9, 0.05, 0.7))
+        wdw.visible_shadow = False
     return out
 
 
