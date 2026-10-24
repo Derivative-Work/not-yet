@@ -234,6 +234,20 @@ def box(name, mat, loc, size, parent=None, bev=0.0, rot=(0, 0, 0)):
     return o
 
 
+def soft_box(name, mat, loc, size, parent=None, rot=(0, 0, 0), level=1):
+    """A box with well-rounded edges, a soft stuffed shape (the maintainer's felt-doll body parts): the size goes
+    into the mesh (so the rounding is even on every edge), then a wide bevel and one level of subdivision."""
+    o = box(name, mat, loc, (1, 1, 1), parent, rot=rot)
+    o.data.transform(Matrix.Diagonal((size[0], size[1], size[2], 1.0)))
+    bv = o.modifiers.new("round", "BEVEL")
+    bv.width, bv.segments, bv.limit_method = 0.42 * min(size), 4, "NONE"
+    if level:
+        sd = o.modifiers.new("soft", "SUBSURF")
+        sd.levels = sd.render_levels = level
+    K.smooth(o)
+    return o
+
+
 def boxes_obj(name, mat, extents):
     """One object made of several axis-aligned boxes, each given as ((x0, y0, z0), (x1, y1, z1)) in world space."""
     bm = bmesh.new()
@@ -693,10 +707,21 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
 
     def rest_z(u, v):
         if cover:
+            # The felt drapes over the sphere and falls to the mattress in folds: ripples around the skirt, zero
+            # over the top and the sphere's sides (so they never cut into it) and out on the flat blanket.
             cx, cy, r = cover
             x, y = xy(u, v)
             d = math.hypot(x - cx, y - cy)
-            return flat(u, v) + (2 * r + 0.03) * math.exp(-(d / (1.25 * r)) ** 4)
+            a = math.atan2(y - cy, x - cx)
+            dome = (2 * r + 0.03) * math.exp(-(d / (1.35 * r)) ** 3)
+            skirt = max(0.0, min((d - 1.05 * r) / (0.35 * r), 1.0)) * math.exp(-((d - 1.5 * r) / (0.6 * r)) ** 2)
+            ph = 7 * a + 1.4 * math.sin(3 * a) + 0.5
+            folds = 0.026 * skirt * math.sin(ph) * (0.7 + 0.3 * math.sin(2 * a))
+            # Over the dome, raised ridges only (they lift the felt off the sphere, never into it), fading in from
+            # the top and running down into the skirt's folds.
+            top = max(0.0, min((d - 0.35 * r) / (0.6 * r), 1.0)) * (1.0 - skirt)
+            ridges = 0.03 * top * (0.5 + 0.5 * math.sin(ph)) ** 2
+            return flat(u, v) + dome + folds + ridges
         return flat(u, v) + 0.07 * hump_w(u, v)
 
     def nest_top(u, v):
@@ -1388,9 +1413,15 @@ def shop_window():
         1.0, 0.55, 1)
     K.text("shop.tag_text", "COMING\nSOON", 0.035, K.mat_ink("tag_ink", "shadow"), loc=(0, 0, 0.001), rot=(0, 0, 0),
            font="Inter-Medium-flat.ttf", parent=tag)
-    # The display screen (dark until verse 4) on a small easel to the left.
+    # The display screen (dark until verse 4) on a small easel to the left: two front legs and a back leg in pale
+    # wood, a ledge under the screen.
     scr = box("shop.screen", K.mat_plastic("shop.screen", "lens", 0.05), (1.3, -1.1, 1.55), (0.04, 0.9, 0.55), root,
               bev=0.01)
+    easel = mat_paint("shop.easel", "wood", 0.55)
+    for sy in (-1, 1):
+        bar(f"shop.easel_leg{sy}", easel, (1.2, -1.1 + sy * 0.36, 0.6), (1.345, -1.1 + sy * 0.25, 1.86), 0.013, root)
+    bar("shop.easel_back", easel, (1.66, -1.1, 0.6), (1.36, -1.1, 1.8), 0.012, root)
+    box("shop.easel_ledge", easel, (1.275, -1.1, 1.262), (0.09, 0.84, 0.025), root, bev=0.004)
     out["screen"] = scr
     for k in range(3):  # fluorescent tubes in the ceiling
         tube = cyl(f"shop.tube{k}", K.mat_emission("shop.tube", "commerce", 6.0), (0.4 + k * 0.55, 0, 2.97), 0.02,
@@ -1578,8 +1609,21 @@ def basement():
                         target=(0.55, 1.2, dz), spot=(1.9, 0.6))
     light("base.lamp_spill", "POINT", (0.8, 1.3, dz + 0.5), 25.0, "tungsten", 0.2, specular=0.1)
     light("base.fill", "AREA", (0, -1.0, Z1 - 0.2), 30.0, "tungsten", 2.0, target=(0.4, 1.0, Z0), specular=0.1)
-    box("base.laptop_base", K.mat_plastic("base.laptop", "lab_dark", 0.4), (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015))
-    scr = box("base.laptop_screen", K.mat_emission("base.screen", "house", 1.5), (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22))
+    # The laptop: a base with a keyboard well, keys and a trackpad, a hinge, and a lid whose display is the lit page
+    # below (the lid itself is dark plastic; the page carries the screen's light).
+    shell = K.mat_plastic("base.laptop", "lab_dark", 0.4)
+    bz = dz + 0.0275  # the base's top face
+    box("base.laptop_base", shell, (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015), bev=0.004)
+    keys_ext = []
+    for row in range(4):
+        for col in range(12):
+            x0, y0 = 0.35 - 0.141 + col * 0.0236, 1.215 - row * 0.0225
+            keys_ext.append(((x0, y0 - 0.0185, bz), (x0 + 0.02, y0, bz + 0.003)))
+    keys_ext.append(((0.35 - 0.075, 1.215 - 4 * 0.0225 - 0.0185, bz), (0.35 + 0.075, 1.215 - 4 * 0.0225, bz + 0.003)))
+    boxes_obj("base.laptop_keys", K.mat_plastic("base.keys", "shadow", 0.5), keys_ext)
+    box("base.laptop_pad", K.mat_plastic("base.pad", "plinth", 0.3), (0.35, 1.062, bz + 0.0005), (0.1, 0.05, 0.001))
+    cyl("base.laptop_hinge", shell, (0.35, 1.262, dz + 0.042), 0.008, 0.3, rot=(0, math.pi / 2, 0), verts=16)
+    scr = box("base.laptop_screen", shell, (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22), bev=0.003)
     scr.rotation_euler = (-0.2, 0, 0)
     # The page on the laptop (human, C4 v3 review: "something about warnings or CVEs"): a security advisory feed, a
     # thousand new warnings, a few critical, mostly noise (N17's line). The real bugs are the ones the words allude to
@@ -1625,20 +1669,54 @@ def basement():
     coin = K.mat_metal("base.coin", "brass", 0.2)
     for k in range(3):
         cyl(f"base.coin{k}", coin, (-0.2 + 0.012 * (k - 1), 1.5, dz + 0.013 + 0.003 * k), 0.012, 0.002, verts=16)
-    # The maintainer, from behind: chair, torso, shoulders, head; "breath" lifts the shoulders a little.
-    m_root = K.empty("maintainer", (0.45, 0.55, Z0))
+    # The maintainer, from behind, hunched over the laptop in a hoodie: a felt doll like the nursery's toys (soft
+    # rounded parts), on a wooden chair. "breath" lifts the torso, shoulders, head and upper arms a little; the
+    # forearms and hands rest on the keyboard and stay put (the elbow joints hide the seam).
+    m_root = K.empty("maintainer", (0.37, 0.55, Z0))
     K.prop(m_root, "breath", 0.0)
     cloth = mat_felt("base.cloth", "felt_grey")
-    skin = mat_paint("base.hair", "pencil", 0.8)
-    box("base.chair_seat", wood, (0, 0, 0.45), (0.45, 0.45, 0.05), m_root, bev=0.01)
-    box("base.chair_back", wood, (0, -0.2, 0.75), (0.45, 0.04, 0.55), m_root, bev=0.01)
+    jeans = mat_felt("base.jeans", "fill")
+    hair = mat_paint("base.hair", "pencil", 0.8)
+    skin = mat_felt("base.skin", "felt_cream")
+    shoe = K.mat_plastic("base.shoe", "shadow", 0.6)
+    # The chair: seat, four legs, two back posts with a top rail and a lower rail.
+    box("base.chair_seat", wood, (0, 0, 0.45), (0.44, 0.44, 0.04), m_root, bev=0.008)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            cyl(f"base.chair_leg{sx}{sy}", wood, (sx * 0.19, sy * 0.19, 0.215), 0.016, 0.43, m_root, verts=12)
+        cyl(f"base.chair_post{sx}", wood, (sx * 0.19, -0.2, 0.7), 0.017, 0.46, m_root, verts=12)
+    box("base.chair_back", wood, (0, -0.2, 0.86), (0.42, 0.03, 0.12), m_root, bev=0.008)
+    box("base.chair_rail", wood, (0, -0.2, 0.62), (0.4, 0.025, 0.04), m_root, bev=0.005)
+    # Torso local: origin over the seat (world z = Z0 + 0.5); +Y toward the desk.
     torso = K.empty("maintainer.torso", (0, 0.02, 0.5), m_root)
     K.drive(torso, "location", 2, m_root, "breath", "0.5 + 0.012 * x")
-    body = sphere("maintainer.body", cloth, (0, 0, 0.32), 0.2, torso, 24)
-    body.scale = (1.15, 0.75, 1.55)
-    sphere("maintainer.head", skin, (0, 0.05, 0.7), 0.11, torso, 24).scale = (0.9, 1.0, 1.05)
+    soft_box("maintainer.hips", jeans, (0, 0.02, 0.05), (0.36, 0.3, 0.15), torso)
+    soft_box("maintainer.body", cloth, (0, 0.06, 0.3), (0.42, 0.27, 0.52), torso, rot=(-0.25, 0, 0))
+    # The hood, down: a soft bunch of fabric lying on the upper back, below the neck.
+    hood = sphere("maintainer.hood", cloth, (0, 0.03, 0.53), 0.09, torso, 24)
+    hood.scale, hood.rotation_euler = (1.45, 0.55, 0.75), (-0.5, 0, 0)
+    cyl("maintainer.neck", skin, (0, 0.14, 0.6), 0.05, 0.07, torso, rot=(-0.5, 0, 0), verts=16)
+    sphere("maintainer.head", hair, (0, 0.2, 0.685), 0.105, torso, 32).scale = (0.9, 1.0, 1.08)
     for sx in (-1, 1):
-        bar(f"maintainer.arm{sx}", cloth, (sx * 0.22, 0.0, 0.5), (sx * 0.15, 0.45, 0.25), 0.05, torso)
+        sphere(f"maintainer.ear{sx}", skin, (sx * 0.094, 0.21, 0.675), 0.022, torso, 12).scale = (0.5, 1.0, 1.25)
+    # Arms: shoulder -> elbow on the torso (breathing); elbow -> wrist -> hand on the root (still, on the keys).
+    # Root local = torso local + (0, 0.02, 0.5).
+    for sx in (-1, 1):
+        sh, el = (sx * 0.17, 0.1, 0.47), (sx * 0.22, 0.22, 0.33)
+        sphere(f"maintainer.shoulder{sx}", cloth, sh, 0.05, torso, 16)
+        bar(f"maintainer.arm{sx}", cloth, sh, el, 0.046, torso, verts=16)
+        el_r = (el[0], el[1] + 0.02, el[2] + 0.5)
+        wr = (sx * 0.1, 0.54, 0.825)
+        sphere(f"maintainer.elbow{sx}", cloth, el_r, 0.045, m_root, 16)
+        bar(f"maintainer.forearm{sx}", cloth, el_r, wr, 0.036, m_root, verts=16)
+        sphere(f"maintainer.cuff{sx}", cloth, wr, 0.037, m_root, 16).scale = (1.0, 0.6, 1.0)
+        sphere(f"maintainer.hand{sx}", skin, (sx * 0.085, 0.585, 0.796), 0.034, m_root, 16).scale = (1.0, 1.35, 0.45)
+        # Legs under the desk: thigh forward along the seat, shin down, a shoe.
+        kn = (sx * 0.1, 0.34, 0.53)
+        bar(f"maintainer.thigh{sx}", jeans, (sx * 0.09, 0.07, 0.55), kn, 0.068, m_root, verts=16)
+        sphere(f"maintainer.knee{sx}", jeans, kn, 0.066, m_root, 16)
+        bar(f"maintainer.shin{sx}", jeans, kn, (sx * 0.11, 0.4, 0.09), 0.052, m_root, verts=16)
+        soft_box(f"maintainer.shoe{sx}", shoe, (sx * 0.11, 0.45, 0.04), (0.1, 0.24, 0.08), m_root)
     out["maintainer"] = m_root
     # The paper avalanche: drifts of printed tickets across the desk and floor, reaching the desk edge (N16).
     grey = K.mat_matte("base.paper", "paper")

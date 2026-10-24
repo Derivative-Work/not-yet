@@ -409,3 +409,44 @@ From the C4 v3 review and its follow-up (`log/human_interventions.md`, 13:20 and
   - `archive/renders/c4_anchors_v6_rejected_c4-v3-review/`
 - **Outputs:** `renders/c4/c4_animatic_v4.mp4` (252 s), `renders/c4/c4_anchor_sheet_v4.jpg`.
 - **Status:** **C4 v4 is ready for review.**
+
+## 2026-10-24T16:30 — C4 v5: the last grey-box geometry replaced (maintainer, laptop, shop easel, twin's blanket)
+
+From the human's go-ahead (`log/human_interventions.md`, 15:20).
+
+- **The maintainer (N15–N17):**
+  - A felt doll like the nursery's toys, from behind, hunched over the laptop: hips in jeans, a hoodie torso leaning forward, the hood down and bunched on the upper back, a short neck, the head (hair) with ears.
+  - The arms go shoulder → elbow → forearm → cuff → hand resting on the keys. The legs go thigh → knee → shin → shoe, under the desk.
+  - The parts are rounded boxes, through a new `soft_box` helper: the size is baked into the mesh, then a wide bevel and one subdivision. A first pass subdivided scaled cubes, which turned every part into a ball (a snowman), and a torus hood read as a ring.
+  - "breath" lifts the torso, head and upper arms. The forearms and hands stay on the keys, and the elbow joints hide the seam.
+  - The figure moved from x 0.45 to 0.37, centred on the laptop.
+  - The chair now has a seat, four legs, two back posts, a top rail and a lower rail.
+- **The laptop (N16–N17):**
+  - A keyboard of 48 keys and a space bar (one mesh), a trackpad and a hinge.
+  - The lid is dark plastic; only the advisory page glows (before, the whole box emitted).
+- **The shop's easel (N29–N37):** the screen stands on an easel in pale wood: two front legs, a back leg, a ledge.
+- **The twin's blanket (N31–N32):**
+  - The mound drapes: a softer dome, folds around the skirt, and raised ridges over the dome. The ridges only lift the felt, so it never cuts into the hidden chassis.
+  - Clearance over the probe's sides is at least 7 mm under the felt's thickness.
+- **Review stills:** `renders/c4/review_v5a`–`v5c`.
+- **Render:**
+  - Only the spans the changes can reach were re-rendered: 78–108.5 s (the basement, N14–N19) and 160–222 s (the shop, N29–N38). They went into `renders/c4/frames_v5`, seeded with a copy of `frames_v4`; the other frames are unchanged.
+  - Checked: the shop isn't in frame before 160 s.
+- **Commands:**
+  - `cp -r renders/c4/frames_v4 renders/c4/frames_v5`
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v5 --step 2 --from 78 --to 108.5` (458 frames)
+  - `… --from 160 --to 222` (931 frames)
+  - `… -- --out renders/c4/anchors_v8 --anchors`
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v5 2 renders/c4/c4_animatic_v5.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v8 renders/c4/c4_anchor_sheet_v5.jpg 6`
+- **Archived (superseded, not rejected):**
+  - `archive/renders/c4/c4_animatic_v4_superseded_greybox-geometry.mp4`
+  - `archive/renders/c4/c4_anchor_sheet_v4_superseded_greybox-geometry.jpg`
+  - `archive/renders/c4_anchors_v7_superseded_greybox-geometry/`
+- **Not geometry, still for C5:**
+  - the N33/N34 real pages;
+  - the baby monitor receiver's picture;
+  - the 2D outro (N41–N44);
+  - planar reflections in the glass.
+- **Outputs:** `renders/c4/c4_animatic_v5.mp4` (252 s), `renders/c4/c4_anchor_sheet_v5.jpg`.
+- **Status:** **C4 v5 is ready for review.**
