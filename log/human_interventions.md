@@ -122,3 +122,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human added a deliverable: a second 9:16 cut built around the broken-window scene, to be released before the next Patch Tuesday (2026-11-10).
 - **Note from the human:** "Add another one with the broken window scene, for release before the next Patch Tuesday"
 - **Rule:** EXCEPTION. The brief named one vertical cut; the human added a deliverable and its release date. The agent chose the span (N07 to just before N11) and wrote it into the brief.
+
+## 2026-10-24T15:20 — Geometry still grey-box: fix all four before the move — R1
+
+- **What:** Asked whether any geometry was still a placeholder, the agent listed four pieces: the maintainer and his chair, the laptop, the shop screen's missing easel, and the twin's blanket mound. The human approved fixing all four before the move to the 5090 box.
+- **Note from the human:** "before I move you over to the 5090 box: is there any gemoetry that's still placeholders?" / "yes, fix all four before the move"
+- **Rule:** R1 (approving the proposed changes).
