@@ -347,3 +347,7 @@ From the C4 v2 review (`log/human_interventions.md`, 11:57).
   - `archive/renders/c4_anchors_v5_rejected_c4-v2-review/`
 - **Outputs:** `renders/c4/c4_animatic_v3.mp4` (252 s), `renders/c4/c4_anchor_sheet_v3.jpg`.
 - **Status:** **C4 v3 is ready for review.**
+
+## 2026-10-24T13:20 — C4 v3 review received
+
+N17's laptop screen to show warnings/CVEs; N32's clipboard clips through the bed. See `log/human_interventions.md`.

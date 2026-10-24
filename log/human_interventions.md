@@ -104,3 +104,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **Then:** at N32 the crib hides the COMING SOON tag.
 - **Note from the human:** "also N32: the "COMING SOON" text is obscured by the crib"
 - **Rule:** R1.
+
+## 2026-10-24T13:20 — C4 v3 review: N17 laptop screen, N32 clipboard — R1
+
+- **What:** At N17 the laptop screen should show something about warnings or CVEs. At N32 the clipboard clips through the bed.
+- **Note from the human:** "N17: let's have the laptop screen have something about warnings or CVEs open on it" / "N32: the clipboard is clipping through the bed"
+- **Rule:** R1 (rejecting parts of a render, with reasons). The screen content is a human creative direction within R1's reasons; the brief leaves the laptop's screen unspecified.
