@@ -268,3 +268,7 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - The projector's slow rotation sweeping the stars, dust in the beam, breaths brightening the projector, the baby monitor's screen.
   - The real pages at N33/N34 (R composite), the 2D outro (N41–N44), the vertical framing, and the thumbnail view re-aligned to the moved neighbor.
 - **Status:** **C4 is ready for review.**
+
+## 2026-10-24T10:12 — C4 review received
+
+- The human asked for seven changes (see `log/human_interventions.md`), including one cut before "and windows are never quite mended" (an EXCEPTION to the brief's no-cut move). I'm making them as C4 v2.
