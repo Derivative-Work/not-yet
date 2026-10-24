@@ -29,11 +29,9 @@ MONO = "assets/fonts/JetBrainsMono[wght].ttf"
 AUDIO = "audio/track/Sleep, Little Secret.wav"  # the Suno mix (the mastered track comes later)
 
 LANES = [  # (label, file, colour role)
-    ("music box", "timing/events/keyboard.json", "comfort"),
-    ("celesta", "timing/events/percussion.json", "frost"),
+    ("music box", "timing/events/music_box.json", "comfort"),
+    ("guitar", "timing/events/guitar.json", "tungsten"),
     ("strings", "timing/events/strings.json", "felt_blue"),
-    ("e.piano/pad", "timing/events/guitar.json", "rim"),
-    ("bass", "timing/events/bass.json", "tungsten"),
     ("words", "timing/timing_map.json:words", "paper"),
 ]
 VOCAL_ENV = "timing/envelopes/vocals.npy"

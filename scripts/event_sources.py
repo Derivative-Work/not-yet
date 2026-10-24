@@ -1,5 +1,11 @@
-"""C3: choose, per pitched stem, whether Suno's MIDI or the Basic Pitch re-transcription drives its machines, and export
-the chosen notes as animation events. Records the choice in config/event_sources.json.
+"""C3: choose, per pitched stem, whether Suno's MIDI or the Basic Pitch re-transcription holds its notes, clean them, and
+export them as animation events per instrument. Records the choices in config/event_sources.json.
+
+Instruments, not stems (the human, C3, by ear in a DAW): Suno's stems don't follow the arrangement. The music box is
+split between the Keyboard and Percussion stems; Guitar and Bass are one fingerstyle guitar; Strings holds real arco
+strings plus crosstalk from everything else. So each stem is analysed and cleaned on its own, then the stems of an
+instrument are merged (INSTRUMENTS), and bleed and duplicates are judged between instruments only, so the two halves of
+the music box (or of the guitar) never cancel each other.
 
 Both sources are measured against the same reference: onsets detected in the stem with a locally normalised onset
 envelope (each point divided by the +-2 s maximum, so quiet passages register; Sandbox Rhapsody found the global
@@ -53,14 +59,20 @@ import midi_io  # noqa: E402
 from song import MIDI, STEM  # noqa: E402
 
 SR, HOP = 22050, 128
-STEMS = {"Keyboard": "music box comb", "Percussion": "celesta (star births)", "Strings": "pizzicato strings, flute",
-         "Guitar": "electric piano, pad", "Bass": "bass"}
+INSTRUMENTS = {  # instrument: (stems, what it drives)
+    "music_box": (["Keyboard", "Percussion"], "music box comb (and the stars: see config/event_sources.json)"),
+    "guitar": (["Guitar", "Bass"], "fingerstyle guitar: bass notes and chords (no machine assigned yet)"),
+    "strings": (["Strings"], "arco strings (no machine assigned yet)"),
+}
+STEMS = [s for stems, _ in INSTRUMENTS.values() for s in stems]
+GROUP = {s: k for k, (stems, _) in INSTRUMENTS.items() for s in stems}
+ARCO_MIN_RISE_MS, ARCO_MIN_DUR = 30.0, 0.2  # strings: bowed attacks swell; a plucked or very short note is crosstalk
 GHOST_DB, ACTIVE_DB, MIN_AMP = 30.0, 26.0, 0.12
 BLEED_DB = 10.0
 UNISON_DB = 3.0
 VOICE_RISE_MS = 25.0
 RISE_HOP = 64
-BLEED_FROM = list(STEMS) + ["Vocals"]
+BLEED_FROM = STEMS + ["Vocals"]
 CQT_HOP, CQT_MIDI0 = 256, 24  # CQT bins are semitones from C1 (MIDI 24)
 DET_LAG, SNAP, CHORD = 0.012, 0.08, 0.06
 
@@ -180,7 +192,7 @@ def bleed_filter(stem, events):
     keep, dropped = [], 0
     for e in events:
         own = level_at(stem, e["t"], e["pitch"])
-        lv = {o: level_at(o, e["t"], e["pitch"]) for o in BLEED_FROM if o != stem}
+        lv = {o: level_at(o, e["t"], e["pitch"]) for o in BLEED_FROM if GROUP.get(o) != GROUP[stem]}
         src = max(lv, key=lv.get)
         bleed = lv[src] - own > BLEED_DB
         if bleed and src == "Vocals":
@@ -193,8 +205,33 @@ def bleed_filter(stem, events):
     return keep, dropped
 
 
+def group_level(g, t, p):
+    return max(level_at(st, t, p) for st in INSTRUMENTS[g][0])
+
+
+def merge(g, per_stem):
+    """One instrument from its stems: the same note (same pitch, within 30 ms) in two of them is kept once, timed and
+    tagged from the stem where it is louder."""
+    ev = sorted(({**e, "stem": st} for st in INSTRUMENTS[g][0] for e in per_stem[st]), key=lambda e: e["t"])
+    out = []
+    for e in ev:
+        twin = next((o for o in reversed(out[-12:]) if e["t"] - o["t"] < 0.03 and o["pitch"] == e["pitch"]), None)
+        if twin is None:
+            out.append(e)
+        elif level_at(e["stem"], e["t"], e["pitch"]) > level_at(twin["stem"], twin["t"], twin["pitch"]):
+            out[out.index(twin)] = e
+    return out, len(ev) - len(out)
+
+
+def arco_filter(events):
+    """Strings: keep bowed notes only (rise >= ARCO_MIN_RISE_MS and duration >= ARCO_MIN_DUR)."""
+    keep = [e for e in events if e["end"] - e["t"] >= ARCO_MIN_DUR
+            and not (rise_ms(e["stem"], e["t"], e["pitch"]) < ARCO_MIN_RISE_MS)]
+    return keep, len(events) - len(keep)
+
+
 def dedupe(E):
-    """Winner-take-all across stems for identical notes (docstring). E: {stem: events}; returns new dict, counts."""
+    """Winner-take-all across instruments for identical notes (docstring). E: {instrument: events}."""
     tagged = sorted(((e["t"], st, k, e["pitch"]) for st, ev in E.items() for k, e in enumerate(ev)))
     drop = {st: set() for st in E}
     for i, (t, st, k, p) in enumerate(tagged):
@@ -202,7 +239,7 @@ def dedupe(E):
         while j < len(tagged) and tagged[j][0] - t < 0.03:
             t2, st2, k2, p2 = tagged[j]
             if st2 != st and p2 == p and k not in drop[st] and k2 not in drop[st2]:
-                la, lb = level_at(st, t, p), level_at(st2, t2, p2)
+                la, lb = group_level(st, t, p), group_level(st2, t2, p2)
                 if abs(la - lb) > UNISON_DB:
                     if la < lb:
                         drop[st].add(k)
@@ -269,6 +306,7 @@ def main():
          "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     analyses = {stem: stem_analysis(STEM.format(stem)) for stem in STEMS}
     before, after = {}, {}
+    Path("timing/events/stems").mkdir(parents=True, exist_ok=True)
     offs = {stem: best_offset([n["t"] for n in suno_notes(stem)], A["det"]) for stem, A in analyses.items()}
     suno_off = float(np.median([o for o, _ in offs.values()]))
     sources["suno_midi_offset_s"] = {"value": round(suno_off, 3), "per_stem": {k: round(o, 3) for k, (o, _) in offs.items()},
@@ -278,7 +316,8 @@ def main():
                 f"{', '.join(f'{k} {o * 1000:+.0f} ms' for k, (o, _) in offs.items())}; applied: {suno_off * 1000:+.0f} ms.")
     L.insert(5, "")
     print("suno offsets:", {k: round(o, 3) for k, (o, _) in offs.items()}, "->", round(suno_off, 3))
-    for stem, role in STEMS.items():
+    for stem in STEMS:
+        role = f"part of {GROUP[stem]}"
         A = analyses[stem]
         cand = {"suno": suno_notes(stem, suno_off), "basic_pitch": bp_notes(stem)}
         cand["union"] = union(cand["suno"], cand["basic_pitch"], A)
@@ -291,9 +330,9 @@ def main():
         win = max((k for k in ok if m[k]["coverage"] >= top_cov - 0.02), key=lambda k: m[k]["support"])
         data = export(stem, cand[win], A, win)
         before[stem], after[stem] = data.pop("_before_bleed"), data["events"]
-        slug = f"timing/events/{stem.lower()}.json"
+        slug = f"timing/events/stems/{stem.lower()}.json"
         Path(slug).write_text(json.dumps(data) + "\n")
-        sources[stem.lower()] = {"events": slug, "drives": role, "source": win,
+        sources[stem.lower()] = {"events": slug, "part_of": GROUP[stem], "source": win,
                                  "why": f"coverage {m[win]['coverage']:.2f} (suno {m['suno']['coverage']:.2f}, basic-pitch "
                                         f"{m['basic_pitch']['coverage']:.2f}, union {m['union']['coverage']:.2f}); "
                                         f"shift {data['shift_ms']:+.1f} ms; {data['dropped_ghosts']} ghosts and "
@@ -306,23 +345,36 @@ def main():
                      f"{len(data['events']) if ch else ''} |")
         print(f"{stem:10s} detected {len(A['det']):4d}  suno {m['suno']}  bp {m['basic_pitch']}  union {m['union']}  -> {win}, "
               f"{len(data['events'])} events, shift {data['shift_ms']} ms")
-    after, dup = dedupe(after)
-    for stem in STEMS:
-        slug = f"timing/events/{stem.lower()}.json"
-        data = json.loads(Path(slug).read_text())
-        data["events"], data["dropped_duplicate"] = after[stem], dup[stem]
-        Path(slug).write_text(json.dumps(data) + "\n")
-        sources[stem.lower()]["why"] += f"; {dup[stem]} duplicates of a louder stem's notes dropped"
-        print(f"{stem:10s} duplicates dropped {dup[stem]:4d}, events {len(after[stem])}")
-    cb, ca = coincidence(before), coincidence(after)
-    names = list(STEMS)
-    L += ["", f"Crosstalk: share of each row stem's events with a same-pitch-class event in the column stem within 30 ms, "
-          f"before / after the bleed filter ({BLEED_DB:.0f} dB) and the duplicate rule.", "",
+    # Instruments: merge their stems, strings to arco only, then duplicates between instruments.
+    inst, info = {}, {}
+    for g, (stems, role) in INSTRUMENTS.items():
+        ev, twins = merge(g, after)
+        info[g] = {"stems": stems, "drives": role, "merged_twins": twins}
+        if g == "strings":
+            ev, n_plucked = arco_filter(ev)
+            info[g]["dropped_not_arco"] = n_plucked
+        inst[g] = ev
+    pre = {g: list(v) for g, v in inst.items()}
+    inst, dup = dedupe(inst)
+    for g, ev in inst.items():
+        info[g]["dropped_duplicate"] = dup[g]
+        slug = f"timing/events/{g}.json"
+        Path(slug).write_text(json.dumps({"instrument": g, **info[g], "events": ev}) + "\n")
+        sources[g] = {"events": slug, **info[g], "count": len(ev)}
+        print(f"{g:10s} {len(ev):5d} events  {info[g]}")
+    sources["stars"] = {"events": "timing/events/music_box.json (top line)",
+                        "why": "the brief places each new star on a celesta note; the human hears no celesta (the "
+                               "Percussion stem is half the music box), so stars are proposed on the music box's "
+                               "top-line notes (C3; decided at C4)"}
+    cb, ca = coincidence(pre), coincidence(inst)
+    names = list(INSTRUMENTS)
+    L += ["", "Instruments (the human's grouping by ear): " + "; ".join(f"{g} = {' + '.join(v['stems'])}" for g, v in info.items()), "",
+          f"Crosstalk between instruments: share of each row's events with a same-pitch-class event in the column within "
+          f"30 ms, before / after the duplicate rule (after the per-stem bleed filter, {BLEED_DB:.0f} dB, and the strings' "
+          f"arco filter).", "",
           "| | " + " | ".join(names) + " |", "| --- |" + " --- |" * len(names)]
     for a in names:
         L.append(f"| {a} | " + " | ".join("—" if a == b else f"{cb[a, b]:.2f} / {ca[a, b]:.2f}" for b in names) + " |")
-        print(f"{a:10s} bleed dropped {len(before[a]) - len(after[a]):4d}; vs music box {cb.get((a, 'Keyboard'), 0):.2f} -> "
-              f"{ca.get((a, 'Keyboard'), 0):.2f}")
     Path("config/event_sources.json").write_text(json.dumps(sources, indent=1) + "\n")
     Path("timing/event_sources.md").write_text("\n".join(L) + "\n")
 

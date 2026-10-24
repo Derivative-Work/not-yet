@@ -1,9 +1,10 @@
 """Build a readable score of the timing data, for the C3 check (human, C3: "a score is best, like it generated for
 that step"). Ported from Sandbox Rhapsody's score_build.py.
 
-Parts, from config/event_sources.json: Vocals (the aligned words, each a note at its aligned start, pitched from
-Suno's vocal MIDI with its offset applied), Music box, Strings and E-piano/pad (the Guitar stem) each on
-two staves split at middle C (Strings and E-piano: lowest 3 notes of each chord shown), Celesta, Bass (lowest line). Every event is placed on the measured
+Parts, by instrument (config/event_sources.json; the human's grouping by ear at C3): Vocals (the aligned words, each
+a note at its aligned start, pitched from Suno's vocal MIDI with its offset applied), Music box (Keyboard + Percussion
+stems; two staves split at middle C), Guitar (fingerstyle: Guitar + Bass stems; one treble-8vb staff, lowest 4 notes
+of each chord shown), Strings (arco only; two staves, lowest 3 notes shown). Every event is placed on the measured
 beat grid (timing/timing_map.json, one beat = one quarter) at eighth-note resolution (at about 150 bpm the
 arrangement moves in eighths; sixteenths only added clutter), in the song's own bars, 3/4 with the odd 2/4 or 4/4 bar
 the meter found. Key signatures come from music21's key analysis of each section (all G minor, except the final
@@ -80,7 +81,7 @@ def poly(evs):
 
 def section_keys():
     """music21 key analysis (Krumhansl) of the pitched events in each section."""
-    ev = [e for s in ("keyboard", "bass", "guitar", "strings") for e in events(s)]
+    ev = [e for s in ("music_box", "guitar", "strings") for e in events(s)]
     secs = TM["sections"]
     out = []
     for i, sec in enumerate(secs):
@@ -136,9 +137,15 @@ def time_signatures(part):
             last = b["beats"]
 
 
+ABBR = {"Vocals": "Voc.", "Music box": "M. box", "Music box (low)": "M. box", "Guitar": "Gtr.", "Strings": "Str.",
+        "Strings (low)": "Str."}
+
+
 def build_part(name, inst, cl, items, lyrics=None):
     p = stream.Part()
     p.partName = name
+    inst.instrumentName, inst.instrumentAbbreviation = name, ABBR.get(name, name)
+    p.partAbbreviation = ABBR.get(name, name)
     p.insert(0, inst)
     p.insert(0, cl)
     time_signatures(p)
@@ -216,14 +223,11 @@ def main():
     voc, lyr = vocal_line()
     parts = [
         build_part("Vocals", instrument.Vocalist(), clef.TrebleClef(), voc, lyrics=lyr),
-        build_part("Music box", instrument.Celesta(), clef.TrebleClef(), poly(events("keyboard", lo=60))),
-        build_part("Music box (low)", instrument.Celesta(), clef.BassClef(), poly(events("keyboard", hi=60))),
-        build_part("Celesta", instrument.Vibraphone(), clef.TrebleClef(), poly(events("percussion"))),
+        build_part("Music box", instrument.Celesta(), clef.TrebleClef(), poly(events("music_box", lo=60))),
+        build_part("Music box (low)", instrument.Celesta(), clef.BassClef(), poly(events("music_box", hi=60))),
+        build_part("Guitar", instrument.AcousticGuitar(), clef.Treble8vbClef(), lowest(4)(poly(events("guitar")))),
         build_part("Strings", instrument.Violin(), clef.TrebleClef(), lowest(3)(poly(events("strings", lo=60)))),
         build_part("Strings (low)", instrument.Violoncello(), clef.BassClef(), lowest(3)(poly(events("strings", hi=60)))),
-        build_part("E-piano / pad", instrument.ElectricPiano(), clef.TrebleClef(), lowest(3)(poly(events("guitar", lo=60)))),
-        build_part("E-piano / pad (low)", instrument.ElectricPiano(), clef.BassClef(), lowest(3)(poly(events("guitar", hi=60)))),
-        build_part("Bass", instrument.AcousticBass(), clef.Bass8vbClef(), mono(events("bass"), top=False)),
     ]
     sc = stream.Score()
     sc.metadata = metadata.Metadata(title="Not Yet (timing check)")

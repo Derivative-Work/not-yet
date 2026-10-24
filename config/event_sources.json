@@ -9,40 +9,65 @@
   "per_stem": {
    "Keyboard": 0.191,
    "Percussion": 0.174,
-   "Strings": 0.176,
    "Guitar": 0.176,
-   "Bass": 0.195
+   "Bass": 0.195,
+   "Strings": 0.176
   },
   "why": "Suno's MIDI runs early against its stems; the median is applied to every Suno note and to its tempo map"
  },
  "keyboard": {
-  "events": "timing/events/keyboard.json",
-  "drives": "music box comb",
+  "events": "timing/events/stems/keyboard.json",
+  "part_of": "music_box",
   "source": "union",
-  "why": "coverage 0.75 (suno 0.64, basic-pitch 0.76, union 0.75); shift +3.6 ms; 13 ghosts and 6 inactive-section events and 461 bleed events dropped; 82 duplicates of a louder stem's notes dropped"
+  "why": "coverage 0.75 (suno 0.64, basic-pitch 0.76, union 0.75); shift +3.6 ms; 13 ghosts and 6 inactive-section events and 461 bleed events dropped"
  },
  "percussion": {
-  "events": "timing/events/percussion.json",
-  "drives": "celesta (star births)",
+  "events": "timing/events/stems/percussion.json",
+  "part_of": "music_box",
   "source": "union",
-  "why": "coverage 0.54 (suno 0.21, basic-pitch 0.53, union 0.54); shift +3.1 ms; 119 ghosts and 25 inactive-section events and 314 bleed events dropped; 50 duplicates of a louder stem's notes dropped"
- },
- "strings": {
-  "events": "timing/events/strings.json",
-  "drives": "pizzicato strings, flute",
-  "source": "union",
-  "why": "coverage 0.60 (suno 0.29, basic-pitch 0.58, union 0.60); shift +7.1 ms; 65 ghosts and 7 inactive-section events and 400 bleed events dropped; 119 duplicates of a louder stem's notes dropped"
+  "why": "coverage 0.54 (suno 0.21, basic-pitch 0.53, union 0.54); shift +3.1 ms; 119 ghosts and 25 inactive-section events and 123 bleed events dropped"
  },
  "guitar": {
   "events": "timing/events/guitar.json",
-  "drives": "electric piano, pad",
-  "source": "union",
-  "why": "coverage 0.63 (suno 0.39, basic-pitch 0.63, union 0.63); shift +4.7 ms; 69 ghosts and 26 inactive-section events and 312 bleed events dropped; 107 duplicates of a louder stem's notes dropped"
+  "stems": [
+   "Guitar",
+   "Bass"
+  ],
+  "drives": "fingerstyle guitar: bass notes and chords (no machine assigned yet)",
+  "merged_twins": 180,
+  "dropped_duplicate": 67,
+  "count": 340
  },
  "bass": {
-  "events": "timing/events/bass.json",
-  "drives": "bass",
+  "events": "timing/events/stems/bass.json",
+  "part_of": "guitar",
   "source": "union",
-  "why": "coverage 0.68 (suno 0.55, basic-pitch 0.71, union 0.68); shift +9.9 ms; 14 ghosts and 2 inactive-section events and 5 bleed events dropped; 15 duplicates of a louder stem's notes dropped"
+  "why": "coverage 0.68 (suno 0.55, basic-pitch 0.71, union 0.68); shift +9.9 ms; 14 ghosts and 2 inactive-section events and 3 bleed events dropped"
+ },
+ "strings": {
+  "events": "timing/events/strings.json",
+  "stems": [
+   "Strings"
+  ],
+  "drives": "arco strings (no machine assigned yet)",
+  "merged_twins": 47,
+  "dropped_not_arco": 75,
+  "dropped_duplicate": 61,
+  "count": 76
+ },
+ "music_box": {
+  "events": "timing/events/music_box.json",
+  "stems": [
+   "Keyboard",
+   "Percussion"
+  ],
+  "drives": "music box comb (and the stars: see config/event_sources.json)",
+  "merged_twins": 215,
+  "dropped_duplicate": 73,
+  "count": 1149
+ },
+ "stars": {
+  "events": "timing/events/music_box.json (top line)",
+  "why": "the brief places each new star on a celesta note; the human hears no celesta (the Percussion stem is half the music box), so stars are proposed on the music box's top-line notes (C3; decided at C4)"
  }
 }

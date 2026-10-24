@@ -60,3 +60,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human judged the notes accurate enough for a convincing video, as in Sandbox Rhapsody. They identified the instrument labelled Celesta in the score (the Percussion stem) as the music box, and asked how much the beat and measure accuracy matters.
 - **Note from the human:** "The notes seem accurate enough to make a convincing video (which was good enough for Sandbox). What you have marked in the score as notated for Celesta *is* the music box. How much does the beat/measure accuracy actually matter for this"
 - **Rule:** R1 (judging a render); identifying an instrument by ear is a correction of the timing data's labels (R2).
+
+## 2026-10-24T02:20 — Instrumentation identified by ear in a DAW — R2
+
+- **What:** The human brought the stems into a DAW and identified the instruments: the music box is split between the Keyboard and Percussion stems. Bass and Guitar are one fingerstyle guitar, with crosstalk between them. Strings is real orchestral arco strings, with a lot of crosstalk from the other instruments.
+- **Note from the human:** "the music box is split between what the stems call keyboard and percussion. What the stems call bass and guitar, I would perform manually as one fingerstyle guitar (but there are places where it only plays the bass notes of it where I would have performed the chords too; maybe these got masked by the music box). There is some crosstalk between the two. What it calls "strings" contains actual orchestral strings -- of the part of this stem that is actually strings, I only hear arco strings, but there's quite a bit of crosstalk from the other instruments."
+- **Rule:** R2 (correcting the timing data's labels, the A/V mapping). It is not a creative choice; the agent changes the grouping (production log).

@@ -182,3 +182,24 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - The irregular bars (`timing/timing_map.md`).
   - The outro edit proposal (unchanged).
 - **Status:** **C3 is ready for re-review.**
+
+## 2026-10-24T02:50:00-04:00 — C3 revision 2: events grouped by instrument, not stem
+
+- **What:** Regrouped the events by the human's identification by ear (human interventions, 02:20).
+  - The music box is the Keyboard and Percussion stems together.
+  - The fingerstyle guitar is the Guitar and Bass stems together.
+  - Strings is arco only.
+- **How** (`scripts/event_sources.py`):
+  - Each stem is still analysed and cleaned on its own: source choice, Suno offset, ghosts, inactive sections. Per-stem files moved to `timing/events/stems/`.
+  - Bleed is now judged only against stems of other instruments, so the two halves of the music box (or of the guitar) no longer cancel each other.
+  - An instrument's stems are merged; a note in both stems is kept once, from the louder stem.
+  - Strings keep bowed notes only (rise ≥ 30 ms, duration ≥ 0.2 s): 75 plucked or short notes dropped as crosstalk. That includes Suno's "Pizzicato" and "Flute" labels, which were transcription guesses.
+  - Duplicates are then judged between instruments.
+  - Result: music box 1,149 events, guitar 340, strings 76.
+  - The score shows Vocals, Music box (2 staves), Guitar (treble 8vb) and Strings (2 staves); the lane preview has the same instruments.
+- **Brief consequence (open):** the brief places each new star on a celesta note, but the human hears no celesta. Proposed: stars on the music box's top-line notes, decided at C4 (`config/event_sources.json` → `stars`).
+- **Also from the human (02:05):** the notes are "accurate enough to make a convincing video". On how much the bar grid matters: only the chair (beat 1), the mobile (downbeats), three focus pulls and the N18 flap use it. Everything else follows note and word onsets. The chair will rock on a steady 3-beat cycle nudged to the nearest downbeat, so an odd bar can't jerk it (C4).
+- **Commands:** `.venv/bin/python -I scripts/event_sources.py`; `scripts/score_build.py`; `scripts/c3_score_preview.py`; `scripts/c3_preview.py`
+- **Outputs:** `timing/events/{music_box,guitar,strings}.json`, `timing/events/stems/*.json`, `config/event_sources.json`, `timing/event_sources.md`, `scripts/{event_sources,score_build,c3_preview}.py`, `renders/c3/c3_score_preview.mp4`, `renders/c3/c3_preview.mp4`
+- **Archived:** `archive/renders/c3/{c3_score_preview,c3_preview}_superseded_stem-not-instrument-grouping.mp4`
+- **Status:** C3 ready for re-review.
