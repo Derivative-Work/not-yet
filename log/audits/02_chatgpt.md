@@ -1,6 +1,6 @@
 # Audit: ChatGPT (version not recorded in the chat)
 
-Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 23 (human) and 24 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 23), which the public share does not expose (`viewer_can_access_files: false`). That file is still to be supplied by the human and saved here as `02_chatgpt_raw.*`.
+Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 23 (human) and 24 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 23), which the public share does not expose (`viewer_can_access_files: false`). The human supplied it separately; it is `02_chatgpt_raw.md`, byte for byte.
 
 - **Submitted to the auditor:** 2026-10-22T23:45:53.861254Z or earlier (the human's message carrying its output)
 - **Resolved by Claude:** 2026-10-22T23:46:41.040106Z

@@ -36,3 +36,11 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - Each auditor's full response was a file attached to the chat. The public share doesn't expose attachments (`viewer_can_access_files: false`; `file_count: 1` on messages 21, 23 and 25). What the share does hold: Gemini's and ChatGPT's suggested lyrics, Claude's resolution tables, and Claude's summary of GLM's findings. The raw outputs are still needed from the human for N34, which shows them on screen.
   - Model versions: Gemini "Argon" (Gemini 4 Argon per message 22); ChatGPT's version is not recorded; GLM 5.3 Flash.
 - **Why:** Brief, "Production rules": save the drafting chat and the audits verbatim with model, version and date, plus the resolution tables. Sandbox Rhapsody's pre-production step 2: log the audio retroactively.
+
+## 2026-10-23T21:12:00-04:00 — Step 2b: raw auditor outputs saved
+
+- **What:** The human saved each auditor's full response to `~/Downloads`. I copied them byte for byte into `log/audits/` (checked with `cmp`) and recorded each one's version, date and which lyric draft it audited. ChatGPT's version is the human's statement: "whatever the current free model is as of yesterday".
+- **Commands:** `cp -p ~/Downloads/not-yet-{gemini,chatgpt,glm}-audit.md log/audits/0{1,2,3}_<auditor>_raw.md`; `cmp` each; `sha256sum log/audits/*_raw.md` (a46cd399…, 97a7c7d0…, 053c7988…)
+- **Outputs:** `log/audits/{01_gemini,02_chatgpt,03_glm}_raw.md`; `log/audits/README.md` and the three per-audit notes updated
+- **Findings:** Each auditor saw a different draft: Gemini saw v1, ChatGPT saw Gemini's revision and GLM saw v3. None audited v3.1 itself. GLM's "hallucination" line for N34 is in its section II.1. Gemini's and GLM's raw outputs also show the mistakes the brief wants on screen: Gemini calls the named events "hypothetical or fictionalized", and GLM pins verse 1 on Big Sleep and SQLite.
+- **Why:** Brief, "Production rules": the auditors' outputs are saved verbatim with model name, version and date.

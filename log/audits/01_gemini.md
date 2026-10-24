@@ -1,6 +1,6 @@
 # Audit: Gemini ("Gemini Argon"; Claude identifies it as Gemini 4 Argon in message 22)
 
-Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 21 (human) and 22 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 21), which the public share does not expose (`viewer_can_access_files: false`). That file is still to be supplied by the human and saved here as `01_gemini_raw.*`.
+Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 21 (human) and 22 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 21), which the public share does not expose (`viewer_can_access_files: false`). The human supplied it separately; it is `01_gemini_raw.md`, byte for byte.
 
 - **Submitted to the auditor:** 2026-10-22T23:30:51.446286Z or earlier (the human's message carrying its output)
 - **Resolved by Claude:** 2026-10-22T23:32:10.128906Z

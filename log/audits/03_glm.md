@@ -1,6 +1,6 @@
 # Audit: GLM 5.3 Flash
 
-Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 25 (human) and 26 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 25), which the public share does not expose (`viewer_can_access_files: false`). That file is still to be supplied by the human and saved here as `03_glm_raw.*`.
+Verbatim from the drafting chat (https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1), messages 25 (human) and 26 (Claude's resolution). The auditor's full response was pasted into the chat as an attached file (`file_count: 1` on message 25), which the public share does not expose (`viewer_can_access_files: false`). The human supplied it separately; it is `03_glm_raw.md`, byte for byte.
 
 - **Submitted to the auditor:** 2026-10-23T00:35:26.157707Z or earlier (the human's message carrying its output)
 - **Resolved by Claude:** 2026-10-23T00:35:59.053992Z

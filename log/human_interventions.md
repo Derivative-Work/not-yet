@@ -29,4 +29,4 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human gave the Suno share link and the drafting chat's share link, said the audits are in that chat, and confirmed: "Sandbox Rhapsody's probe is final (it's rendering on the other box)."
 - **Why:** These answer the brief's open items on the generator, the probe lock and the audit sources.
 - **Rule:** R1 for the probe (approving a design to reuse). Supplying links is not a touch on the work.
-- **Still open:** the raw auditor outputs were attachments the share doesn't expose (production log, step 2).
+- **Then (21:10):** the human saved the three raw auditor outputs to `~/Downloads` (production log, step 2b) and gave ChatGPT's version: "whatever the current free model is as of yesterday." Supplying inputs is not a touch on the work.
