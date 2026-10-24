@@ -203,3 +203,14 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Outputs:** `timing/events/{music_box,guitar,strings}.json`, `timing/events/stems/*.json`, `config/event_sources.json`, `timing/event_sources.md`, `scripts/{event_sources,score_build,c3_preview}.py`, `renders/c3/c3_score_preview.mp4`, `renders/c3/c3_preview.mp4`
 - **Archived:** `archive/renders/c3/{c3_score_preview,c3_preview}_superseded_stem-not-instrument-grouping.mp4`
 - **Status:** C3 ready for re-review.
+
+## 2026-10-24T03:15:00-04:00 — C3 approved; outro as chosen; the pen scratch
+
+- **What:** C3 is approved (human interventions, 03:00). Outro per the human's choice: the audio is not edited, and a code-synthesised pen scratch goes on top just after "signed" (229.42 s).
+  - On screen, the chair stops and the stars freeze at the scratch, but the music box keeps turning while it is still heard (85 notes to 244.5 s), so no audible note goes without its pluck. This departs from the brief's "the music box stops", which assumed the music would stop. It keeps the sync rule.
+  - Black after "Goodnight." (233.94 s), with the music box playing out in the dark. The CRT line opens 0.8 s after the audio ends (247.16 s, N41's "Silence"), then the fact card (248.16 s).
+  - Stars: on the music box's melody notes (top line), the human's choice (C4).
+- **Commands:** `.venv/bin/python -I scripts/timing_map.py`; `.venv/bin/python -I scripts/pen_scratch.py`; `ffmpeg -ss 220 -i <track> -i audio/sfx/pen_scratch.wav -filter_complex "[1:a]adelay=9420|9420[s];[0:a][s]amix=inputs=2:duration=first:normalize=0" renders/c3/outro_pen_scratch_preview.wav`
+- **Outputs:** `scripts/pen_scratch.py`, `audio/sfx/pen_scratch.wav` (1.62 s, 48 kHz, 24-bit, seed 41), `config/audio.json`, `config/seeds.json`, `scripts/timing_map.py`, `timing/timing_map.{json,md}`, `config/shot_anchors.json`, `renders/c3/outro_pen_scratch_preview.wav`
+- **Level:** over the scratch's 1.8 s, the mix's mean level rises from −32.9 to −29.2 dB. The level gets judged by ear at C5.
+- **Why:** Human interventions, C3 approval (R1).

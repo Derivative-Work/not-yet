@@ -1,0 +1,13 @@
+{
+ "_doc": "Audio for the edit (scripts/pen_scratch.py, the human's C3 choices). The track itself is not edited.",
+ "track": "audio/track/Sleep, Little Secret.wav",
+ "master": null,
+ "sfx": [
+  {
+   "file": "audio/sfx/pen_scratch.wav",
+   "at_s": 229.42,
+   "gain_db": 0.0,
+   "why": "N39: the waiver's pen, off screen, on top of the existing audio"
+  }
+ ]
+}

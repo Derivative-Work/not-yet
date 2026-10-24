@@ -9,6 +9,10 @@
     "cracks": {
       "seed": "main (+1 for the new crack)",
       "used_by": "scenes/blender/sets/nursery.py crack: the hall window's crack shapes"
+    },
+    "pen_scratch": {
+      "seed": "main",
+      "used_by": "scripts/pen_scratch.py: noise and fibre clicks"
     }
   }
 }

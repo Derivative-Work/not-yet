@@ -10,10 +10,10 @@ move must reach its mark, at the line's first word, with the nearest downbeat re
 pass: on downbeats only). The only cuts are N40 (black), N41 (the CRT line), N42 (fact card), N43 (bookend) and
 N44 (end card).
 
-The outro is provisional (C3 proposal, config/shot_anchors.json "outro"): the brief stops the music box at the pen
-scratch (N39), but Suno's music box plays on to the end of the audio. The proposal makes the stop in the edit: the
-music cuts to silence at the end of "signed", a pen scratch sounds, "Goodnight." comes from the vocal stem alone,
-then black.
+The outro (human, C3: "just add the pen scratch on top of what's existing"): the audio is not edited. The pen scratch
+sounds just after "signed" (N39); the chair stops and the stars freeze there, but the music box keeps turning, since it
+is still heard. Black follows "Goodnight." (N40), and the music box plays out in the dark. The CRT line opens in the
+silence after the audio ends (N41: "Silence"), then the fact card.
 
 Usage: .venv/bin/python -I scripts/timing_map.py  ->  timing/timing_map.json, timing/timing_map.md,
        config/shot_anchors.json
@@ -27,7 +27,7 @@ import soundfile as sf
 LOOK = json.loads(Path("config/look.json").read_text())
 FPS = LOOK["fps"]
 TRACK = "audio/track/Sleep, Little Secret.wav"
-BLACK_HOLD = 1.5   # s of black after "Goodnight." before the CRT line opens (N41)
+SILENCE = 0.8      # s of silence after the audio ends before the CRT line opens (N41)
 CRT_LEN = 1.0      # s for the CRT line to open into the fact card (N42)
 
 
@@ -73,24 +73,23 @@ def main():
                       "kind": "mark" if k + 3 <= 38 else ("outro" if k + 3 == 39 else "cut")})
     signed = lines[-2]["end"]          # L37, "...is signed."
     good = lines[-1]                   # L38, "Goodnight."
-    outro = {"pen_scratch": round(signed + 0.05, 3), "music_cut": round(signed + 0.05, 3),
+    outro = {"pen_scratch": round(signed + 0.05, 3), "freeze": round(signed + 0.05, 3),
              "goodnight": [good["start"], good["end"]], "black": round(good["end"] + 0.4, 3)}
-    outro["crt"] = round(outro["black"] + BLACK_HOLD, 3)
+    outro["crt"] = round(dur + SILENCE, 3)
     outro["fact_card"] = round(outro["crt"] + CRT_LEN, 3)
     for s in shots:
         if s["id"] == "N40":
-            s.update({"t": outro["black"], "kind": "cut", "provisional": True, "note": "black after Goodnight."})
+            s.update({"t": outro["black"], "kind": "cut", "note": "black after Goodnight.; the music box plays out"})
         if s["id"] == "N39":
-            s["provisional"] = True
-            s["note"] = f"pen scratch {outro['pen_scratch']} s; music cut to silence (edit)"
-    shots += [{"id": "N41", "anchor": "after black", "t": outro["crt"], "kind": "cut", "provisional": True},
-              {"id": "N42", "anchor": "fact card", "t": outro["fact_card"], "kind": "cut", "provisional": True},
+            s["note"] = f"pen scratch {outro['pen_scratch']} s over the existing audio; chair stops, stars freeze"
+    shots += [{"id": "N41", "anchor": "after the audio ends", "t": outro["crt"], "kind": "cut"},
+              {"id": "N42", "anchor": "fact card", "t": outro["fact_card"], "kind": "cut"},
               {"id": "N43", "anchor": "closing bookend", "t": None, "kind": "cut"},
               {"id": "N44", "anchor": "end card", "t": None, "kind": "cut"}]
     for s in shots:
         s["frame"] = fr(s["t"]) if s["t"] is not None else None
     Path("config/shot_anchors.json").write_text(json.dumps({
-        "_doc": "Shot anchors (scripts/timing_map.py): Nk is line L(k-2); outro timings provisional until C3 approval.",
+        "_doc": "Shot anchors (scripts/timing_map.py): Nk is line L(k-2); outro as approved at C3.",
         "rule": "N03..N40 = L01..L38", "outro": outro}, indent=1) + "\n")
     tm = {"fps": FPS, "duration_s": round(dur, 3), "duration_frames": fr(dur), "audio": TRACK,
           "meter": "3/4", "beats": B["beats"], "downbeat_beats": down, "bars": bars, "sections": sections,
@@ -106,7 +105,7 @@ def main():
         t = "" if s["t"] is None else f"{s['t']:.2f}"
         L.append(f"| {s['id']} | {s['anchor']} | {s.get('line', '')} | {t} | "
                  f"{'' if s['frame'] is None else s['frame']} | {s.get('downbeat', '')} | "
-                 f"{('provisional: ' + s.get('note', '')) if s.get('provisional') else ''} |")
+                 f"{s.get('note', '')} |")
     irregular = [b for b in bars if b["beats"] != 3]
     L += ["", "## Bars that are not 3 beats (for the ear check)", "", "| Bar | Start (s) | Beats |", "| --- | --- | --- |"]
     L += [f"| {b['n']} | {b['start']:.2f} | {b['beats']} |" for b in irregular]

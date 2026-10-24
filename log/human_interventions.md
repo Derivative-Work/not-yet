@@ -66,3 +66,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human brought the stems into a DAW and identified the instruments: the music box is split between the Keyboard and Percussion stems. Bass and Guitar are one fingerstyle guitar, with crosstalk between them. Strings is real orchestral arco strings, with a lot of crosstalk from the other instruments.
 - **Note from the human:** "the music box is split between what the stems call keyboard and percussion. What the stems call bass and guitar, I would perform manually as one fingerstyle guitar (but there are places where it only plays the bass notes of it where I would have performed the chords too; maybe these got masked by the music box). There is some crosstalk between the two. What it calls "strings" contains actual orchestral strings -- of the part of this stem that is actually strings, I only hear arco strings, but there's quite a bit of crosstalk from the other instruments."
 - **Rule:** R2 (correcting the timing data's labels, the A/V mapping). It is not a creative choice; the agent changes the grouping (production log).
+
+## 2026-10-24T03:00 — C3 approved; stars on the music box melody; ending: pen scratch over the existing audio — R1
+
+- **What:** The human approved the C3 timing data. They chose the music box's melody for the star births, and for the ending chose to keep Suno's audio as it is, with the pen scratch added on top, rather than the proposed music cut.
+- **Note from the human:** "Score is good enough to animate to -- let's only revisit if something's visually wrong. Yes, use the music box melody for the stars. For the ending: just add the pen scratch on top of what's existing. Don't try to silence it yourself -- that did not work well for Folks."
+- **Rule:** R1 (approving data and choosing between proposed plans).
