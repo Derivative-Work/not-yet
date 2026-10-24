@@ -42,3 +42,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human approved C1 v2 and chose 30 fps over the proposed 60.
 - **Note from the human:** "this one is fine at 30fps. keep going"
 - **Rule:** R1 (approving a plan and a render).
+
+## 2026-10-23T23:25 — C2 approved — R1
+
+- **What:** The human approved the C2 kit import: the probe in this set's light with the green LED, the 3x crib scale, the reveal and glint frames.
+- **Note from the human:** "looks great, keep going"
+- **Rule:** R1 (approving a render and a plan).
