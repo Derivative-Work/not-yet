@@ -1,0 +1,5 @@
+{
+  "_doc": "Every random process reads its seed from here (inherited from Ghost in the Machine / Sandbox Rhapsody). Main video seed 41.",
+  "main": 41,
+  "processes": {}
+}

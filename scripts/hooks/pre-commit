@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Reject any staged file over 50 MiB. Large files belong in MANIFEST.sha256, not git.
+limit=$((50 * 1024 * 1024))
+fail=0
+while IFS= read -r -d '' f; do
+  size=$(git cat-file -s ":$f" 2>/dev/null) || continue
+  if [ "$size" -gt "$limit" ]; then
+    echo "pre-commit: $f is $size bytes (> 50 MiB). Add it to .gitignore and the manifest instead." >&2
+    fail=1
+  fi
+done < <(git diff --cached --name-only --diff-filter=AM -z)
+exit $fail

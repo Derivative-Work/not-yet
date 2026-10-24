@@ -1,0 +1,6 @@
+{
+  "_doc": "Render tiers. draft720 is for iteration on the GTX 970 box; final runs on the RTX 5090 box. Frame rate is set by the style spec at C1.",
+  "draft720": {"size": [1280, 720], "samples": 8, "box": "GTX 970"},
+  "animatic": {"size": [640, 360], "samples": 8, "box": "GTX 970"},
+  "final": {"size": [3840, 2160], "samples": 64, "box": "RTX 5090"}
+}

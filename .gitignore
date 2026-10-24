@@ -1,0 +1,33 @@
+# Large files: excluded from git, hashed in MANIFEST.sha256, the irreplaceable ones published as a GitHub Release.
+audio/track/
+audio/stems/
+audio/master/
+renders/
+takes/
+reference/stills/
+*.wav
+*.mp3
+*.flac
+*.zip
+*.blend
+*.blend1
+*.mp4
+*.mov
+*.mkv
+*.webm
+transcripts/
+
+# Reference material: never published, never hashed into the manifest.
+reference/inspiration/
+
+# Regenerable: never archived; versions and regen commands are logged instead.
+frames/
+**/frames/
+cache/
+**/__pycache__/
+.venv/
+venv/
+node_modules/
+models/
+*.pt
+*.safetensors
