@@ -91,3 +91,29 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Commands:** docs `update` on the brief (rev 24 → 27, three `find` replacements); docs `read` of the prose node, then `scripts/doc_to_md.py <read result> docs/brief.md`
 - **Outputs:** `config/look.json`, `style/style_spec.md`, `docs/brief.md`
 - **Why:** Human interventions, C1 approval (R1).
+
+## 2026-10-23T23:20:00-04:00 — C2: kit import, the probe in this set's light beside Sandbox Rhapsody's
+
+- **What:**
+  - Rendered Sandbox Rhapsody's own C1 close-up of its lead probe at 720p from that repo, as the reference. Its working tree was clean before and after; only this repo's `renders/c2/` was written.
+  - Imported the probe with the kit's `sr_kit.probe(led_role="standby")`, unchanged, as `nursery.crib_probe()`. It lies at the crib's head end under the blanket's lip, scaled 3x: 20 cm across, a baby's size, with the kit's proportions, materials and rig untouched.
+  - Rendered three Not Yet frames: `match` (the same rig, pose and camera offsets as the reference, on the dresser), `reveal` (N38: over the rail, iris open via `sing` 0.55, LED lit, rising out of the felt, clear glass) and `glint` (before N38: chassis hidden, glint only).
+  - Made a 2x2 review sheet. Deepened the blanket colour, since `#9fb3cf` read white under the cream light.
+- **Commands:**
+  - `blender -b --factory-startup --python ../sandbox-rhapsody/scenes/blender/c1_test_frame.py -- $PWD/renders/c2/sr_reference_close.png 1280 720 64 close` (Sandbox Rhapsody at 5a56d3c, 138 s on the GTX 970)
+  - `blender -b --factory-startup --python scenes/blender/c2_test_frame.py -- renders/c2/c2_v<N>_{reveal,glint,match}.png 1280 720 64 {reveal,glint,match}` (about 22 s each)
+  - `.venv/bin/python -I scripts/c2_sheet.py renders/c2/c2_sheet.jpg renders/c2/sr_reference_close.png "…" renders/c2/c2_v3_match.png "…" renders/c2/c2_v4_reveal.png "…" renders/c2/c2_v3_glint.png "…"`
+- **Outputs:** `scenes/blender/c2_test_frame.py`, `scenes/blender/sets/nursery.py` (`PROBE_SCALE`, `crib_probe`), `scripts/c2_sheet.py`, `config/look.json`, `style/style_spec.md` (`felt_blue`), `renders/c2/{sr_reference_close,c2_v3_match,c2_v4_reveal,c2_v3_glint}.png`, `renders/c2/c2_sheet.jpg`
+- **Iterations** (archived under `archive/renders/c2/`, named by cause):
+  1. Cameras read `matrix_world` before the depsgraph ran, so the reveal camera sat inside the set and the match probe was misplaced. Fixed with `view_layer.update()`.
+  2. `hide_render` on the probe's root empty didn't hide its parts. Fixed with `hide_tree()`.
+  3. The reveal camera looked through the slats; it now looks over the rail. The match probe stood behind the music box; the music box and monitor are hidden for that frame.
+  4. Blanket recolour; an arms pass.
+- **Self-assessment for C2:**
+  - It reads as the same make: chrome sphere, bezel, iris, LED dome and arms, with only the light changed from amber to green. The match frame is the direct test.
+  - The 3x scale is my call. The brief doesn't give a size, and a tennis-ball probe would be lost in a 1.3 m crib.
+  - The brief's "two thin arms folded on the blanket" isn't met yet. The arms hang from just below the equator, so a probe sunk into the felt hides them. Staging the N38 rise (the probe lifts as the iris opens, arms coming to rest on the blanket) is animation work for C4.
+  - From this angle the glint shows only as green spill on the crib's end board. Its framing is a C4 camera choice.
+  - Not done here: the shop window's twin with mittens, built at C4 with the same function and `led_role="standby"`.
+- **Why:** Brief, checkpoint C2.
+- **Status:** **C2 is ready for review.** The agent stops here for approval, per the brief.

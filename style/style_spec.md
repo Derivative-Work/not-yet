@@ -59,7 +59,7 @@ on the hill and a tungsten slit under the floor. Nothing is saturated except tho
 | Vault door paint | `pastel` | `#c8c0e4`: lavender. Not pink, so it can't be read as red, and not mint, which would collide with the probe's green |
 | Crib and nursery paint | `crib` | `#ece5d8` |
 | Chair wood | `wood` | `#9a7a5c` |
-| Felt (blanket, mobile, rug) | `felt_blue`, `felt_cream`, `felt_grey`, `rug` | `#9fb3cf`, `#e9dcc4`, `#b9b4ad`, `#d8cdb8` |
+| Felt (blanket, mobile, rug) | `felt_blue`, `felt_cream`, `felt_grey`, `rug` | `#7d95bd` (C2: `#9fb3cf` read white under the cream light), `#e9dcc4`, `#b9b4ad`, `#d8cdb8` |
 | Sticky note | `note` | `#f2d64b`, Sandbox Rhapsody's |
 | Pencil (growth chart) | `pencil` | `#3a3d44` |
 

@@ -550,6 +550,23 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True):
     return out
 
 
+PROBE_SCALE = 3.0  # the crib probe: Sandbox Rhapsody's chassis at 3x (20 cm across), a baby's size in the crib
+
+
+def crib_probe(crib_root, name="crib_probe"):
+    """The thing in the crib (brief, section 3): Sandbox Rhapsody's probe from the kit, unchanged, with the soft
+    green standby LED, lying at the head end under the blanket's lip, lens toward the room (-Y). Scaled 3x: the same
+    make, a baby's size; the kit's proportions, materials and rig are untouched."""
+    p = K.probe(name, (0, 0, 0), led_role="standby", led=0.6, scale=PROBE_SCALE)
+    p.parent = crib_root
+    # On the mattress (top 0.44) under the blanket's head-end lip: the blanket (0.45-0.53 here) covers its lower
+    # third, so at N38 the sphere rises out of the felt rather than sitting on it.
+    p.location = (-0.42, 0.0, 0.44 + K.PROBE_R * PROBE_SCALE * 0.55)
+    p.rotation_euler = (0, 0, 0)
+    p["arm_l"] = p["arm_r"] = 0.0
+    return {"root": p, "probe": p}
+
+
 def mobile(name, loc, parent=None):
     """The crib mobile: an arm up from the crib's back, a cross of two rods, four felt pieces on threads: a bank's
     columns, a globe, a cloud and the tiny flag (Sandbox Rhapsody's prize; its swallowtail shape, recoloured, since
