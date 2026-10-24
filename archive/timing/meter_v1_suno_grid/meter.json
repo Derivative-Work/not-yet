@@ -1,0 +1,62 @@
+{
+ "_doc": "Bars for 3/4 (scripts/meter.py): downbeats chosen by dynamic programming over Suno's beat grid. Bars that are not 3 beats are listed with their times for the ear check.",
+ "suno_offset_s": 0.176,
+ "grid_fine_shift_s": -0.0069,
+ "beats": 525,
+ "bars": 176,
+ "bar_lengths": {
+  "3": 167,
+  "2": 5,
+  "4": 3
+ },
+ "irregular_bars": [
+  {
+   "bar": 11,
+   "beat": 30,
+   "t": 16.523,
+   "beats": 2
+  },
+  {
+   "bar": 30,
+   "beat": 86,
+   "t": 42.379,
+   "beats": 2
+  },
+  {
+   "bar": 31,
+   "beat": 88,
+   "t": 43.187,
+   "beats": 2
+  },
+  {
+   "bar": 32,
+   "beat": 90,
+   "t": 44.0,
+   "beats": 2
+  },
+  {
+   "bar": 39,
+   "beat": 110,
+   "t": 52.406,
+   "beats": 4
+  },
+  {
+   "bar": 98,
+   "beat": 288,
+   "t": 124.452,
+   "beats": 4
+  },
+  {
+   "bar": 105,
+   "beat": 310,
+   "t": 134.069,
+   "beats": 2
+  },
+  {
+   "bar": 130,
+   "beat": 384,
+   "t": 179.409,
+   "beats": 4
+  }
+ ]
+}

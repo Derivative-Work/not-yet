@@ -48,3 +48,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human approved the C2 kit import: the probe in this set's light with the green LED, the 3x crib scale, the reveal and glint frames.
 - **Note from the human:** "looks great, keep going"
 - **Rule:** R1 (approving a render and a plan).
+
+## 2026-10-24T00:50 — C3 review: lanes hard to read, beat detection poor, crosstalk; beat_this approved — R1
+
+- **What:** The human rejected the C3 preview and approved installing beat_this, which the permission classifier had blocked.
+- **Note from the human:** "As with Sandbox Rhapsody this is still hard for me to read -- a score is best, like it generated for that step. That said, it seems the beat detection was not good, which would make it difficult to generate a legible score, and it seems there is significant crosstalk based off this alone. Go ahead with beat_this"
+- **Rule:** R1 (rejecting a render, reasons in words). Approving a tool install is a technical decision the agent couldn't make alone (R3).

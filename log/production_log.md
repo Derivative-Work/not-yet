@@ -149,3 +149,36 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - **Outro conflict, proposal only, not applied to any audio:** the brief stops the music box at the pen scratch (N39), but Suno's music box plays on to 245.8 s. Proposal: make the stop in the edit (Folks Like Us rule). The music cuts to silence at the end of "signed" (229.42 s) with a pen scratch; "Goodnight." (232.97 s) plays from the vocal stem alone; black at 233.94 s (N40); the CRT line at 235.44 s (N41). The preview plays the unedited mix and marks these points.
 - **Why:** Brief, checkpoint C3; Sandbox Rhapsody's steps 4–5.
 - **Status:** **C3 is ready for review.** The human checks the preview by ear; corrections go in the intervention log.
+
+## 2026-10-24T01:55:00-04:00 — C3 revision: beat_this beat grid, crosstalk removed, score preview
+
+- **What:** Three changes after the human's C3 review (human interventions, 00:50).
+  1. **Beats and bars rebuilt with beat_this** (CPJKU, pinned at b95c8ab, checkpoint final0, approved by the human).
+     - Suno's grid agreed with beat_this 81–100% while the band plays (30–120 s), but only 12–41% in the intro, bridge and outro, where it dropped to 95–115 bpm.
+     - The lyric lines show the song doesn't slow down: every line spans 4.6–5.6 s, four bars of three beats.
+     - New method: dynamic-programming beat tracking (librosa) on beat_this's beat probability (mix and music box averaged), with a tempo prior from the line spacing (147.8 bpm) and high tightness. Bars come from dynamic programming on beat_this's downbeat probability plus line starts.
+     - Result: 609 beats, median 150 bpm (p5–p95 143–158); 203 bars, 193 of 3 beats, 5 of 4, 4 of 2.
+     - Bar phase check: 46 of 56 bass notes fall on beat 1, and the music box's lowest note is on beat 1 in 112 of 187 bars. Most lines start with a one-beat pickup.
+     - The v1 meter (Suno grid) is archived in `archive/timing/meter_v1_suno_grid/`.
+  2. **Crosstalk.** Suno's stems leak into each other. Before the fix, 69–86% of the other stems' events had a same-pitch-class event in the music box within 30 ms. Two filters in `scripts/event_sources.py`:
+     - **Bleed:** a note is dropped where another stem is more than 10 dB louder at its pitch and moment. Against the vocal stem it is dropped only if its attack is also soft (rise over 25 ms): voice-dropped notes had a median rise of 52 ms, against 32 ms for kept ones.
+     - **Duplicates:** an identical note left in two stems stays only in the louder one, unless they're within 3 dB (a unison).
+     - Exact duplicates are gone. What remains is mostly octave doubling (`timing/event_sources.md`).
+     - Events now: music box 1,006, celesta 108, strings 140, e-piano/pad 416, bass 45.
+  3. **A score** (`scripts/score_build.py`, `score_render.py`, `c3_score_preview.py`, ported from Sandbox Rhapsody):
+     - Parts: Vocals with the aligned lyrics; music box, strings and e-piano/pad on two staves each; celesta; bass.
+     - Notes are at eighth-note resolution on the new grid, in the song's own bars.
+     - Keys are G minor throughout, except the final chorus in E-flat major (music21 analysis per section).
+     - 1080p, a cursor on the beat grid, and notes lighting while they sound.
+- **Commands:**
+  - `uv add "beat_this @ git+https://github.com/CPJKU/beat_this.git@b95c8ab0c58c2d9fcfd40508ae8dffbc05ac4f5c"` (checkpoint downloaded to `~/.cache/torch/hub/checkpoints/beat_this-final0.ckpt`, 77 MB)
+  - `.venv/bin/python -I scripts/beats_beat_this.py`
+  - `scripts/meter.py`, `scripts/timing_map.py`, `scripts/event_sources.py`, `scripts/midi_inventory.py`, `scripts/score_build.py`, `scripts/c3_score_preview.py` (4 min), `scripts/c3_preview.py`
+- **Outputs:** `scripts/{beats_beat_this,meter,event_sources,score_build,score_render,c3_score_preview}.py`, `timing/beat_this.json`, `timing/beats.json`, `config/meter.json`, `timing/events/*.json`, `timing/event_sources.md`, `timing/timing_map.{json,md}`, `renders/c3/c3_score_preview.mp4` (primary), `renders/c3/c3_preview.mp4` (lanes)
+- **Archived:** rejected (R1) `archive/renders/c3/c3_preview_rejected_unreadable-suno-grid-crosstalk.mp4`. Superseded: the test cut `c3_score_preview_34-50_test.mp4`, and the first full score and lane renders with the level-only bleed rule (`*_superseded_voice-bleed-rule.mp4`).
+- **Open for the ear check:**
+  - The soft chords dropped as voice leakage under the bridge's vocal (141.9 s, 143.1 s).
+  - Whether the "celesta" (Percussion stem) is a real separate instrument. After the duplicate rule it has only 108 notes, mostly in the intro and the final chorus.
+  - The irregular bars (`timing/timing_map.md`).
+  - The outro edit proposal (unchanged).
+- **Status:** **C3 is ready for re-review.**

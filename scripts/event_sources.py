@@ -22,6 +22,20 @@ physical attacks of isolated notes (scripts/attack_times.py); notes within 60 ms
 nearest detected onset (within 80 ms); events kept only where the stem is playing (within 26 dB of its loud level in
 the 0.3 s after the event).
 
+Crosstalk (human, C3 review: "significant crosstalk"). Suno separates its stems from a finished mix, so the music
+box leaks into every other stem, and both transcriptions hear the leak: before this filter, 69-86% of the other
+stems' events had a same-pitch-class event in the music box within 30 ms. Each event is tested by energy: the
+constant-Q magnitude at its pitch (+-1 semitone bin, first 100 ms) in its own stem against the same measure in
+every other stem (Vocals included as a source of bleed). If another stem is more than BLEED_DB louder there, the
+event is bleed and is dropped, with one exception: where the louder stem is Vocals, the event is dropped only if its
+attack is also soft (10-90% rise over VOICE_RISE_MS at its pitch in its own stem), as a leaked voice's is; a plucked
+attack is the instrument's own, however loud the singer is over it (C3 score: a level rule alone emptied the music box
+under the bridge's vocal; the voice-dropped notes' median rise was 52 ms against 32 ms for the kept ones). A real unison (two instruments on one note) shows comparable energy in both stems
+and survives. Then duplicates: the same note (same pitch, onsets within 30 ms) left in two stems at comparable level
+(C3 score: the "celesta" doubled the music box note for note in the intro) is kept only in the stem where it is
+louder, unless the two are within UNISON_DB (a deliberate unison), so one sound never drives two machines. The
+before/after coincidence matrix is in timing/event_sources.md.
+
 Usage: .venv/bin/python -I scripts/event_sources.py  ->  timing/events/<stem>.json, config/event_sources.json,
        timing/event_sources.md
 """
@@ -42,6 +56,12 @@ SR, HOP = 22050, 128
 STEMS = {"Keyboard": "music box comb", "Percussion": "celesta (star births)", "Strings": "pizzicato strings, flute",
          "Guitar": "electric piano, pad", "Bass": "bass"}
 GHOST_DB, ACTIVE_DB, MIN_AMP = 30.0, 26.0, 0.12
+BLEED_DB = 10.0
+UNISON_DB = 3.0
+VOICE_RISE_MS = 25.0
+RISE_HOP = 64
+BLEED_FROM = list(STEMS) + ["Vocals"]
+CQT_HOP, CQT_MIDI0 = 256, 24  # CQT bins are semitones from C1 (MIDI 24)
 DET_LAG, SNAP, CHORD = 0.012, 0.08, 0.06
 
 
@@ -111,6 +131,102 @@ def union(suno, bp, A):
     return sorted([{**n, "source": "suno"} for n in suno] + fill, key=lambda n: (n["t"], n["pitch"]))
 
 
+_cqt = {}
+
+
+def cqt_db(stem):
+    """Constant-Q magnitude in dB (absolute reference, so stems compare), semitone bins from C1, 7 octaves."""
+    if stem not in _cqt:
+        y, _ = librosa.load(STEM.format(stem), sr=SR, mono=True)
+        C = np.abs(librosa.cqt(y, sr=SR, hop_length=CQT_HOP, fmin=librosa.midi_to_hz(CQT_MIDI0), n_bins=84,
+                               bins_per_octave=12))
+        _cqt[stem] = 20 * np.log10(C + 1e-9)
+    return _cqt[stem]
+
+
+def level_at(stem, t, pitch):
+    C = cqt_db(stem)
+    b = int(pitch) - CQT_MIDI0
+    if b < 0 or b >= C.shape[0]:
+        return -200.0
+    f0, f1 = int(t * SR / CQT_HOP), int((t + 0.1) * SR / CQT_HOP) + 1
+    return float(C[max(0, b - 1):b + 2, f0:f1].max(initial=-200.0))
+
+
+_fine = {}
+
+
+def rise_ms(stem, t, pitch):
+    """10-90% rise time (ms) of the stem's constant-Q magnitude at `pitch` around onset t; NaN if no clear rise."""
+    if stem not in _fine:
+        y, _ = librosa.load(STEM.format(stem), sr=SR, mono=True)
+        _fine[stem] = np.abs(librosa.cqt(y, sr=SR, hop_length=RISE_HOP, fmin=librosa.midi_to_hz(CQT_MIDI0), n_bins=84,
+                                          bins_per_octave=12))
+    C = _fine[stem]
+    b, f = int(pitch) - CQT_MIDI0, int(t * SR / RISE_HOP)
+    if b < 0 or b >= C.shape[0] or f < 20:
+        return float("nan")
+    w = C[max(0, b - 1):b + 2, f - 20:f + 30].max(0)
+    pk = int(np.argmax(w[10:])) + 10
+    base, top = float(np.median(w[:8])), float(w[pk])
+    if top < 2 * base:
+        return float("nan")
+    i10 = int(np.argmax(w[:pk + 1] > base + 0.1 * (top - base)))
+    i90 = int(np.argmax(w[:pk + 1] > base + 0.9 * (top - base)))
+    return (i90 - i10) * RISE_HOP / SR * 1000
+
+
+def bleed_filter(stem, events):
+    keep, dropped = [], 0
+    for e in events:
+        own = level_at(stem, e["t"], e["pitch"])
+        lv = {o: level_at(o, e["t"], e["pitch"]) for o in BLEED_FROM if o != stem}
+        src = max(lv, key=lv.get)
+        bleed = lv[src] - own > BLEED_DB
+        if bleed and src == "Vocals":
+            r = rise_ms(stem, e["t"], e["pitch"])
+            bleed = not (r == r and r <= VOICE_RISE_MS)  # a sharp (plucked) attack is the instrument's own
+        if bleed:
+            dropped += 1
+        else:
+            keep.append(e)
+    return keep, dropped
+
+
+def dedupe(E):
+    """Winner-take-all across stems for identical notes (docstring). E: {stem: events}; returns new dict, counts."""
+    tagged = sorted(((e["t"], st, k, e["pitch"]) for st, ev in E.items() for k, e in enumerate(ev)))
+    drop = {st: set() for st in E}
+    for i, (t, st, k, p) in enumerate(tagged):
+        j = i + 1
+        while j < len(tagged) and tagged[j][0] - t < 0.03:
+            t2, st2, k2, p2 = tagged[j]
+            if st2 != st and p2 == p and k not in drop[st] and k2 not in drop[st2]:
+                la, lb = level_at(st, t, p), level_at(st2, t2, p2)
+                if abs(la - lb) > UNISON_DB:
+                    if la < lb:
+                        drop[st].add(k)
+                    else:
+                        drop[st2].add(k2)
+            j += 1
+    return {st: [e for k, e in enumerate(ev) if k not in drop[st]] for st, ev in E.items()}, \
+        {st: len(d) for st, d in drop.items()}
+
+
+def coincidence(E):
+    """Share of A's events with a same-pitch-class event in B within 30 ms."""
+    out = {}
+    for a in E:
+        for b in E:
+            if a == b:
+                continue
+            tb = np.array([e["t"] for e in E[b]])
+            pb = np.array([e["pitch"] for e in E[b]])
+            hit = sum(bool(np.any((pb[np.abs(tb - e["t"]) < 0.03] % 12) == e["pitch"] % 12)) for e in E[a])
+            out[a, b] = hit / max(1, len(E[a]))
+    return out
+
+
 def export(stem, notes, A, source):
     path = STEM.format(stem)
     db = A["db"]
@@ -136,8 +252,10 @@ def export(stem, notes, A, source):
         tt = float(det[k]) if k >= 0 and abs(det[k] - t0) <= SNAP else t0
         out += [{**n, "t": round(tt, 4), "end": round(max(n["end"], tt + 0.05), 4)} for n in g]
     active = [e for e in out if db[frame(e["t"]):frame(e["t"] + 0.3) + 1].max(initial=-200) >= A["loud"] - ACTIVE_DB]
+    clean, n_bleed = bleed_filter(stem, active)
     return {"stem": stem, "source": source, "shift_ms": round(shift, 1), "shift_from": f"{len(att)} isolated attacks",
-            "dropped_ghosts": len(notes) - len(keep), "dropped_inactive": len(out) - len(active), "events": active}
+            "dropped_ghosts": len(notes) - len(keep), "dropped_inactive": len(out) - len(active),
+            "dropped_bleed": n_bleed, "bleed_db": BLEED_DB, "events": clean, "_before_bleed": active}
 
 
 def main():
@@ -150,6 +268,7 @@ def main():
          "| Stem | Drives | Source | Notes | Coverage | Support | Ghosts | Chosen | Shift (ms) | Events |",
          "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     analyses = {stem: stem_analysis(STEM.format(stem)) for stem in STEMS}
+    before, after = {}, {}
     offs = {stem: best_offset([n["t"] for n in suno_notes(stem)], A["det"]) for stem, A in analyses.items()}
     suno_off = float(np.median([o for o, _ in offs.values()]))
     sources["suno_midi_offset_s"] = {"value": round(suno_off, 3), "per_stem": {k: round(o, 3) for k, (o, _) in offs.items()},
@@ -171,13 +290,15 @@ def main():
         # isn't there is worse than one fewer pluck.
         win = max((k for k in ok if m[k]["coverage"] >= top_cov - 0.02), key=lambda k: m[k]["support"])
         data = export(stem, cand[win], A, win)
+        before[stem], after[stem] = data.pop("_before_bleed"), data["events"]
         slug = f"timing/events/{stem.lower()}.json"
         Path(slug).write_text(json.dumps(data) + "\n")
         sources[stem.lower()] = {"events": slug, "drives": role, "source": win,
                                  "why": f"coverage {m[win]['coverage']:.2f} (suno {m['suno']['coverage']:.2f}, basic-pitch "
                                         f"{m['basic_pitch']['coverage']:.2f}, union {m['union']['coverage']:.2f}); "
                                         f"shift {data['shift_ms']:+.1f} ms; {data['dropped_ghosts']} ghosts and "
-                                        f"{data['dropped_inactive']} inactive-section events dropped"}
+                                        f"{data['dropped_inactive']} inactive-section events and {data['dropped_bleed']} "
+                                        f"bleed events dropped"}
         for k in ("suno", "basic_pitch", "union"):
             ch = k == win
             L.append(f"| {stem} | {role} | {k} | {m[k]['notes']} | {m[k]['coverage']:.2f} | {m[k]['support']:.2f} | "
@@ -185,6 +306,23 @@ def main():
                      f"{len(data['events']) if ch else ''} |")
         print(f"{stem:10s} detected {len(A['det']):4d}  suno {m['suno']}  bp {m['basic_pitch']}  union {m['union']}  -> {win}, "
               f"{len(data['events'])} events, shift {data['shift_ms']} ms")
+    after, dup = dedupe(after)
+    for stem in STEMS:
+        slug = f"timing/events/{stem.lower()}.json"
+        data = json.loads(Path(slug).read_text())
+        data["events"], data["dropped_duplicate"] = after[stem], dup[stem]
+        Path(slug).write_text(json.dumps(data) + "\n")
+        sources[stem.lower()]["why"] += f"; {dup[stem]} duplicates of a louder stem's notes dropped"
+        print(f"{stem:10s} duplicates dropped {dup[stem]:4d}, events {len(after[stem])}")
+    cb, ca = coincidence(before), coincidence(after)
+    names = list(STEMS)
+    L += ["", f"Crosstalk: share of each row stem's events with a same-pitch-class event in the column stem within 30 ms, "
+          f"before / after the bleed filter ({BLEED_DB:.0f} dB) and the duplicate rule.", "",
+          "| | " + " | ".join(names) + " |", "| --- |" + " --- |" * len(names)]
+    for a in names:
+        L.append(f"| {a} | " + " | ".join("—" if a == b else f"{cb[a, b]:.2f} / {ca[a, b]:.2f}" for b in names) + " |")
+        print(f"{a:10s} bleed dropped {len(before[a]) - len(after[a]):4d}; vs music box {cb.get((a, 'Keyboard'), 0):.2f} -> "
+              f"{ca.get((a, 'Keyboard'), 0):.2f}")
     Path("config/event_sources.json").write_text(json.dumps(sources, indent=1) + "\n")
     Path("timing/event_sources.md").write_text("\n".join(L) + "\n")
 

@@ -1,62 +1,75 @@
 {
- "_doc": "Bars for 3/4 (scripts/meter.py): downbeats chosen by dynamic programming over Suno's beat grid. Bars that are not 3 beats are listed with their times for the ear check.",
- "suno_offset_s": 0.176,
- "grid_fine_shift_s": -0.0069,
- "beats": 525,
- "bars": 176,
+ "_doc": "Beats and 3/4 bars (scripts/meter.py v2): beat_this activations, a tempo prior from the lyric lines, DP beat tracking, DP bar choice. Bars that are not 3 beats are listed for the ear check.",
+ "tempo_prior_bpm": 147.81,
+ "from_line_gaps": 26,
+ "tightness": 400,
+ "beats": 609,
+ "beat_bpm_median": 150.0,
+ "beat_bpm_p5_p95": [
+  142.9,
+  157.9
+ ],
+ "beats_on_activation": 0.673,
+ "bars": 203,
  "bar_lengths": {
-  "3": 167,
-  "2": 5,
-  "4": 3
+  "3": 193,
+  "4": 5,
+  "2": 4
  },
  "irregular_bars": [
   {
-   "bar": 11,
-   "beat": 30,
-   "t": 16.523,
-   "beats": 2
-  },
-  {
-   "bar": 30,
-   "beat": 86,
-   "t": 42.379,
-   "beats": 2
-  },
-  {
-   "bar": 31,
-   "beat": 88,
-   "t": 43.187,
-   "beats": 2
-  },
-  {
-   "bar": 32,
-   "beat": 90,
-   "t": 44.0,
-   "beats": 2
-  },
-  {
-   "bar": 39,
-   "beat": 110,
-   "t": 52.406,
+   "bar": 17,
+   "beat": 49,
+   "t": 19.74,
    "beats": 4
   },
   {
-   "bar": 98,
-   "beat": 288,
-   "t": 124.452,
+   "bar": 22,
+   "beat": 65,
+   "t": 26.12,
    "beats": 4
   },
   {
-   "bar": 105,
-   "beat": 310,
-   "t": 134.069,
+   "bar": 46,
+   "beat": 138,
+   "t": 56.1,
+   "beats": 4
+  },
+  {
+   "bar": 100,
+   "beat": 301,
+   "t": 122.04,
    "beats": 2
   },
   {
-   "bar": 130,
-   "beat": 384,
-   "t": 179.409,
+   "bar": 111,
+   "beat": 333,
+   "t": 135.02,
+   "beats": 2
+  },
+  {
+   "bar": 120,
+   "beat": 359,
+   "t": 145.46,
    "beats": 4
+  },
+  {
+   "bar": 155,
+   "beat": 465,
+   "t": 188.3,
+   "beats": 2
+  },
+  {
+   "bar": 171,
+   "beat": 512,
+   "t": 207.08,
+   "beats": 4
+  },
+  {
+   "bar": 191,
+   "beat": 573,
+   "t": 231.9,
+   "beats": 2
   }
  ]
 }

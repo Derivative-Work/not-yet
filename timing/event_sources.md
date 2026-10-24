@@ -8,16 +8,26 @@ Suno's MIDI offset, measured per stem against detected onsets: Keyboard +191 ms,
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Keyboard | music box comb | suno | 1238 | 0.64 | 0.95 | 0.00 |  |  |  |
 | Keyboard | music box comb | basic_pitch | 1461 | 0.76 | 0.93 | 0.01 |  |  |  |
-| Keyboard | music box comb | union | 1568 | 0.75 | 0.96 | 0.01 | **yes** | 3.6 | 1549 |
+| Keyboard | music box comb | union | 1568 | 0.75 | 0.96 | 0.01 | **yes** | 3.6 | 1088 |
 | Percussion | celesta (star births) | suno | 247 | 0.21 | 1.00 | 0.00 |  |  |  |
 | Percussion | celesta (star births) | basic_pitch | 606 | 0.53 | 0.97 | 0.22 |  |  |  |
-| Percussion | celesta (star births) | union | 616 | 0.54 | 1.00 | 0.19 | **yes** | 3.1 | 472 |
+| Percussion | celesta (star births) | union | 616 | 0.54 | 1.00 | 0.19 | **yes** | 3.1 | 158 |
 | Strings | pizzicato strings, flute | suno | 418 | 0.29 | 0.97 | 0.01 |  |  |  |
 | Strings | pizzicato strings, flute | basic_pitch | 626 | 0.58 | 0.90 | 0.15 |  |  |  |
-| Strings | pizzicato strings, flute | union | 731 | 0.60 | 0.98 | 0.09 | **yes** | 7.1 | 659 |
+| Strings | pizzicato strings, flute | union | 731 | 0.60 | 0.98 | 0.09 | **yes** | 7.1 | 259 |
 | Guitar | electric piano, pad | suno | 696 | 0.39 | 0.99 | 0.00 |  |  |  |
 | Guitar | electric piano, pad | basic_pitch | 650 | 0.63 | 0.90 | 0.15 |  |  |  |
-| Guitar | electric piano, pad | union | 930 | 0.63 | 0.99 | 0.07 | **yes** | 4.7 | 835 |
+| Guitar | electric piano, pad | union | 930 | 0.63 | 0.99 | 0.07 | **yes** | 4.7 | 523 |
 | Bass | bass | suno | 51 | 0.55 | 1.00 | 0.00 |  |  |  |
 | Bass | bass | basic_pitch | 110 | 0.71 | 0.77 | 0.19 |  |  |  |
-| Bass | bass | union | 81 | 0.68 | 1.00 | 0.17 | **yes** | 9.9 | 65 |
+| Bass | bass | union | 81 | 0.68 | 1.00 | 0.17 | **yes** | 9.9 | 60 |
+
+Crosstalk: share of each row stem's events with a same-pitch-class event in the column stem within 30 ms, before / after the bleed filter (10 dB) and the duplicate rule.
+
+| | Keyboard | Percussion | Strings | Guitar | Bass |
+| --- | --- | --- | --- | --- | --- |
+| Keyboard | — | 0.23 / 0.06 | 0.36 / 0.04 | 0.40 / 0.17 | 0.10 / 0.05 |
+| Percussion | 0.69 / 0.56 | — | 0.27 / 0.00 | 0.22 / 0.06 | 0.06 / 0.01 |
+| Strings | 0.72 / 0.26 | 0.20 / 0.00 | — | 0.61 / 0.31 | 0.25 / 0.08 |
+| Guitar | 0.81 / 0.53 | 0.19 / 0.01 | 0.65 / 0.15 | — | 0.28 / 0.17 |
+| Bass | 0.86 / 0.64 | 0.29 / 0.02 | 0.75 / 0.11 | 0.86 / 0.56 | — |
