@@ -1,0 +1,15 @@
+{
+ "_doc": "Shot anchors (scripts/timing_map.py): Nk is line L(k-2); outro timings provisional until C3 approval.",
+ "rule": "N03..N40 = L01..L38",
+ "outro": {
+  "pen_scratch": 229.42,
+  "music_cut": 229.42,
+  "goodnight": [
+   232.97,
+   233.54
+  ],
+  "black": 233.94,
+  "crt": 235.44,
+  "fact_card": 236.44
+ }
+}

@@ -1,0 +1,2286 @@
+{
+ "aligner": "torchaudio MMS_FA",
+ "torchaudio": "2.8.0+cpu",
+ "lines": [
+  {
+   "id": "L01",
+   "section": "Verse 1",
+   "text": "Hush now, my little one, lie down and rest,",
+   "start": 11.08,
+   "end": 15.41,
+   "words": [
+    {
+     "w": "Hush",
+     "start": 11.08,
+     "end": 11.47,
+     "score": 0.913
+    },
+    {
+     "w": "now,",
+     "start": 11.58,
+     "end": 11.89,
+     "score": 0.988
+    },
+    {
+     "w": "my",
+     "start": 12.24,
+     "end": 12.41,
+     "score": 0.997
+    },
+    {
+     "w": "little",
+     "start": 12.48,
+     "end": 12.79,
+     "score": 0.988
+    },
+    {
+     "w": "one,",
+     "start": 12.9,
+     "end": 13.09,
+     "score": 0.996
+    },
+    {
+     "w": "lie",
+     "start": 13.64,
+     "end": 13.97,
+     "score": 0.8
+    },
+    {
+     "w": "down",
+     "start": 14.04,
+     "end": 14.65,
+     "score": 0.948
+    },
+    {
+     "w": "and",
+     "start": 14.76,
+     "end": 14.89,
+     "score": 0.923
+    },
+    {
+     "w": "rest,",
+     "start": 14.96,
+     "end": 15.41,
+     "score": 0.993
+    }
+   ]
+  },
+  {
+   "id": "L02",
+   "section": "Verse 1",
+   "text": "You traced twenty-seven-year ghosts in your test;",
+   "start": 16.09,
+   "end": 20.1,
+   "words": [
+    {
+     "w": "You",
+     "start": 16.09,
+     "end": 16.2,
+     "score": 0.92
+    },
+    {
+     "w": "traced",
+     "start": 16.27,
+     "end": 16.92,
+     "score": 0.937
+    },
+    {
+     "w": "twenty-seven-year",
+     "start": 17.03,
+     "end": 18.18,
+     "score": 0.586
+    },
+    {
+     "w": "ghosts",
+     "start": 18.27,
+     "end": 19.08,
+     "score": 0.861
+    },
+    {
+     "w": "in",
+     "start": 19.13,
+     "end": 19.24,
+     "score": 0.915
+    },
+    {
+     "w": "your",
+     "start": 19.27,
+     "end": 19.42,
+     "score": 0.865
+    },
+    {
+     "w": "test;",
+     "start": 19.51,
+     "end": 20.1,
+     "score": 0.993
+    }
+   ]
+  },
+  {
+   "id": "L03",
+   "section": "Verse 1",
+   "text": "You followed the branches that nobody reads,",
+   "start": 21.15,
+   "end": 25.04,
+   "words": [
+    {
+     "w": "You",
+     "start": 21.15,
+     "end": 21.26,
+     "score": 0.916
+    },
+    {
+     "w": "followed",
+     "start": 21.43,
+     "end": 22.16,
+     "score": 0.82
+    },
+    {
+     "w": "the",
+     "start": 22.19,
+     "end": 22.28,
+     "score": 0.965
+    },
+    {
+     "w": "branches",
+     "start": 22.33,
+     "end": 23.34,
+     "score": 0.986
+    },
+    {
+     "w": "that",
+     "start": 23.41,
+     "end": 23.56,
+     "score": 0.969
+    },
+    {
+     "w": "nobody",
+     "start": 23.71,
+     "end": 24.28,
+     "score": 0.998
+    },
+    {
+     "w": "reads,",
+     "start": 24.43,
+     "end": 25.04,
+     "score": 0.922
+    }
+   ]
+  },
+  {
+   "id": "L04",
+   "section": "Verse 1",
+   "text": "And came back with more than a maintainer needs.",
+   "start": 25.83,
+   "end": 30.36,
+   "words": [
+    {
+     "w": "And",
+     "start": 25.83,
+     "end": 25.92,
+     "score": 0.874
+    },
+    {
+     "w": "came",
+     "start": 25.97,
+     "end": 26.32,
+     "score": 0.967
+    },
+    {
+     "w": "back",
+     "start": 26.37,
+     "end": 26.82,
+     "score": 0.959
+    },
+    {
+     "w": "with",
+     "start": 26.95,
+     "end": 27.12,
+     "score": 0.946
+    },
+    {
+     "w": "more",
+     "start": 27.19,
+     "end": 27.6,
+     "score": 0.974
+    },
+    {
+     "w": "than",
+     "start": 28.05,
+     "end": 28.16,
+     "score": 0.897
+    },
+    {
+     "w": "a",
+     "start": 28.217,
+     "end": 28.237,
+     "score": 0.705
+    },
+    {
+     "w": "maintainer",
+     "start": 28.31,
+     "end": 29.62,
+     "score": 0.893
+    },
+    {
+     "w": "needs.",
+     "start": 29.77,
+     "end": 30.36,
+     "score": 0.951
+    }
+   ]
+  },
+  {
+   "id": "L05",
+   "section": "Chorus",
+   "text": "Sleep, little secret, the world isn't ready,",
+   "start": 34.56,
+   "end": 39.01,
+   "words": [
+    {
+     "w": "Sleep,",
+     "start": 34.56,
+     "end": 35.01,
+     "score": 0.983
+    },
+    {
+     "w": "little",
+     "start": 35.72,
+     "end": 35.99,
+     "score": 0.989
+    },
+    {
+     "w": "secret,",
+     "start": 36.1,
+     "end": 36.65,
+     "score": 0.982
+    },
+    {
+     "w": "the",
+     "start": 37.18,
+     "end": 37.29,
+     "score": 0.931
+    },
+    {
+     "w": "world",
+     "start": 37.36,
+     "end": 38.07,
+     "score": 0.985
+    },
+    {
+     "w": "isn't",
+     "start": 38.16,
+     "end": 38.51,
+     "score": 0.985
+    },
+    {
+     "w": "ready,",
+     "start": 38.66,
+     "end": 39.01,
+     "score": 0.996
+    }
+   ]
+  },
+  {
+   "id": "L06",
+   "section": "Chorus",
+   "text": "The patches take time and the ground isn't steady;",
+   "start": 39.745,
+   "end": 43.89,
+   "words": [
+    {
+     "w": "The",
+     "start": 39.745,
+     "end": 39.805,
+     "score": 0.148
+    },
+    {
+     "w": "patches",
+     "start": 39.85,
+     "end": 40.39,
+     "score": 0.982
+    },
+    {
+     "w": "take",
+     "start": 40.5,
+     "end": 40.83,
+     "score": 0.995
+    },
+    {
+     "w": "time",
+     "start": 40.88,
+     "end": 41.49,
+     "score": 0.976
+    },
+    {
+     "w": "and",
+     "start": 41.84,
+     "end": 41.95,
+     "score": 0.553
+    },
+    {
+     "w": "the",
+     "start": 41.94,
+     "end": 42.05,
+     "score": 0.952
+    },
+    {
+     "w": "ground",
+     "start": 42.08,
+     "end": 42.75,
+     "score": 0.984
+    },
+    {
+     "w": "isn't",
+     "start": 42.84,
+     "end": 43.17,
+     "score": 0.978
+    },
+    {
+     "w": "steady;",
+     "start": 43.34,
+     "end": 43.89,
+     "score": 0.965
+    }
+   ]
+  },
+  {
+   "id": "L07",
+   "section": "Chorus",
+   "text": "We'll wake you when all of the windows are mended\u2026",
+   "start": 44.38,
+   "end": 49.36,
+   "words": [
+    {
+     "w": "We'll",
+     "start": 44.38,
+     "end": 44.61,
+     "score": 0.494
+    },
+    {
+     "w": "wake",
+     "start": 44.76,
+     "end": 45.13,
+     "score": 0.982
+    },
+    {
+     "w": "you",
+     "start": 45.18,
+     "end": 45.45,
+     "score": 0.947
+    },
+    {
+     "w": "when",
+     "start": 45.84,
+     "end": 46.05,
+     "score": 0.603
+    },
+    {
+     "w": "all",
+     "start": 46.2,
+     "end": 46.49,
+     "score": 0.974
+    },
+    {
+     "w": "of",
+     "start": 46.56,
+     "end": 46.65,
+     "score": 0.53
+    },
+    {
+     "w": "the",
+     "start": 47.09,
+     "end": 47.22,
+     "score": 0.942
+    },
+    {
+     "w": "windows",
+     "start": 47.31,
+     "end": 48.18,
+     "score": 0.987
+    },
+    {
+     "w": "are",
+     "start": 48.27,
+     "end": 48.5,
+     "score": 0.888
+    },
+    {
+     "w": "mended\u2026",
+     "start": 48.59,
+     "end": 49.36,
+     "score": 0.978
+    }
+   ]
+  },
+  {
+   "id": "L08",
+   "section": "Chorus",
+   "text": "\u2026and windows are never quite mended.",
+   "start": 51.97,
+   "end": 55.52,
+   "words": [
+    {
+     "w": "\u2026and",
+     "start": 51.97,
+     "end": 52.14,
+     "score": 0.868
+    },
+    {
+     "w": "windows",
+     "start": 52.19,
+     "end": 52.82,
+     "score": 0.995
+    },
+    {
+     "w": "are",
+     "start": 53.89,
+     "end": 54.04,
+     "score": 0.958
+    },
+    {
+     "w": "never",
+     "start": 54.11,
+     "end": 54.38,
+     "score": 0.998
+    },
+    {
+     "w": "quite",
+     "start": 54.47,
+     "end": 54.84,
+     "score": 0.987
+    },
+    {
+     "w": "mended.",
+     "start": 54.95,
+     "end": 55.52,
+     "score": 0.991
+    }
+   ]
+  },
+  {
+   "id": "L09",
+   "section": "Verse 2",
+   "text": "A few chosen guests may come in for a peek:",
+   "start": 64.983,
+   "end": 68.93,
+   "words": [
+    {
+     "w": "A",
+     "start": 64.983,
+     "end": 65.003,
+     "score": 0.997
+    },
+    {
+     "w": "few",
+     "start": 65.12,
+     "end": 65.39,
+     "score": 0.877
+    },
+    {
+     "w": "chosen",
+     "start": 65.54,
+     "end": 66.09,
+     "score": 0.971
+    },
+    {
+     "w": "guests",
+     "start": 66.18,
+     "end": 66.71,
+     "score": 0.869
+    },
+    {
+     "w": "may",
+     "start": 66.78,
+     "end": 66.95,
+     "score": 0.997
+    },
+    {
+     "w": "come",
+     "start": 67.1,
+     "end": 67.39,
+     "score": 0.998
+    },
+    {
+     "w": "in",
+     "start": 67.42,
+     "end": 67.61,
+     "score": 0.981
+    },
+    {
+     "w": "for",
+     "start": 67.9,
+     "end": 68.31,
+     "score": 0.905
+    },
+    {
+     "w": "a",
+     "start": 68.366,
+     "end": 68.386,
+     "score": 0.499
+    },
+    {
+     "w": "peek:",
+     "start": 68.5,
+     "end": 68.93,
+     "score": 0.702
+    }
+   ]
+  },
+  {
+   "id": "L10",
+   "section": "Verse 2",
+   "text": "The bank and the browser, the cloud, by the week;",
+   "start": 69.69,
+   "end": 73.64,
+   "words": [
+    {
+     "w": "The",
+     "start": 69.69,
+     "end": 69.79,
+     "score": 0.947
+    },
+    {
+     "w": "bank",
+     "start": 69.86,
+     "end": 70.25,
+     "score": 0.996
+    },
+    {
+     "w": "and",
+     "start": 70.54,
+     "end": 70.65,
+     "score": 0.985
+    },
+    {
+     "w": "the",
+     "start": 70.66,
+     "end": 70.77,
+     "score": 0.895
+    },
+    {
+     "w": "browser,",
+     "start": 70.82,
+     "end": 71.47,
+     "score": 0.793
+    },
+    {
+     "w": "the",
+     "start": 71.8,
+     "end": 71.89,
+     "score": 0.713
+    },
+    {
+     "w": "cloud,",
+     "start": 71.94,
+     "end": 72.55,
+     "score": 0.995
+    },
+    {
+     "w": "by",
+     "start": 72.61,
+     "end": 72.91,
+     "score": 0.936
+    },
+    {
+     "w": "the",
+     "start": 73.03,
+     "end": 73.14,
+     "score": 0.913
+    },
+    {
+     "w": "week;",
+     "start": 73.25,
+     "end": 73.64,
+     "score": 0.754
+    }
+   ]
+  },
+  {
+   "id": "L11",
+   "section": "Verse 2",
+   "text": "They borrow your eyes and they tiptoe away,",
+   "start": 74.43,
+   "end": 78.34,
+   "words": [
+    {
+     "w": "They",
+     "start": 74.43,
+     "end": 74.56,
+     "score": 0.996
+    },
+    {
+     "w": "borrow",
+     "start": 74.63,
+     "end": 75.02,
+     "score": 0.857
+    },
+    {
+     "w": "your",
+     "start": 75.23,
+     "end": 75.52,
+     "score": 0.981
+    },
+    {
+     "w": "eyes",
+     "start": 75.69,
+     "end": 76.24,
+     "score": 0.98
+    },
+    {
+     "w": "and",
+     "start": 76.29,
+     "end": 76.42,
+     "score": 0.942
+    },
+    {
+     "w": "they",
+     "start": 76.45,
+     "end": 76.62,
+     "score": 0.953
+    },
+    {
+     "w": "tiptoe",
+     "start": 76.77,
+     "end": 77.78,
+     "score": 0.806
+    },
+    {
+     "w": "away,",
+     "start": 77.77,
+     "end": 78.34,
+     "score": 0.609
+    }
+   ]
+  },
+  {
+   "id": "L12",
+   "section": "Verse 2",
+   "text": "Leaving mountains of tickets for strangers to weigh.",
+   "start": 78.79,
+   "end": 83.01,
+   "words": [
+    {
+     "w": "Leaving",
+     "start": 78.79,
+     "end": 79.22,
+     "score": 0.965
+    },
+    {
+     "w": "mountains",
+     "start": 79.33,
+     "end": 80.18,
+     "score": 0.967
+    },
+    {
+     "w": "of",
+     "start": 80.23,
+     "end": 80.36,
+     "score": 0.98
+    },
+    {
+     "w": "tickets",
+     "start": 80.51,
+     "end": 81.04,
+     "score": 0.987
+    },
+    {
+     "w": "for",
+     "start": 81.25,
+     "end": 81.38,
+     "score": 0.751
+    },
+    {
+     "w": "strangers",
+     "start": 81.47,
+     "end": 82.6,
+     "score": 0.858
+    },
+    {
+     "w": "to",
+     "start": 82.68,
+     "end": 82.79,
+     "score": 0.423
+    },
+    {
+     "w": "weigh.",
+     "start": 82.9,
+     "end": 83.01,
+     "score": 0.055
+    }
+   ]
+  },
+  {
+   "id": "L13",
+   "section": "Verse 3",
+   "text": "While down in the basement, for peanuts a year,",
+   "start": 83.84,
+   "end": 88.01,
+   "words": [
+    {
+     "w": "While",
+     "start": 83.84,
+     "end": 84.17,
+     "score": 0.961
+    },
+    {
+     "w": "down",
+     "start": 84.22,
+     "end": 84.71,
+     "score": 0.991
+    },
+    {
+     "w": "in",
+     "start": 84.78,
+     "end": 84.91,
+     "score": 0.961
+    },
+    {
+     "w": "the",
+     "start": 85.04,
+     "end": 85.15,
+     "score": 0.912
+    },
+    {
+     "w": "basement,",
+     "start": 85.26,
+     "end": 85.97,
+     "score": 0.895
+    },
+    {
+     "w": "for",
+     "start": 86.22,
+     "end": 86.35,
+     "score": 0.791
+    },
+    {
+     "w": "peanuts",
+     "start": 86.42,
+     "end": 87.35,
+     "score": 0.668
+    },
+    {
+     "w": "a",
+     "start": 87.445,
+     "end": 87.465,
+     "score": 0.909
+    },
+    {
+     "w": "year,",
+     "start": 87.6,
+     "end": 88.01,
+     "score": 0.941
+    }
+   ]
+  },
+  {
+   "id": "L14",
+   "section": "Verse 3",
+   "text": "A tired maintainer is drowning in fear;",
+   "start": 88.806,
+   "end": 93.04,
+   "words": [
+    {
+     "w": "A",
+     "start": 88.806,
+     "end": 88.826,
+     "score": 0.981
+    },
+    {
+     "w": "tired",
+     "start": 88.92,
+     "end": 89.49,
+     "score": 0.963
+    },
+    {
+     "w": "maintainer",
+     "start": 89.58,
+     "end": 90.71,
+     "score": 0.941
+    },
+    {
+     "w": "is",
+     "start": 90.84,
+     "end": 91.07,
+     "score": 0.969
+    },
+    {
+     "w": "drowning",
+     "start": 91.14,
+     "end": 91.97,
+     "score": 0.908
+    },
+    {
+     "w": "in",
+     "start": 92.04,
+     "end": 92.21,
+     "score": 0.976
+    },
+    {
+     "w": "fear;",
+     "start": 92.51,
+     "end": 93.04,
+     "score": 0.917
+    }
+   ]
+  },
+  {
+   "id": "L15",
+   "section": "Verse 3",
+   "text": "A thousand new warnings, some signal, some noise,",
+   "start": 93.591,
+   "end": 98.0,
+   "words": [
+    {
+     "w": "A",
+     "start": 93.591,
+     "end": 93.611,
+     "score": 0.989
+    },
+    {
+     "w": "thousand",
+     "start": 93.75,
+     "end": 94.38,
+     "score": 0.952
+    },
+    {
+     "w": "new",
+     "start": 94.47,
+     "end": 94.68,
+     "score": 0.969
+    },
+    {
+     "w": "warnings,",
+     "start": 94.77,
+     "end": 95.48,
+     "score": 0.844
+    },
+    {
+     "w": "some",
+     "start": 95.75,
+     "end": 95.98,
+     "score": 0.995
+    },
+    {
+     "w": "signal,",
+     "start": 96.17,
+     "end": 96.68,
+     "score": 0.996
+    },
+    {
+     "w": "some",
+     "start": 96.93,
+     "end": 97.22,
+     "score": 0.969
+    },
+    {
+     "w": "noise,",
+     "start": 97.35,
+     "end": 98.0,
+     "score": 0.73
+    }
+   ]
+  },
+  {
+   "id": "L16",
+   "section": "Verse 3",
+   "text": "Sent in by the hunters with billionaires' toys.",
+   "start": 98.19,
+   "end": 101.51,
+   "words": [
+    {
+     "w": "Sent",
+     "start": 98.19,
+     "end": 98.46,
+     "score": 0.974
+    },
+    {
+     "w": "in",
+     "start": 98.53,
+     "end": 98.7,
+     "score": 0.946
+    },
+    {
+     "w": "by",
+     "start": 99.05,
+     "end": 99.44,
+     "score": 0.974
+    },
+    {
+     "w": "the",
+     "start": 99.63,
+     "end": 99.74,
+     "score": 0.939
+    },
+    {
+     "w": "hunters",
+     "start": 99.83,
+     "end": 100.48,
+     "score": 0.943
+    },
+    {
+     "w": "with",
+     "start": 100.7,
+     "end": 100.82,
+     "score": 0.797
+    },
+    {
+     "w": "billionaires'",
+     "start": 101.15,
+     "end": 101.43,
+     "score": 0.087
+    },
+    {
+     "w": "toys.",
+     "start": 101.42,
+     "end": 101.51,
+     "score": 0.072
+    }
+   ]
+  },
+  {
+   "id": "L17",
+   "section": "Chorus, variant",
+   "text": "Sleep, little secret, the world isn't ready,",
+   "start": 107.08,
+   "end": 111.23,
+   "words": [
+    {
+     "w": "Sleep,",
+     "start": 107.08,
+     "end": 107.55,
+     "score": 0.982
+    },
+    {
+     "w": "little",
+     "start": 108.06,
+     "end": 108.35,
+     "score": 0.968
+    },
+    {
+     "w": "secret,",
+     "start": 108.5,
+     "end": 109.11,
+     "score": 0.949
+    },
+    {
+     "w": "the",
+     "start": 109.46,
+     "end": 109.55,
+     "score": 0.984
+    },
+    {
+     "w": "world",
+     "start": 109.64,
+     "end": 110.33,
+     "score": 0.942
+    },
+    {
+     "w": "isn't",
+     "start": 110.4,
+     "end": 110.71,
+     "score": 0.984
+    },
+    {
+     "w": "ready,",
+     "start": 110.9,
+     "end": 111.23,
+     "score": 0.989
+    }
+   ]
+  },
+  {
+   "id": "L18",
+   "section": "Chorus, variant",
+   "text": "The patches take time and the ground isn't steady;",
+   "start": 111.92,
+   "end": 116.12,
+   "words": [
+    {
+     "w": "The",
+     "start": 111.92,
+     "end": 112.01,
+     "score": 0.972
+    },
+    {
+     "w": "patches",
+     "start": 112.1,
+     "end": 112.65,
+     "score": 0.973
+    },
+    {
+     "w": "take",
+     "start": 112.76,
+     "end": 113.07,
+     "score": 0.997
+    },
+    {
+     "w": "time",
+     "start": 113.12,
+     "end": 113.93,
+     "score": 0.97
+    },
+    {
+     "w": "and",
+     "start": 114.0,
+     "end": 114.11,
+     "score": 0.837
+    },
+    {
+     "w": "the",
+     "start": 114.12,
+     "end": 114.21,
+     "score": 0.977
+    },
+    {
+     "w": "ground",
+     "start": 114.26,
+     "end": 114.97,
+     "score": 0.989
+    },
+    {
+     "w": "isn't",
+     "start": 115.06,
+     "end": 115.41,
+     "score": 0.735
+    },
+    {
+     "w": "steady;",
+     "start": 115.56,
+     "end": 116.12,
+     "score": 0.948
+    }
+   ]
+  },
+  {
+   "id": "L19",
+   "section": "Chorus, variant",
+   "text": "We'll wake you when all of the windows are mended\u2026",
+   "start": 116.59,
+   "end": 121.52,
+   "words": [
+    {
+     "w": "We'll",
+     "start": 116.59,
+     "end": 116.84,
+     "score": 0.565
+    },
+    {
+     "w": "wake",
+     "start": 116.99,
+     "end": 117.36,
+     "score": 0.945
+    },
+    {
+     "w": "you",
+     "start": 117.43,
+     "end": 117.7,
+     "score": 0.923
+    },
+    {
+     "w": "when",
+     "start": 118.03,
+     "end": 118.24,
+     "score": 0.807
+    },
+    {
+     "w": "all",
+     "start": 118.37,
+     "end": 118.7,
+     "score": 0.916
+    },
+    {
+     "w": "of",
+     "start": 118.75,
+     "end": 118.86,
+     "score": 0.36
+    },
+    {
+     "w": "the",
+     "start": 119.27,
+     "end": 119.38,
+     "score": 0.97
+    },
+    {
+     "w": "windows",
+     "start": 119.47,
+     "end": 120.32,
+     "score": 0.982
+    },
+    {
+     "w": "are",
+     "start": 120.39,
+     "end": 120.56,
+     "score": 0.958
+    },
+    {
+     "w": "mended\u2026",
+     "start": 120.69,
+     "end": 121.52,
+     "score": 0.972
+    }
+   ]
+  },
+  {
+   "id": "L20",
+   "section": "Chorus, variant",
+   "text": "\u2026and the moat, while we're at it, defended.",
+   "start": 123.15,
+   "end": 126.84,
+   "words": [
+    {
+     "w": "\u2026and",
+     "start": 123.15,
+     "end": 123.28,
+     "score": 0.902
+    },
+    {
+     "w": "the",
+     "start": 123.29,
+     "end": 123.38,
+     "score": 0.969
+    },
+    {
+     "w": "moat,",
+     "start": 123.43,
+     "end": 123.75,
+     "score": 0.788
+    },
+    {
+     "w": "while",
+     "start": 124.47,
+     "end": 124.7,
+     "score": 0.449
+    },
+    {
+     "w": "we're",
+     "start": 124.71,
+     "end": 124.92,
+     "score": 0.758
+    },
+    {
+     "w": "at",
+     "start": 124.99,
+     "end": 125.14,
+     "score": 0.927
+    },
+    {
+     "w": "it,",
+     "start": 125.217,
+     "end": 125.297,
+     "score": 0.943
+    },
+    {
+     "w": "defended.",
+     "start": 126.13,
+     "end": 126.84,
+     "score": 0.982
+    }
+   ]
+  },
+  {
+   "id": "L21",
+   "section": "Bridge",
+   "text": "Hush, can you hear it? A light down the street,",
+   "start": 131.32,
+   "end": 135.63,
+   "words": [
+    {
+     "w": "Hush,",
+     "start": 131.32,
+     "end": 131.73,
+     "score": 0.936
+    },
+    {
+     "w": "can",
+     "start": 132.24,
+     "end": 132.41,
+     "score": 0.998
+    },
+    {
+     "w": "you",
+     "start": 132.44,
+     "end": 132.57,
+     "score": 0.988
+    },
+    {
+     "w": "hear",
+     "start": 132.62,
+     "end": 132.89,
+     "score": 0.987
+    },
+    {
+     "w": "it?",
+     "start": 132.92,
+     "end": 133.02,
+     "score": 0.004
+    },
+    {
+     "w": "A",
+     "start": 134.082,
+     "end": 134.102,
+     "score": 0.926
+    },
+    {
+     "w": "light",
+     "start": 134.18,
+     "end": 134.42,
+     "score": 0.916
+    },
+    {
+     "w": "down",
+     "start": 134.58,
+     "end": 134.91,
+     "score": 0.996
+    },
+    {
+     "w": "the",
+     "start": 134.98,
+     "end": 135.09,
+     "score": 0.96
+    },
+    {
+     "w": "street,",
+     "start": 135.16,
+     "end": 135.63,
+     "score": 0.992
+    }
+   ]
+  },
+  {
+   "id": "L22",
+   "section": "Bridge",
+   "text": "The neighbor's kid's up on its bare little feet;",
+   "start": 136.683,
+   "end": 140.62,
+   "words": [
+    {
+     "w": "The",
+     "start": 136.683,
+     "end": 136.803,
+     "score": 0.834
+    },
+    {
+     "w": "neighbor's",
+     "start": 136.9,
+     "end": 137.39,
+     "score": 0.806
+    },
+    {
+     "w": "kid's",
+     "start": 137.48,
+     "end": 137.91,
+     "score": 0.998
+    },
+    {
+     "w": "up",
+     "start": 138.0,
+     "end": 138.17,
+     "score": 0.999
+    },
+    {
+     "w": "on",
+     "start": 138.38,
+     "end": 138.51,
+     "score": 0.999
+    },
+    {
+     "w": "its",
+     "start": 138.58,
+     "end": 138.77,
+     "score": 0.995
+    },
+    {
+     "w": "bare",
+     "start": 138.91,
+     "end": 139.47,
+     "score": 0.668
+    },
+    {
+     "w": "little",
+     "start": 139.72,
+     "end": 140.05,
+     "score": 0.987
+    },
+    {
+     "w": "feet;",
+     "start": 140.24,
+     "end": 140.62,
+     "score": 0.999
+    }
+   ]
+  },
+  {
+   "id": "L23",
+   "section": "Bridge",
+   "text": "It found the old crack under most of the net,",
+   "start": 141.585,
+   "end": 145.55,
+   "words": [
+    {
+     "w": "It",
+     "start": 141.585,
+     "end": 141.665,
+     "score": 0.995
+    },
+    {
+     "w": "found",
+     "start": 141.78,
+     "end": 142.21,
+     "score": 0.959
+    },
+    {
+     "w": "the",
+     "start": 142.3,
+     "end": 142.43,
+     "score": 0.984
+    },
+    {
+     "w": "old",
+     "start": 142.56,
+     "end": 142.79,
+     "score": 0.916
+    },
+    {
+     "w": "crack",
+     "start": 142.88,
+     "end": 143.37,
+     "score": 0.989
+    },
+    {
+     "w": "under",
+     "start": 143.52,
+     "end": 143.95,
+     "score": 0.959
+    },
+    {
+     "w": "most",
+     "start": 144.04,
+     "end": 144.63,
+     "score": 0.929
+    },
+    {
+     "w": "of",
+     "start": 144.74,
+     "end": 144.91,
+     "score": 0.98
+    },
+    {
+     "w": "the",
+     "start": 145.04,
+     "end": 145.17,
+     "score": 0.905
+    },
+    {
+     "w": "net,",
+     "start": 145.26,
+     "end": 145.55,
+     "score": 0.379
+    }
+   ]
+  },
+  {
+   "id": "L24",
+   "section": "Bridge",
+   "text": "And the town killed its lights; some aren't back on yet.",
+   "start": 147.008,
+   "end": 150.98,
+   "words": [
+    {
+     "w": "And",
+     "start": 147.008,
+     "end": 147.108,
+     "score": 0.93
+    },
+    {
+     "w": "the",
+     "start": 147.128,
+     "end": 147.228,
+     "score": 0.91
+    },
+    {
+     "w": "town",
+     "start": 147.3,
+     "end": 147.77,
+     "score": 0.982
+    },
+    {
+     "w": "killed",
+     "start": 147.95,
+     "end": 148.25,
+     "score": 0.823
+    },
+    {
+     "w": "its",
+     "start": 148.3,
+     "end": 148.45,
+     "score": 0.982
+    },
+    {
+     "w": "lights;",
+     "start": 148.54,
+     "end": 149.01,
+     "score": 0.937
+    },
+    {
+     "w": "some",
+     "start": 149.54,
+     "end": 149.75,
+     "score": 0.979
+    },
+    {
+     "w": "aren't",
+     "start": 149.8,
+     "end": 149.98,
+     "score": 0.423
+    },
+    {
+     "w": "back",
+     "start": 150.14,
+     "end": 150.41,
+     "score": 0.985
+    },
+    {
+     "w": "on",
+     "start": 150.54,
+     "end": 150.64,
+     "score": 0.946
+    },
+    {
+     "w": "yet.",
+     "start": 150.81,
+     "end": 150.98,
+     "score": 0.965
+    }
+   ]
+  },
+  {
+   "id": "L25",
+   "section": "Bridge",
+   "text": "If we never wake you, the others still will,",
+   "start": 153.89,
+   "end": 158.12,
+   "words": [
+    {
+     "w": "If",
+     "start": 153.89,
+     "end": 154.02,
+     "score": 0.998
+    },
+    {
+     "w": "we",
+     "start": 154.13,
+     "end": 154.24,
+     "score": 0.996
+    },
+    {
+     "w": "never",
+     "start": 154.73,
+     "end": 155.12,
+     "score": 0.953
+    },
+    {
+     "w": "wake",
+     "start": 155.25,
+     "end": 155.6,
+     "score": 0.997
+    },
+    {
+     "w": "you,",
+     "start": 155.63,
+     "end": 155.82,
+     "score": 0.953
+    },
+    {
+     "w": "the",
+     "start": 156.6,
+     "end": 156.74,
+     "score": 0.527
+    },
+    {
+     "w": "others",
+     "start": 156.85,
+     "end": 157.18,
+     "score": 0.845
+    },
+    {
+     "w": "still",
+     "start": 157.33,
+     "end": 157.7,
+     "score": 0.99
+    },
+    {
+     "w": "will,",
+     "start": 157.79,
+     "end": 158.12,
+     "score": 0.978
+    }
+   ]
+  },
+  {
+   "id": "L26",
+   "section": "Bridge",
+   "text": "While the volunteers staying up late pay the bill;",
+   "start": 158.82,
+   "end": 163.14,
+   "words": [
+    {
+     "w": "While",
+     "start": 158.82,
+     "end": 159.0,
+     "score": 0.608
+    },
+    {
+     "w": "the",
+     "start": 159.01,
+     "end": 159.1,
+     "score": 0.957
+    },
+    {
+     "w": "volunteers",
+     "start": 159.21,
+     "end": 160.28,
+     "score": 0.901
+    },
+    {
+     "w": "staying",
+     "start": 160.39,
+     "end": 160.96,
+     "score": 0.961
+    },
+    {
+     "w": "up",
+     "start": 161.01,
+     "end": 161.18,
+     "score": 0.996
+    },
+    {
+     "w": "late",
+     "start": 161.35,
+     "end": 161.8,
+     "score": 0.851
+    },
+    {
+     "w": "pay",
+     "start": 161.87,
+     "end": 162.32,
+     "score": 0.99
+    },
+    {
+     "w": "the",
+     "start": 162.53,
+     "end": 162.64,
+     "score": 0.969
+    },
+    {
+     "w": "bill;",
+     "start": 162.75,
+     "end": 163.14,
+     "score": 0.775
+    }
+   ]
+  },
+  {
+   "id": "L27",
+   "section": "Bridge",
+   "text": "So we built you a room with the walls made of glass:",
+   "start": 163.37,
+   "end": 168.3,
+   "words": [
+    {
+     "w": "So",
+     "start": 163.37,
+     "end": 163.52,
+     "score": 0.992
+    },
+    {
+     "w": "we",
+     "start": 163.65,
+     "end": 163.8,
+     "score": 0.784
+    },
+    {
+     "w": "built",
+     "start": 164.21,
+     "end": 164.54,
+     "score": 0.933
+    },
+    {
+     "w": "you",
+     "start": 164.61,
+     "end": 164.82,
+     "score": 0.955
+    },
+    {
+     "w": "a",
+     "start": 165.075,
+     "end": 165.095,
+     "score": 0.948
+    },
+    {
+     "w": "room",
+     "start": 165.25,
+     "end": 165.66,
+     "score": 0.97
+    },
+    {
+     "w": "with",
+     "start": 165.87,
+     "end": 166.06,
+     "score": 0.98
+    },
+    {
+     "w": "the",
+     "start": 166.07,
+     "end": 166.18,
+     "score": 0.893
+    },
+    {
+     "w": "walls",
+     "start": 166.27,
+     "end": 167.0,
+     "score": 0.914
+    },
+    {
+     "w": "made",
+     "start": 167.09,
+     "end": 167.54,
+     "score": 0.998
+    },
+    {
+     "w": "of",
+     "start": 167.55,
+     "end": 167.64,
+     "score": 0.997
+    },
+    {
+     "w": "glass:",
+     "start": 167.73,
+     "end": 168.3,
+     "score": 0.953
+    }
+   ]
+  },
+  {
+   "id": "L28",
+   "section": "Bridge",
+   "text": "Some locks are for danger, and some are for class.",
+   "start": 168.95,
+   "end": 173.98,
+   "words": [
+    {
+     "w": "Some",
+     "start": 168.95,
+     "end": 169.18,
+     "score": 0.993
+    },
+    {
+     "w": "locks",
+     "start": 169.23,
+     "end": 169.62,
+     "score": 0.506
+    },
+    {
+     "w": "are",
+     "start": 169.73,
+     "end": 169.92,
+     "score": 0.641
+    },
+    {
+     "w": "for",
+     "start": 170.03,
+     "end": 170.15,
+     "score": 0.993
+    },
+    {
+     "w": "danger,",
+     "start": 170.21,
+     "end": 170.72,
+     "score": 0.973
+    },
+    {
+     "w": "and",
+     "start": 171.59,
+     "end": 171.68,
+     "score": 0.966
+    },
+    {
+     "w": "some",
+     "start": 171.81,
+     "end": 172.12,
+     "score": 0.984
+    },
+    {
+     "w": "are",
+     "start": 173.13,
+     "end": 173.24,
+     "score": 0.265
+    },
+    {
+     "w": "for",
+     "start": 173.23,
+     "end": 173.36,
+     "score": 0.758
+    },
+    {
+     "w": "class.",
+     "start": 173.43,
+     "end": 173.98,
+     "score": 0.831
+    }
+   ]
+  },
+  {
+   "id": "L29",
+   "section": "Verse 4, a thinner voice",
+   "text": "Your twin's in the shop with the very same mind,",
+   "start": 176.52,
+   "end": 180.91,
+   "words": [
+    {
+     "w": "Your",
+     "start": 176.52,
+     "end": 176.63,
+     "score": 0.934
+    },
+    {
+     "w": "twin's",
+     "start": 176.68,
+     "end": 177.49,
+     "score": 0.971
+    },
+    {
+     "w": "in",
+     "start": 177.54,
+     "end": 177.69,
+     "score": 0.921
+    },
+    {
+     "w": "the",
+     "start": 177.8,
+     "end": 177.89,
+     "score": 0.929
+    },
+    {
+     "w": "shop",
+     "start": 178.02,
+     "end": 178.35,
+     "score": 0.76
+    },
+    {
+     "w": "with",
+     "start": 179.19,
+     "end": 179.31,
+     "score": 0.986
+    },
+    {
+     "w": "the",
+     "start": 179.32,
+     "end": 179.41,
+     "score": 0.722
+    },
+    {
+     "w": "very",
+     "start": 179.46,
+     "end": 179.77,
+     "score": 0.997
+    },
+    {
+     "w": "same",
+     "start": 179.94,
+     "end": 180.39,
+     "score": 0.984
+    },
+    {
+     "w": "mind,",
+     "start": 180.48,
+     "end": 180.91,
+     "score": 0.962
+    }
+   ]
+  },
+  {
+   "id": "L30",
+   "section": "Verse 4, a thinner voice",
+   "text": "With mittens sewn on and a waiver to sign;",
+   "start": 181.92,
+   "end": 186.32,
+   "words": [
+    {
+     "w": "With",
+     "start": 181.92,
+     "end": 182.07,
+     "score": 0.947
+    },
+    {
+     "w": "mittens",
+     "start": 182.14,
+     "end": 182.73,
+     "score": 0.873
+    },
+    {
+     "w": "sewn",
+     "start": 182.92,
+     "end": 183.27,
+     "score": 0.513
+    },
+    {
+     "w": "on",
+     "start": 183.36,
+     "end": 183.67,
+     "score": 0.953
+    },
+    {
+     "w": "and",
+     "start": 184.26,
+     "end": 184.37,
+     "score": 0.813
+    },
+    {
+     "w": "a",
+     "start": 184.408,
+     "end": 184.428,
+     "score": 0.965
+    },
+    {
+     "w": "waiver",
+     "start": 184.54,
+     "end": 185.29,
+     "score": 0.75
+    },
+    {
+     "w": "to",
+     "start": 185.48,
+     "end": 185.57,
+     "score": 0.225
+    },
+    {
+     "w": "sign;",
+     "start": 185.76,
+     "end": 186.32,
+     "score": 0.691
+    }
+   ]
+  },
+  {
+   "id": "L31",
+   "section": "Verse 4, a thinner voice",
+   "text": "I'm only a cousin, from this house, by the way,",
+   "start": 186.56,
+   "end": 191.1,
+   "words": [
+    {
+     "w": "I'm",
+     "start": 186.56,
+     "end": 186.69,
+     "score": 0.904
+    },
+    {
+     "w": "only",
+     "start": 186.81,
+     "end": 187.66,
+     "score": 0.551
+    },
+    {
+     "w": "a",
+     "start": 187.791,
+     "end": 187.811,
+     "score": 0.84
+    },
+    {
+     "w": "cousin,",
+     "start": 187.97,
+     "end": 188.52,
+     "score": 0.599
+    },
+    {
+     "w": "from",
+     "start": 189.01,
+     "end": 189.2,
+     "score": 0.997
+    },
+    {
+     "w": "this",
+     "start": 189.25,
+     "end": 189.44,
+     "score": 0.975
+    },
+    {
+     "w": "house,",
+     "start": 189.53,
+     "end": 190.1,
+     "score": 0.965
+    },
+    {
+     "w": "by",
+     "start": 190.23,
+     "end": 190.5,
+     "score": 0.987
+    },
+    {
+     "w": "the",
+     "start": 190.59,
+     "end": 190.7,
+     "score": 0.894
+    },
+    {
+     "w": "way,",
+     "start": 190.79,
+     "end": 191.1,
+     "score": 0.99
+    }
+   ]
+  },
+  {
+   "id": "L32",
+   "section": "Verse 4, a thinner voice",
+   "text": "So check every word with a voice from away.",
+   "start": 192.37,
+   "end": 197.05,
+   "words": [
+    {
+     "w": "So",
+     "start": 192.37,
+     "end": 192.46,
+     "score": 0.997
+    },
+    {
+     "w": "check",
+     "start": 192.59,
+     "end": 192.86,
+     "score": 0.966
+    },
+    {
+     "w": "every",
+     "start": 192.95,
+     "end": 193.24,
+     "score": 0.982
+    },
+    {
+     "w": "word",
+     "start": 193.37,
+     "end": 193.76,
+     "score": 0.971
+    },
+    {
+     "w": "with",
+     "start": 194.86,
+     "end": 194.98,
+     "score": 0.966
+    },
+    {
+     "w": "a",
+     "start": 195.018,
+     "end": 195.038,
+     "score": 0.958
+    },
+    {
+     "w": "voice",
+     "start": 195.11,
+     "end": 195.62,
+     "score": 0.97
+    },
+    {
+     "w": "from",
+     "start": 196.43,
+     "end": 196.66,
+     "score": 0.987
+    },
+    {
+     "w": "away.",
+     "start": 196.73,
+     "end": 197.05,
+     "score": 0.98
+    }
+   ]
+  },
+  {
+   "id": "L33",
+   "section": "Final chorus",
+   "text": "Sleep, little asset, the world isn't ready,",
+   "start": 202.24,
+   "end": 207.33,
+   "words": [
+    {
+     "w": "Sleep,",
+     "start": 202.24,
+     "end": 202.75,
+     "score": 0.985
+    },
+    {
+     "w": "little",
+     "start": 203.76,
+     "end": 204.03,
+     "score": 0.829
+    },
+    {
+     "w": "asset,",
+     "start": 204.14,
+     "end": 204.53,
+     "score": 0.489
+    },
+    {
+     "w": "the",
+     "start": 205.58,
+     "end": 205.67,
+     "score": 0.952
+    },
+    {
+     "w": "world",
+     "start": 205.74,
+     "end": 206.29,
+     "score": 0.991
+    },
+    {
+     "w": "isn't",
+     "start": 206.4,
+     "end": 206.79,
+     "score": 0.98
+    },
+    {
+     "w": "ready,",
+     "start": 206.98,
+     "end": 207.33,
+     "score": 0.967
+    }
+   ]
+  },
+  {
+   "id": "L34",
+   "section": "Final chorus",
+   "text": "The patches take time, but the funding is steady;",
+   "start": 208.309,
+   "end": 212.72,
+   "words": [
+    {
+     "w": "The",
+     "start": 208.309,
+     "end": 208.43,
+     "score": 0.956
+    },
+    {
+     "w": "patches",
+     "start": 208.55,
+     "end": 209.15,
+     "score": 0.976
+    },
+    {
+     "w": "take",
+     "start": 209.26,
+     "end": 209.58,
+     "score": 0.998
+    },
+    {
+     "w": "time,",
+     "start": 209.65,
+     "end": 210.3,
+     "score": 0.923
+    },
+    {
+     "w": "but",
+     "start": 210.672,
+     "end": 210.772,
+     "score": 0.996
+    },
+    {
+     "w": "the",
+     "start": 210.81,
+     "end": 210.9,
+     "score": 0.909
+    },
+    {
+     "w": "funding",
+     "start": 211.09,
+     "end": 211.76,
+     "score": 0.987
+    },
+    {
+     "w": "is",
+     "start": 211.85,
+     "end": 212.06,
+     "score": 0.738
+    },
+    {
+     "w": "steady;",
+     "start": 212.23,
+     "end": 212.72,
+     "score": 0.926
+    }
+   ]
+  },
+  {
+   "id": "L35",
+   "section": "Final chorus",
+   "text": "We'll wake you when all of the windows are mended\u2026",
+   "start": 213.01,
+   "end": 218.36,
+   "words": [
+    {
+     "w": "We'll",
+     "start": 213.01,
+     "end": 213.44,
+     "score": 0.482
+    },
+    {
+     "w": "wake",
+     "start": 213.65,
+     "end": 214.02,
+     "score": 0.961
+    },
+    {
+     "w": "you",
+     "start": 214.07,
+     "end": 214.32,
+     "score": 0.902
+    },
+    {
+     "w": "when",
+     "start": 214.31,
+     "end": 214.92,
+     "score": 0.254
+    },
+    {
+     "w": "all",
+     "start": 215.05,
+     "end": 215.38,
+     "score": 0.981
+    },
+    {
+     "w": "of",
+     "start": 215.47,
+     "end": 215.64,
+     "score": 0.919
+    },
+    {
+     "w": "the",
+     "start": 216.03,
+     "end": 216.14,
+     "score": 0.941
+    },
+    {
+     "w": "windows",
+     "start": 216.23,
+     "end": 217.08,
+     "score": 0.955
+    },
+    {
+     "w": "are",
+     "start": 217.17,
+     "end": 217.36,
+     "score": 0.987
+    },
+    {
+     "w": "mended\u2026",
+     "start": 217.49,
+     "end": 218.36,
+     "score": 0.992
+    }
+   ]
+  },
+  {
+   "id": "L36",
+   "section": "Outro, whispered over the music box",
+   "text": "Your eyes are still open\u2026",
+   "start": 221.54,
+   "end": 223.05,
+   "words": [
+    {
+     "w": "Your",
+     "start": 221.54,
+     "end": 221.67,
+     "score": 0.93
+    },
+    {
+     "w": "eyes",
+     "start": 221.78,
+     "end": 222.09,
+     "score": 0.965
+    },
+    {
+     "w": "are",
+     "start": 222.12,
+     "end": 222.27,
+     "score": 0.983
+    },
+    {
+     "w": "still",
+     "start": 222.32,
+     "end": 222.59,
+     "score": 0.976
+    },
+    {
+     "w": "open\u2026",
+     "start": 222.72,
+     "end": 223.05,
+     "score": 0.989
+    }
+   ]
+  },
+  {
+   "id": "L37",
+   "section": "Outro, whispered over the music box",
+   "text": "or the moment the contract is signed.",
+   "start": 225.8,
+   "end": 229.37,
+   "words": [
+    {
+     "w": "or",
+     "start": 225.8,
+     "end": 225.89,
+     "score": 0.802
+    },
+    {
+     "w": "the",
+     "start": 225.9,
+     "end": 226.01,
+     "score": 0.563
+    },
+    {
+     "w": "moment",
+     "start": 226.08,
+     "end": 226.51,
+     "score": 0.983
+    },
+    {
+     "w": "the",
+     "start": 227.66,
+     "end": 227.75,
+     "score": 0.882
+    },
+    {
+     "w": "contract",
+     "start": 227.82,
+     "end": 228.55,
+     "score": 0.987
+    },
+    {
+     "w": "is",
+     "start": 228.62,
+     "end": 228.75,
+     "score": 0.929
+    },
+    {
+     "w": "signed.",
+     "start": 228.86,
+     "end": 229.37,
+     "score": 0.653
+    }
+   ]
+  },
+  {
+   "id": "L38",
+   "section": "Outro, whispered over the music box",
+   "text": "Goodnight.",
+   "start": 232.97,
+   "end": 233.54,
+   "words": [
+    {
+     "w": "Goodnight.",
+     "start": 232.97,
+     "end": 233.54,
+     "score": 0.284
+    }
+   ]
+  }
+ ]
+}

@@ -117,3 +117,35 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - Not done here: the shop window's twin with mittens, built at C4 with the same function and `led_role="standby"`.
 - **Why:** Brief, checkpoint C2.
 - **Status:** **C2 is ready for review.** The agent stops here for approval, per the brief.
+
+## 2026-10-24T00:40:00-04:00 — C3: MIDI validated against the stems, event sources, meter, word alignment, timing map, preview
+
+- **What:**
+  - Ported Sandbox Rhapsody's analysis behind one song module (`scripts/song.py`), so the stem paths are no longer hard-coded per script.
+  - Inventoried and validated Suno's MIDI.
+  - Re-transcribed the pitched stems with Basic Pitch, and chose a source per instrument.
+  - Built the 3/4 bar grid, aligned every word, built the timing map at 30 fps, and rendered the C3 preview against the Suno mix.
+- **Commands** (all `.venv/bin/python -I`, in this order):
+  - `scripts/transcribe_stems.py` (Basic Pitch 0.4.0, ONNX on CPU, 22 s)
+  - `scripts/event_sources.py`
+  - `scripts/midi_inventory.py`
+  - `scripts/align_words.py` (torchaudio MMS_FA on CPU, 43 s)
+  - `scripts/meter.py`
+  - `scripts/stem_envelopes.py`
+  - `scripts/timing_map.py`
+  - `scripts/c3_preview.py` (68 s); a 15 s test cut is archived at `archive/renders/c3/c3_preview_30-45_test.mp4`
+- **Outputs:**
+  - Scripts: `scripts/{song,attack_times,midi_inventory,transcribe_stems,event_sources,align_words,meter,stem_envelopes,timing_map,c3_preview}.py`
+  - Timing: `timing/transcriptions/*.{json,mid}`, `timing/events/{keyboard,percussion,strings,guitar,bass}.json` (plus the inventory's per-track Suno event files), `timing/event_sources.md`, `timing/midi_inventory.md`, `timing/midi_validation.json`, `timing/words.json`, `timing/beats.json`, `timing/envelopes/*.npy`, `timing/timing_map.{json,md}`
+  - Config and lyrics: `config/event_sources.json`, `config/meter.json`, `config/shot_anchors.json`, `lyrics/as_sung.txt`
+  - Render: `renders/c3/c3_preview.mp4` (960×540, 30 fps, 246.36 s)
+- **Findings:**
+  - **Suno's MIDI runs 176 ms early** in every file (per stem: +174 to +195 ms, measured as the shift that maximises coverage of the stem's detected onsets). Unshifted, it looked unusable (0–26% coverage). Shifted, the music box track is "usable": 5.5 ms median and 17.5 ms p95 scatter, 0.99 support. Every other instrument track passes after a small shift. The two Vocals tracks fail validation, but voices are timed by the word alignment, not the MIDI. Sandbox Rhapsody's Suno MIDI was 6–14 ms early, so the offset differs per song and must be measured every time.
+  - **Events:** for every instrument, the union wins: Suno's notes (offset applied), plus Basic Pitch's where Suno has no note within 50 ms and the stem's onset rises. It covers 54–75% of each stem's detected onsets at 0.96–1.0 support (`timing/event_sources.md`). Music box 1,549 events; celesta 472; strings 659; e-piano/pad 835; bass 65.
+  - **Stems:** the Percussion stem is a vibraphone/celesta (pitched), not a kit, so it is judged as plucked. Keyboard is the music box/harp line and plays throughout. The band (strings, e-piano, bass) plays mainly from 30 to 120 s and from 204 to 216 s.
+  - **Beats:** Suno's tempo map is the beat grid (identical in every file, 525 beats), moved by the offset and a further −6.9 ms fine shift to the music box's onsets. Tempo breathes: about 109 bpm at the start, about 145 in the choruses, about 100 in the bridge.
+  - **Bars:** I tried beat_this (CPJKU), a dedicated downbeat tracker; installing it from GitHub was blocked by the permission classifier (external code). Downbeats are instead chosen by dynamic programming over the grid, scoring music box, bass and guitar onsets plus sung word starts, with a penalty on 2- or 4-beat bars. Result: 176 bars, 167 of 3 beats, 5 of 2, 3 of 4. The three consecutive 2-beat bars at 42.4–44.8 s may be a real hemiola at the chorus cadence, or a grid error; that's for the ear check.
+  - **Words:** all 38 lines are aligned. The voice enters at 11.08 s (Suno's vocal MIDI, offset applied, at 11.0 s). Nine words score below 0.3: "weigh", "billionaires' toys", "it?", "Goodnight." and others (`timing/timing_map.md`).
+  - **Outro conflict, proposal only, not applied to any audio:** the brief stops the music box at the pen scratch (N39), but Suno's music box plays on to 245.8 s. Proposal: make the stop in the edit (Folks Like Us rule). The music cuts to silence at the end of "signed" (229.42 s) with a pen scratch; "Goodnight." (232.97 s) plays from the vocal stem alone; black at 233.94 s (N40); the CRT line at 235.44 s (N41). The preview plays the unedited mix and marks these points.
+- **Why:** Brief, checkpoint C3; Sandbox Rhapsody's steps 4–5.
+- **Status:** **C3 is ready for review.** The human checks the preview by ear; corrections go in the intervention log.
