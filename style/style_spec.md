@@ -100,7 +100,7 @@ on the hill and a tungsten slit under the floor. Nothing is saturated except tho
 | Light | Value | Role |
 | --- | --- | --- |
 | Hall spots | two 420 W spots from the ceiling (8.6 m) onto the plinth, cone 32° | `key` |
-| Moon | sun 1.6, through the tall window from behind and above | `moon` |
+| Moon | sun 1.6, through the back window from behind and above | `moon` |
 | Door key | 60 W soft area from the front | `moon`: lets the pastel read as pastel |
 | Rims | two 300 W areas behind the room, specular 0.25 | `rim`: they draw the steel frame against the dark |
 | Night-light | 30 W point inside the projector dome | `comfort` |
@@ -110,17 +110,27 @@ on the hill and a tungsten slit under the floor. Nothing is saturated except tho
 | Haze | volume density 0.004 through the hall | the moonlight and the projector read as beams |
 | Bloom | threshold 1.5, size 0.45, strength 0.55 | softer than Sandbox Rhapsody's (4.0, 0.3): stars, porch lights and the glint glow |
 
-- **AgX, Base Contrast**, not Sandbox Rhapsody's Punchy: the lullaby wants soft shoulders, not snap.
+- **AgX, Base Contrast**, not Sandbox Rhapsody's Punchy: the lullaby wants soft shoulders, not snap. **Exposure −0.4** (C1 v2: the human asked for "a little darker").
 - **Practicals do the moving.** The night-light, the stars, the glint, the comb glow and the neighbor's window are the
   lights that change, each driven by notes or the timing map. The hall's lights stay constant, apart from the moon's
   slow travel (the moonlight clock).
-- **The moonlight clock.** The sun's direction is keyed so the window's patch starts at the window's base at N02 and
+- **The moonlight clock.** The sun's direction is keyed so the back window's patch starts at the window's base at N02 and
   reaches the crib at N38 (texture pass). C1 shows it mid-song.
 
 ## The set as built for C1
 
-- **Hall:** 22 × 26 m, 9 m high. The tall window (3.2 × 7 m, 4 × 8 panes) is in the back wall. A taped hall window
-  is behind the camera's start (N09). The shop window is in the right wall.
+- **Hall:** 22 × 26 m, 9 m high, with the shop window in the right wall.
+- **The windows (C1 v2, after the human's review).** Every hall window is a square four-pane sash split by a heavy
+  cross mullion, so the chorus's "windows" can carry the Microsoft Windows play. It's the plain architectural form,
+  never coloured, tilted or waved, so it stays generic (brief: no real logos).
+  - **Back window:** 4.4 m square, sill at 1.2 m, left of centre. From the wide camera, the moon sits in its
+    upper-left pane and the neighbor's amber window in its upper-right. The hill is low (8 m), so sky silhouettes
+    the cross.
+  - **Front window:** 2.2 m square, glazed, behind the camera's start, with the night sky glowing faintly behind it.
+    Its upper -X pane is taped with an X over an old crack. The new hairline crack (`crack_new["grow"]`) starts
+    beside the tape and grows on "…and windows are never quite mended" (N10). It's seen in the glass room's
+    reflection at N09 and N10. Straight on, as in the C1 frame, the backlit blue 2×2 is very close to the current
+    logo, so the shot list keeps it a reflection at an angle, not a straight-on hold. That's a C4 check.
 - **Plinth:** 5.6 m square, 0.4 m high, steel edge band, and the tungsten slit at its front base.
 - **Glass room:** 4 m square, 2.8 m high, one pane per metre on a steel frame, glass roof on ribs, and frost inside the bottom edge.
 - **The door:** Sandbox Rhapsody's vault door (chrome rim, ten bolts, handwheel, untouched black dial), scaled to
@@ -132,8 +142,8 @@ on the hill and a tungsten slit under the floor. Nothing is saturated except tho
   Sandbox Rhapsody's music box (recoloured) and the baby monitor; and the growth chart leaning on the back glass.
 - **Stars:** 320 seeded directions (seed 41) from the projector, cast onto the glass walls and roof as 5-point
   stars. C1 shows 85%, 242 placed. The projector's rotation and the per-chorus additions come at C3/C4.
-- **Street:** a night sky, the moon and a 21 m hill of thirteen houses with porch lights. The neighbor's house is
-  placed so the tall window frames its upstairs amber window from the wide camera.
+- **Street:** a night sky, the moon and an 8 m hill of thirteen houses with porch lights. The neighbor's house is
+  placed so the back window frames its upstairs amber window from the wide camera.
 - **Shop window:** a fluorescent display box with an identical crib, the glint, `COMING SOON` on the rail, a dark
   screen for verse 4, and the baby monitor's receiver. The twin probe and its mittens come at C2.
 - **Basement:** not built for C1. Only the slit shows it.
@@ -154,7 +164,7 @@ no pop or overshoot (unlike Ghost in the Machine and Sandbox Rhapsody), and line
 is set in Inter's lighter weight. The N34 check marks are drawn in a different hand (Instrument Serif Italic,
 in `paper`; green is the probe's alone).
 
-## Open for C1 review
+## Open for C1 review (v2)
 
 - 60 fps against 30 fps with motion blur (cost above).
 - The pastel: lavender `#c8c0e4`.

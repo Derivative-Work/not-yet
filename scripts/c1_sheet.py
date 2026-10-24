@@ -1,8 +1,8 @@
-"""C1 review sheet: the two test frames (wide, close) above a strip of the six colour-role swatches with their hex values.
+"""C1 review sheet: the test frames (wide, close, and any more), side by side, above a strip of the six colour-role swatches with their hex values.
 
 There are no reference videos in this project (the look follows the brief and Sandbox Rhapsody's spec), so unlike
 Sandbox Rhapsody's sheet this one holds only this video's own frames.
-Usage: .venv/bin/python -I scripts/c1_sheet.py <wide.png> <close.png> <out.jpg>
+Usage: .venv/bin/python -I scripts/c1_sheet.py <title> <frame.png>... <out.jpg>
 """
 import json
 import sys
@@ -15,21 +15,23 @@ ROLES = [("house", "The house and its glass"), ("comfort", "Comfort"), ("standby
 
 
 def main():
-    wide, close, out = sys.argv[1:4]
+    title, frames, out = sys.argv[1], sys.argv[2:-1], sys.argv[-1]
     look = json.load(open("config/look.json"))
     font = ImageFont.truetype("assets/fonts/Inter-Medium-flat.ttf", 20)
     mono = ImageFont.truetype("assets/fonts/JetBrainsMono-SemiBold-flat.ttf", 18)
-    a, b = Image.open(wide).convert("RGB"), Image.open(close).convert("RGB")
-    fw, fh = a.size
+    ims = [Image.open(f).convert("RGB") for f in frames]
+    fw, fh = ims[0].size
+    if len(ims) > 2:  # keep the sheet about two frames wide
+        fw, fh = fw * 2 // len(ims), fh * 2 // len(ims)
+        ims = [im.resize((fw, fh), Image.LANCZOS) for im in ims]
     sw_h = 120
-    W = 2 * fw + 3 * PAD
+    W = len(ims) * fw + (len(ims) + 1) * PAD
     H = PAD + LABEL + fh + PAD + LABEL + sw_h + PAD
     sheet = Image.new("RGB", (W, H), look["palette"]["void"])
     d = ImageDraw.Draw(sheet)
-    d.text((PAD, PAD + 2), "Not Yet, C1 test frames: wide (N29 / thumbnail view), close (N07, the vault door)",
-           fill=look["palette"]["paper"], font=font)
-    sheet.paste(a, (PAD, PAD + LABEL))
-    sheet.paste(b, (2 * PAD + fw, PAD + LABEL))
+    d.text((PAD, PAD + 2), title, fill=look["palette"]["paper"], font=font)
+    for k, im in enumerate(ims):
+        sheet.paste(im, (PAD + k * (fw + PAD), PAD + LABEL))
     y = PAD + LABEL + fh + PAD
     d.text((PAD, y + 2), "Colour roles (config/look.json)", fill=look["palette"]["paper"], font=font)
     y += LABEL

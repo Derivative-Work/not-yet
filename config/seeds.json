@@ -5,6 +5,10 @@
     "stars": {
       "seed": "main",
       "used_by": "scenes/blender/sets/nursery.py projected_stars: star directions and sizes"
+    },
+    "cracks": {
+      "seed": "main (+1 for the new crack)",
+      "used_by": "scenes/blender/sets/nursery.py crack: the hall window's crack shapes"
     }
   }
 }

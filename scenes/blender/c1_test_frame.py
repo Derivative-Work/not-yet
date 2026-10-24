@@ -2,13 +2,14 @@
 
 Builds the whole set (scenes/blender/sets/nursery.py) posed as a late-song still (walls crowded with stars, frost
 half gone, the neighbor's window lit) and frames it:
-  wide   the N29 / thumbnail view: the glass room glowing in the dark hall, the tall window and the amber window
+  wide   the N29 / thumbnail view: the glass room glowing in the dark hall, the back window (four panes: the moon in one, the amber window in another)
          on the hill behind it
+  hallwin  the front wall's four-pane window straight on, the taped pane and the new crack (N09/N10's subject)
   close  outside the vault door at N07: the sticky note, the dial, and the nursery through the glass (crib, mobile,
          projector, chair), for the materials (glass, frost, felt, steel)
 Deterministic: the star scatter reads its seed from config/seeds.json.
 
-Usage: blender -b --factory-startup --python scenes/blender/c1_test_frame.py -- <out.png> [width height samples [wide|close]]
+Usage: blender -b --factory-startup --python scenes/blender/c1_test_frame.py -- <out.png> [width height samples [wide|close|hallwin]]
 """
 import math
 import sys
@@ -43,10 +44,15 @@ S["door"]["open"] = 0.0
 S["street_neighbor"]["amber"] = 1.0
 
 if framing == "wide":
-    # Low three-quarter from front left, far enough back that the tall window and the hill sit above the room.
+    # Low three-quarter from front left, far enough left that the back window sits clear of the room.
     eye = Vector((-6.0, -8.2, 1.5))
     target = Vector((0.3, 1.0, 2.3))
     K.camera("cam", eye, target, lens=27, dof_fstop=8.0, focus=(eye - Vector((0, 0, 1.6))).length)
+elif framing == "hallwin":
+    # Straight on at the front wall's four-pane window, the new crack half grown (N10's "never quite mended").
+    S["crack_new"]["grow"] = 0.6
+    eye = Vector((-4.0, -9.0, 2.6))
+    K.camera("cam", eye, Vector((-4.0, -14.0, 2.6)), lens=40, dof_fstop=8.0, focus=5.0)
 else:
     # Outside the front wall, right of the door: the note in focus at left, the nursery through the glass at right.
     eye = Vector((1.85, -4.3, 1.6))

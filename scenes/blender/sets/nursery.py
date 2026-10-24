@@ -1,12 +1,12 @@
 """The one set (brief, "The set"): a glass nursery on a low plinth in a dark, museum-like hall, with the street through
-a tall window at the back and the shop window across the hall.
+a four-pane window at the back and the shop window across the hall.
 
 Layout (metres, Z up, the camera's push starts at -Y):
-  hall        x -11..11, y -14..12, ceiling 9; tall window in the back wall (+Y) at x 0
+  hall        x -11..11, y -14..12, ceiling 9; a four-pane window in the back wall (+Y), a smaller one in the front
   plinth      5.6 m square, 0.4 m high, centred on the origin; the glass room stands on it
   glass room  4 m square, 2.8 m high (x, y -2..2, z 0.4..3.2); the vault door in its front (-Y) wall
   shop window in the +X wall at y 0, facing the glass room
-  street      outside the tall window: a hill of small houses, y 40..70
+  street      outside the back window: a hill of small houses, y 40..70
 
 Everything is procedural. The only random process is the star scatter, seeded from config/seeds.json. Rigs expose
 custom properties for the note-driven library (sr_anim), all 0-1 unless noted:
@@ -34,8 +34,9 @@ PL_H = 0.4          # plinth height: the nursery floor
 ROOM = 2.0          # glass room half-width
 ROOM_H = 2.8        # glass room height
 TOP = PL_H + ROOM_H
-HILL = 21.0         # the street's hill height behind the window: high enough to show above the glass room
-MOON_AT = (19.0, 92.0, 25.0)  # in the tall window from the wide camera
+HILL = 8.0          # the street's hill: low enough that sky silhouettes the back window's cross mullion
+MOON_AT = (13.5, 94.0, 16.9)  # in the back window's upper-left pane from the wide C1 camera
+WINDOW_X = -1.0     # the back window's centre
 
 
 # ---------------------------------------------------------------- materials (this video's surfaces)
@@ -190,47 +191,124 @@ def light(name, kind, loc, power, role, size=0.1, target=None, spot=None, specul
 
 # ---------------------------------------------------------------- the hall
 
+def crack(name, mat, origin, length, seed, parent=None, branches=2):
+    """A hairline crack in a pane (local XZ plane, Y toward the viewer): a jagged ribbon from `origin` with a couple of
+    short branches. "grow" (0-1) on the returned root reveals it from its origin outward (N10's new crack)."""
+    rnd = random.Random(seed)
+    root = K.empty(name, origin, parent)
+    K.prop(root, "grow", 1.0)
+    bm = bmesh.new()
+
+    def ribbon(p, ang, L, w):
+        pts = [p]
+        n = 9
+        for _ in range(n):
+            ang += rnd.uniform(-0.55, 0.55)
+            p = p + Vector((math.cos(ang), 0, math.sin(ang))) * (L / n)
+            pts.append(p)
+        for a, b in zip(pts, pts[1:]):
+            d = (b - a).normalized()
+            nrm = Vector((-d.z, 0, d.x)) * w
+            bm.faces.new([bm.verts.new(v) for v in (a - nrm, b - nrm, b + nrm, a + nrm)])
+        return pts
+
+    main = ribbon(Vector((0, 0, 0)), rnd.uniform(0, math.tau), length, 0.0022)
+    for k in range(branches):
+        at = main[rnd.randint(2, 7)]
+        ribbon(at, rnd.uniform(0, math.tau), length * 0.35, 0.0015)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = K.link(bpy.data.objects.new(f"{name}.lines", me))
+    o.parent = root
+    o.data.materials.append(mat)
+    o.visible_shadow = False
+    K.drive(o, "scale", 0, root, "grow", "max(x, 0.001)")
+    K.drive(o, "scale", 2, root, "grow", "max(x, 0.001)")
+    return root
+
+
+def cross_window(name, wall_y, cx, z0, size, mull, steel, facing=-1, glazed=False, backdrop=None):
+    """A square window of four panes split by a heavy cross mullion: a plain sash form, never coloured, tilted or
+    waved, so it stays generic (brief: no real logos). It carries the chorus's "windows" (human, C1 review: the grid
+    window made the play on the word hard to stage). `facing` is the side the hall sees (-1 = its -Y face). Returns
+    {"panes": [centre of each pane, upper-left first], ...}."""
+    out = {}
+    h = size / 2
+    zc = z0 + h
+    t = 0.12  # outer frame
+    y = wall_y + facing * 0.12
+    for k, (dx, dz, sx, sz) in enumerate(((0, h, size + t, t), (0, -h, size + t, t), (-h, 0, t, size + t),
+                                          (h, 0, t, size + t))):
+        box(f"{name}.frame{k}", steel, (cx + dx, y, zc + dz), (sx, 0.14, sz))
+    box(f"{name}.mullion_v", steel, (cx, y, zc), (mull, 0.12, size))
+    box(f"{name}.mullion_h", steel, (cx, y, zc), (size, 0.12, mull))
+    box(f"{name}.sill", mat_stone(f"{name}.sill", "plinth", 0.5), (cx, y + facing * 0.12, z0 - t / 2 - 0.03),
+        (size + 0.4, 0.3, 0.06))
+    q = (h + mull / 2) / 2
+    out["panes"] = [(cx - q, zc + q), (cx + q, zc + q), (cx - q, zc - q), (cx + q, zc - q)]
+    if glazed:
+        g = K.mesh_obj(f"{name}.glass", bpy.ops.mesh.primitive_plane_add, K.mat_glass(f"{name}.glass", reflect=0.4),
+                       None, size=1, location=(cx, y, zc), rotation=(math.pi / 2, 0, 0))
+        g.scale = (size, size, 1)
+        g.visible_shadow = False
+    if backdrop:
+        b = box(f"{name}.backdrop", backdrop, (cx, wall_y - facing * 0.25, zc), (size, 0.02, size))
+        b.visible_shadow = False
+    return out
+
+
+def wall_with_opening(name, mat, axis_y, x0, x1, z0, z1, H=9.0, span=(-11.0, 11.0)):
+    """A hall wall at y = axis_y with one rectangular opening (x0..x1, z0..z1)."""
+    a, b = span
+    for nm, u0, u1 in (("l", a, x0), ("r", x1, b)):
+        box(f"{name}_{nm}", mat, ((u0 + u1) / 2, axis_y, H / 2), (u1 - u0, 0.3, H))
+    box(f"{name}_low", mat, ((x0 + x1) / 2, axis_y, z0 / 2), (x1 - x0, 0.3, z0))
+    box(f"{name}_high", mat, ((x0 + x1) / 2, axis_y, (z1 + H) / 2), (x1 - x0, 0.3, H - z1))
+
+
 def hall():
-    """Dark polished floor, tall dark walls and ceiling; the tall window in the back wall (an opening with
-    mullions, no glass), a hall window behind the camera with a taped crack (N09, seen in reflection)."""
+    """Dark polished floor, tall dark walls and ceiling. The back wall (+Y) holds a big four-pane window onto the
+    street; the front wall (-Y), behind the camera's start, holds a smaller one with a cracked pane taped over (N09)
+    and the hairline crack that appears beside the tape (N10, "grow")."""
     out = {}
     K.floor(size=80.0).data.materials[0] = mat_stone("hall_floor", "floor", LOOK["materials"]["floor_roughness"])
     wall = mat_stone("hall_wall", "hall_wall", 0.85)
     H = 9.0
     box("hall.ceiling", wall, (0, -1, H + 0.15), (22.6, 26.6, 0.3))
     box("hall.wall_l", wall, (-11.15, -1, H / 2), (0.3, 26.6, H))
-    box("hall.wall_front", wall, (0, -14.15, H / 2), (22.6, 0.3, H))
     # The +X wall with the shop window's opening (y -1.8..1.8, z 0.6..3.0).
     for nm, y0, y1 in (("a", -14, -1.8), ("b", 1.8, 12)):
         box(f"hall.wall_r{nm}", wall, (11.15, (y0 + y1) / 2, H / 2), (0.3, y1 - y0, H))
     box("hall.wall_r_low", wall, (11.15, 0, 0.3), (0.3, 3.6, 0.6))
     box("hall.wall_r_high", wall, (11.15, 0, (3.0 + H) / 2), (0.3, 3.6, H - 3.0))
-    # The back wall with the tall window (x -1.6..1.6, z 0.6..7.6).
-    wx, z0, z1 = 1.6, 0.6, 7.6
-    for nm, x0, x1 in (("l", -11, -wx), ("r", wx, 11)):
-        box(f"hall.wall_back_{nm}", wall, ((x0 + x1) / 2, 12.15, H / 2), (x1 - x0, 0.3, H))
-    box("hall.wall_back_low", wall, (0, 12.15, z0 / 2), (2 * wx, 0.3, z0))
-    box("hall.wall_back_high", wall, (0, 12.15, (z1 + H) / 2), (2 * wx, 0.3, H - z1))
     steel = mat_steel("window_steel")
-    for k in range(5):  # mullions: 4 columns ...
-        x = -wx + k * (2 * wx / 4)
-        box(f"window.mullion{k}", steel, (x, 12.02, (z0 + z1) / 2), (0.05, 0.08, z1 - z0))
-    for k in range(9):  # ... and 8 rows of panes
-        z = z0 + k * ((z1 - z0) / 8)
-        box(f"window.transom{k}", steel, (0, 12.02, z), (2 * wx, 0.08, 0.04))
-    box("window.sill", mat_stone("sill", "plinth", 0.5), (0, 11.9, z0 - 0.03), (2 * wx + 0.3, 0.4, 0.06))
-    # A hall window in the front wall, behind the camera, its cracked pane taped over (N09/N10 reflections).
-    hw = (-4.0, -13.98)
-    for k in range(3):
-        box(f"hallwin.mullion{k}", steel, (hw[0] - 0.8 + k * 0.8, hw[1], 3.0), (0.04, 0.06, 3.0))
-    for k in range(4):
-        box(f"hallwin.transom{k}", steel, (hw[0], hw[1], 1.5 + k * 1.0), (1.6, 0.06, 0.04))
-    pane = box("hallwin.glow", K.mat_emission("hallwin_glow", "sky", 0.6), (hw[0], hw[1] - 0.04, 3.0), (1.6, 0.01, 3.0))
-    pane.visible_shadow = False
+    # The back window: 4.4 m square, sill at 1.2 m, left of centre so the wide view sees it clear of the room.
+    bx, bz, bs = WINDOW_X, 1.2, 4.4
+    wall_with_opening("hall.wall_back", wall, 12.15, bx - bs / 2, bx + bs / 2, bz, bz + bs)
+    out["window_panes"] = cross_window("window", 12.15, bx, bz, bs, 0.16, steel, facing=-1)["panes"]
+    out["window"] = (bx, 12.0, bz + bs / 2)
+    # The front window, behind the camera: 2.2 m square, glazed, the night sky glowing faintly behind it.
+    fx, fz, fs = -4.0, 1.5, 2.2
+    wall_with_opening("hall.wall_front", wall, -14.15, fx - fs / 2, fx + fs / 2, fz, fz + fs)
+    fw = cross_window("hallwin", -14.15, fx, fz, fs, 0.1, steel, facing=1, glazed=True,
+                      backdrop=K.mat_emission("hallwin_glow", "sky", 0.6))
+    # The cracked pane: the upper pane at -X (the hall's upper right, looking at the front wall), taped with an X
+    # over the old crack; the new crack starts beside the tape.
+    px, pz = fw["panes"][0]
+    yfront = -14.15 + 0.12 + 0.012
     tape = K.mat_matte("tape", "paper")
-    for k, a in enumerate((0.6, -0.6)):  # an X of tape over one pane
-        box(f"hallwin.tape{k}", tape, (hw[0] + 0.4, hw[1] + 0.035, 3.5), (0.62, 0.004, 0.05), rot=(0, a, 0))
-    out["window"] = (0.0, 12.0, (z0 + z1) / 2)
+    tb = tape.node_tree.nodes["Principled BSDF"]
+    tb.inputs["Emission Color"].default_value = K.col("paper")
+    tb.inputs["Emission Strength"].default_value = 0.12  # the hall light barely reaches it; tape must read as tape
+    for k, a in enumerate((0.7, -0.7)):
+        box(f"hallwin.tape{k}", tape, (px, yfront, pz), (0.95, 0.004, 0.06), rot=(0, a, 0))
+    crack_m = K.mat_emission("crack", "frost", 1.4)
+    seed = SEEDS["main"]
+    crack("hallwin.crack_old", crack_m, (px + 0.05, yfront - 0.002, pz - 0.03), 0.42, seed)
+    new = crack("hallwin.crack_new", crack_m, (px - 0.2, yfront - 0.002, pz - 0.28), 0.3, seed + 1)
+    new["grow"] = 0.0
+    out["crack_new"] = new
     return out
 
 
@@ -767,7 +845,7 @@ def nursery(room):
 # ---------------------------------------------------------------- the street and the shop window
 
 def street():
-    """Outside the tall window: a night sky, the moon, a hill of small houses with porch lights, and the neighbor's
+    """Outside the back window: a night sky, the moon, a hill of small houses with porch lights, and the neighbor's
     upstairs window (amber, "amber" 0-1). The hill rises from y 30 to 70, so through the window it fills the lower
     two-thirds."""
     out = {}
@@ -822,12 +900,12 @@ def street():
     roof_m = mat_stone("house_roof", "hill", 0.7)
     porch = K.mat_emission("porch", "comfort", 22.0)
     win_dim = K.mat_emission("house_win", "comfort", 1.2)
-    homes = [(-22, 46), (-13, 50), (-5, 53), (1.5, 50), (13.1, 56), (7, 53), (17, 48), (25, 45), (-9, 63),
+    homes = [(-22, 46), (-13, 50), (-5, 53), (1.5, 50), (13.5, 56), (6, 52), (17, 48), (25, 45), (-9, 63),
              (8.5, 65), (2, 62), (14, 61), (-1.5, 59)]
-    neighbor = 4  # (13.1, 56): framed by the tall window from the wide C1 camera
+    neighbor = 4  # (13.5, 56): its upstairs window in the back window's upper-right pane from the wide C1 camera
     for k, (x, y) in enumerate(homes):
         g = ground(x, y)
-        w, d, hh = 3.2, 2.6, 3.0 + (1.6 if k == neighbor else 0.6 * (k % 2))
+        w, d, hh = 3.2, 2.6, 3.0 + (2.6 if k == neighbor else 0.6 * (k % 2))
         box(f"house{k}.body", wall, (x, y, g + hh / 2), (w, d, hh))
         rf = K.mesh_obj(f"house{k}.roof", bpy.ops.mesh.primitive_cone_add, roof_m, None, vertices=4,
                         radius1=w * 0.8, depth=1.4, location=(x, y, g + hh + 0.7), rotation=(0, 0, math.pi / 4))
@@ -899,7 +977,7 @@ def shop_window():
 # ---------------------------------------------------------------- lighting and air
 
 def hall_lights():
-    """The hall's cold museum light: two dim spots from the ceiling on the plinth, a moonlight sun through the tall
+    """The hall's cold museum light: two dim spots from the ceiling on the plinth, a moonlight sun through the back
     window (it lays the window's patch on the floor: the moonlight clock), faint cool rims behind the glass room so
     its frame reads against the dark."""
     L = LOOK["lights"]
@@ -918,7 +996,7 @@ def hall_lights():
 
 
 def haze(density):
-    """Faint air in the hall so the moonlight through the tall window and the projector's glow read as beams."""
+    """Faint air in the hall so the moonlight through the back window and the projector's glow read as beams."""
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, -1, 4.5))
     o = bpy.context.active_object
     o.name = "hall.haze"

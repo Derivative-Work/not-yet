@@ -30,3 +30,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **Why:** These answer the brief's open items on the generator, the probe lock and the audit sources.
 - **Rule:** R1 for the probe (approving a design to reuse). Supplying links is not a touch on the work.
 - **Then (21:10):** the human saved the three raw auditor outputs to `~/Downloads` (production log, step 2b) and gave ChatGPT's version: "whatever the current free model is as of yesterday." Supplying inputs is not a touch on the work.
+
+## 2026-10-23T22:10 — C1 review: darker; rethink the tall window — R1
+
+- **What:** The human reviewed the C1 sheet and asked for changes in words, not by hand.
+- **Note from the human:** "it could be a little darker. I'm also not sold on the "tall window" -- it seems like it would be difficult to make the play on Microsoft Windows at "windows are never quite mended" with this format"
+- **Rule:** R1 (rejecting a render, with the reason in words). The agent makes the change (production log, C1 v2).

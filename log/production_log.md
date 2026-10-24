@@ -69,3 +69,18 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - Not in C1: the probe (C2), animation, and real reflections in the glass (planar probes, C4/C5).
 - **Why:** Brief, checkpoint C1.
 - **Status:** **C1 is ready for review.** The agent stops here for approval, per the brief.
+
+## 2026-10-23T22:31:00-04:00 — C1 v2: darker, and four-pane windows for the "windows" play
+
+- **What:** Revised C1 after the human's rejection (human interventions, 22:10). Exposure is now −0.4. The back wall's 4×8 grid window is now a 4.4 m four-pane cross window, and the front wall's taped window a 2.2 m one. The front window has a seeded hairline crack under its tape and a new one beside it that grows (`grow`, N10). I lowered the hill to 8 m so sky silhouettes the cross. The moon now sits in the back window's upper-left pane and the neighbor's amber window in its upper-right. I gave the tape a faint emission, since it read black. Added a third test framing (`hallwin`, the front window straight on) and generalised the review sheet to any number of frames.
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/c1_test_frame.py -- renders/c1/c1_v2_{wide,close,hallwin}.png 1280 720 64 {wide,close,hallwin}`
+  - after the mullion and tape fixes: `… renders/c1/c1_v3_{wide,hallwin}.png 1280 720 64 {wide,hallwin}`
+  - `.venv/bin/python -I scripts/c1_sheet.py "<title>" renders/c1/c1_v3_wide.png renders/c1/c1_v2_close.png renders/c1/c1_v3_hallwin.png renders/c1/c1_v2_sheet.jpg`
+- **Outputs:** `scenes/blender/sets/nursery.py` (`crack`, `cross_window`, `wall_with_opening`, new `hall`), `scenes/blender/c1_test_frame.py`, `scripts/c1_sheet.py`, `config/look.json`, `config/seeds.json` (the `cracks` process), `style/style_spec.md`, `renders/c1/c1_v3_wide.png`, `renders/c1/c1_v2_close.png`, `renders/c1/c1_v3_hallwin.png`, `renders/c1/c1_v2_sheet.jpg`
+- **Archived:**
+  - Rejected (R1): `archive/renders/c1/c1_test_frame_{wide_rejected_too-bright-grid-window,close_rejected_too-bright}.png` and `c1_sheet_rejected_too-bright-grid-window.jpg`
+  - Superseded: `c1_v2_wide_superseded_mullion-lost-against-hill.png` and `c1_v2_hallwin_superseded_tape-unlit.png`
+- **Note for the shot list:** straight on, the backlit blue four panes are very close to the current Windows logo. N09 and N10 show the window as a reflection at an angle (brief), which keeps it a window. That gets checked at C4. The brief's set description still says "tall window"; I'll update the doc once you approve v2.
+- **Why:** Human interventions, C1 rejection (R1).
+- **Status:** **C1 v2 is ready for review.**
