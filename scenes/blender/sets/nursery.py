@@ -565,15 +565,15 @@ def vault_door(room):
     # The sticky note, a little crooked, on the glass beside the door (brief, section 3: "on the nursery's glass
     # door"): from outside it reads (N07); from inside it shows mirrored, peeling (N21); it falls at N35. It hangs
     # from its top edge (the pivot), so "peel" lifts it away from the glass.
-    note = K.empty("note", (1.13, y - 0.004, 1.74), room)
+    note = K.empty("note", (1.13, y - 0.004, 1.36), room)  # room-local: its middle at world z 1.66
     K.prop(note, "peel", 0.0)
     K.drive(note, "rotation_euler", 0, note, "peel", "1.5708 - 0.9 * x")
     note.rotation_euler = (math.pi / 2, 0.06, 0)
     out["note"] = note
     paper = K.empty("note.paper_root", (0, -0.1, 0), note)
     K.mesh_obj("note.paper", bpy.ops.mesh.primitive_plane_add, K.mat_matte("sticky", "note"), paper, size=0.2)
-    K.text("note.text", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, -0.0012),
-           rot=(0, math.pi, 0), font="InstrumentSerif-Italic.ttf", parent=paper)
+    K.text("note.text", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, 0.0012),
+           rot=(0, 0, 0), font="InstrumentSerif-Italic.ttf", parent=paper)  # faces out; mirrored from inside
     return out
 
 
@@ -692,6 +692,11 @@ def mobile(name, loc, parent=None):
         cyl(f"{name}.thread{k}", thread, (0, 0, -L / 2), 0.0015, L, hang, verts=6, smooth=False)
         p = K.empty(f"{name}.{piece}", (0, 0, -L - 0.05), hang)
         pieces[piece] = p
+        # N13: each piece rises again "holding a tiny stack of tickets" (hidden until then; animate.mobile).
+        stk = K.empty(f"{name}.stack_{piece}", (0, 0, -0.07), p)
+        for j in range(4):
+            box(f"{name}.stack_{piece}{j}", K.mat_matte(f"{name}.ticket", "paper"), (0.004 * (j % 2), 0, -0.004 * j),
+                (0.05, 0.035, 0.0015), stk)
     felt_c, felt_b, felt_g = (mat_felt(f"{name}.felt_c", "felt_cream"), mat_felt(f"{name}.felt_b", "felt_blue"),
                               mat_felt(f"{name}.felt_g", "felt_grey"))
     # A bank: stepped base, four columns, a pediment.
@@ -1281,11 +1286,16 @@ def moat():
     bpy.ops.mesh.extrude_region_shrink_fatten(TRANSFORM_OT_shrink_fatten={"value": 0.7})
     bpy.ops.mesh.edge_face_add()
     bpy.ops.object.mode_set(mode="OBJECT")
-    m, b = K._principled("moat")
-    b.inputs["Base Color"].default_value = K.col("void")
-    b.inputs["Roughness"].default_value = 0.02
-    b.inputs["Specular IOR Level"].default_value = 0.8
-    o.data.materials.append(m)
+    # Still water reads as reflection: Sandbox Rhapsody's glass shader (a Fresnel reflection of the procedural studio
+    # environment) over a dark tint, and a faint cold rim at both edges so the ring shows against the dark floor.
+    o.data.materials.append(K.mat_glass("moat", role="house", tint=0.25, reflect=0.3))
+    for k, r in enumerate((4.1, 4.8)):
+        bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=0.008, major_segments=128, minor_segments=6,
+                                         location=(0, 0, 0.006))
+        e = bpy.context.active_object
+        e.name = f"moat.edge{k}"
+        e.data.materials.append(K.mat_emission(f"moat.edge{k}", "house", 1.2))
+        e.parent = o
     return o
 
 
@@ -1323,7 +1333,7 @@ def basement():
     for k, (p, sz) in enumerate((((0, W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)), ((0, -W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)),
                                  ((W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)), ((-W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)))):
         box(f"base.wall{k}", wall, p, sz)
-    ceil = box("base.ceiling", mat_stone("base.ceil", "hall_wall", 0.9), (0, 0, Z1 - 0.03), (2 * W, 2 * W, 0.04))
+    ceil = box("base.ceiling", mat_stone("base.ceil", "plinth", 0.9), (0, 0, Z1 - 0.03), (2 * W, 2 * W, 0.04))
     ceil.visible_camera = True
     # The desk, its lamp, the laptop.
     wood = mat_paint("base.desk", "wood", 0.6)
@@ -1339,9 +1349,10 @@ def basement():
                        radius2=0.03, depth=0.12, location=(0.82, 1.32, dz + 0.4), rotation=(0.5, -0.3, 0))
     K.smooth(shade)
     sphere("base.bulb", K.mat_emission("base.bulb", "tungsten", 40.0), (0.81, 1.31, dz + 0.36), 0.02, None, 12)
-    out["lamp"] = light("base.lamp_light", "SPOT", (0.81, 1.31, dz + 0.37), 60.0, "tungsten", 0.03,
-                        target=(0.55, 1.2, dz), spot=(1.6, 0.5))
-    light("base.fill", "AREA", (0, -1.0, Z1 - 0.2), 6.0, "tungsten", 2.0, target=(0.4, 1.0, Z0), specular=0.1)
+    out["lamp"] = light("base.lamp_light", "SPOT", (0.81, 1.31, dz + 0.37), 220.0, "tungsten", 0.03,
+                        target=(0.55, 1.2, dz), spot=(1.9, 0.6))
+    light("base.lamp_spill", "POINT", (0.8, 1.3, dz + 0.5), 25.0, "tungsten", 0.2, specular=0.1)
+    light("base.fill", "AREA", (0, -1.0, Z1 - 0.2), 30.0, "tungsten", 2.0, target=(0.4, 1.0, Z0), specular=0.1)
     box("base.laptop_base", K.mat_plastic("base.laptop", "lab_dark", 0.4), (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015))
     scr = box("base.laptop_screen", K.mat_emission("base.screen", "house", 1.5), (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22))
     scr.rotation_euler = (-0.2, 0, 0)
@@ -1393,12 +1404,23 @@ def basement():
             out["sheets_glow"].append(sh)
     out["glow"] = glow
     # The mail slot in the ceiling: a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
-    slot = K.empty("mailslot", (0.2, 1.6, Z1 - 0.05))
+    slot = K.empty("mailslot", (0.2, 1.6, Z1 - 0.06))  # just below the ceiling slab (its underside is Z1 - 0.05)
     K.prop(slot, "flap", 0.0)
     box("mailslot.frame", K.mat_metal("mailslot.brass", "brass", 0.3), (0, 0, 0), (0.36, 0.1, 0.02), slot)
     hinge = K.empty("mailslot.hinge", (0, 0.04, -0.012), slot)
     K.drive(hinge, "rotation_euler", 0, slot, "flap", "-1.1 * x")
     box("mailslot.flap", K.mat_metal("mailslot.flap", "brass", 0.3), (0, -0.04, 0), (0.32, 0.08, 0.004), hinge)
+    # The hall's cold light falls through the slot (N18 looks up at it; the ceiling is otherwise unlit).
+    light("mailslot.light", "AREA", (0.2, 1.6, Z1 - 0.08), 12.0, "house", 0.3, target=(0.3, 1.3, Z0), specular=0.3)
+    light("mailslot.ceiling", "POINT", (0.4, 1.3, Z1 - 0.6), 20.0, "tungsten", 0.3, specular=0.0)
+    # Sheets the slot drops on the beat (N18): "drop<k>" 0 at the slot .. 1 on the floor (animate.basement).
+    for k in range(4):
+        K.prop(slot, f"drop{k}", 0.0)
+        d = box(f"mailslot.sheet{k}", K.mat_matte("mailslot.sheet", "paper"), (0, 0, 0), (0.21, 0.297, 0.001), slot)
+        K.drive(d, "location", 2, slot, f"drop{k}", f"-0.05 - {abs(Z0 - Z1) - 0.1:.3f} * x")
+        K.drive(d, "location", 1, slot, f"drop{k}", f"-{0.15 + 0.1 * k:.2f} * x")
+        K.drive(d, "rotation_euler", 0, slot, f"drop{k}", f"{0.6 + 0.4 * k:.2f} * x")
+        K.drive(d, "scale", 0, slot, f"drop{k}", "1.0 if x > 0.01 else 0.001")
     out["mailslot"] = slot
     return out
 

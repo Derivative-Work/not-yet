@@ -1,0 +1,18 @@
+{
+ "_doc": "Event sources for the note-driven library (scenes/blender/lib/sr_anim.py, from Sandbox Rhapsody), and which machine each drives (C4). Sources are config/event_sources.json's instruments, approved at C3.",
+ "sources": {
+  "music_box": {"file": "timing/events/music_box.json", "kind": "notes"},
+  "guitar": {"file": "timing/events/guitar.json", "kind": "notes"},
+  "strings": {"file": "timing/events/strings.json", "kind": "notes"},
+  "vocal_env": {"stem": "audio/stems/Sleep, Little Secret (Vocals).wav", "kind": "envelope"},
+  "words": {"kind": "words"},
+  "beats": {"kind": "beats"}
+ },
+ "machines": {
+  "music box comb": {"source": "music_box", "rig": "comb (sr_anim.comb), every note"},
+  "stars": {"source": "music_box", "rig": "reveal: births on the melody (top line), a planned count per section (human, C3)"},
+  "rocking chair": {"source": "beats", "rig": "one rock per bar on the downbeats, steady; stops at the pen scratch"},
+  "mobile": {"source": "beats", "rig": "stepper on downbeats; pieces lower on their nouns (N12)"},
+  "mail slot flap": {"source": "beats", "rig": "clatters on each beat of N18"}
+ }
+}
