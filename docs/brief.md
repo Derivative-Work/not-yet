@@ -22,7 +22,7 @@
 **Deliverables**
 
 - Main video, 16:9, 4K (3840×2160; frame rate set by the style spec)
-- 9:16 vertical cut (section 7)
+- Two 9:16 vertical cuts (section 7): the bridge, and the windows (Chorus 1, before Patch Tuesday)
 - Burned-in captions plus a separate SRT file
 - Thumbnail
 - The complete production log, as in the Ghost in the Machine brief
@@ -293,6 +293,8 @@ Visual interest inside the frame, layered onto the shot list without changing a 
 
 **Vertical cut (9:16):** the bridge through the CRT line (N23 to N41), then the fact card. Frame the street window, the shop window and the crib inside the vertical safe area from the start, and render wide enough to reframe rather than re-render.
 
+**Second vertical cut, the windows (9:16):** Chorus 1, from N07 to just before N11 (34.6 s to about 64.7 s, 30 s), released before Patch Tuesday on 2026-11-10. It runs from the sticky note through the taped pane and the new crack on "never", then the one cut to the cracked window from outside, and the push back in through it. It ends on that push, with picture and music fading out together in the instrumental bar before verse 2. No fact card. It opens with the `AI-generated satire` label and has burned-in captions. Frame the sticky note, the taped pane, the crack and the outside view inside the vertical safe area, and reframe from the same wide render. Its C5 frames (about 910 frames at 30 fps) render first on the 5090 box, ahead of the rest of the main video, with the mastered track.
+
 **Thumbnail:** the N29 frame: the glass room glowing in the dark hall, walls crowded with stars, and one amber window on the hill behind it. Never the probe reveal.
 
 ## Checkpoints, scope and open items
@@ -304,7 +306,7 @@ The agent stops at each checkpoint and waits for approval; approvals and rejecti
 - [ ] **C3 Audio, MIDI and timing map:** generation logged, MIDI validated against stems, word-level alignment checked by ear
 - [ ] **C4 Animatic:** the whole camera move in grey-box at final timing, every anchor hit, low-res
 - [ ] **C5 Final renders:** full quality, with a contact sheet of stills at each anchor
-- [ ] **C6 Final:** main video, vertical cut, captions, thumbnail, the fact-card source check, and a log audit
+- [ ] **C6 Final:** main video, both vertical cuts (the windows cut first, before Patch Tuesday), captions, thumbnail, the fact-card source check, and a log audit
 
 **Scope, if time runs short.** Build in this order and stop at any tier with a complete video:
 

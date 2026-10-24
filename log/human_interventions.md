@@ -116,3 +116,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The laptop's advisory IDs (made up, in the first pass) must be the ones the lyrics allude to.
 - **Note from the human:** "Which CVEs are those? Make sure it's the ones alluded to in the words"
 - **Rule:** R1 (rejecting part of a render, with a reason).
+
+## 2026-10-24T14:30 — A second vertical cut, the windows, before Patch Tuesday — EXCEPTION
+
+- **What:** The human added a deliverable: a second 9:16 cut built around the broken-window scene, to be released before the next Patch Tuesday (2026-11-10).
+- **Note from the human:** "Add another one with the broken window scene, for release before the next Patch Tuesday"
+- **Rule:** EXCEPTION. The brief named one vertical cut; the human added a deliverable and its release date. The agent chose the span (N07 to just before N11) and wrote it into the brief.

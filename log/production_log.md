@@ -368,3 +368,20 @@ N17's laptop screen to show warnings/CVEs; N32's clipboard clips through the bed
   - No IDs are made up.
 - **Legibility:** the rows are set in Inter, because JetBrains Mono's dotted zero read as an 8 at 720p ("2826"). Checked in `renders/c4/review_v4e`–`v4f`.
 - **The first v4 full render** (frames_v4) was stopped before it finished, to pick up this change. Its frames will be overwritten by the restart; frame sequences are not archived.
+
+## 2026-10-24T14:30 — Brief: a second vertical cut, the windows (EXCEPTION, human)
+
+- **Spec:**
+  - Chorus 1, N07 (34.56 s) to just before N11 (about 64.7 s; N11 is 64.98), 30 s.
+  - It runs from the sticky note through the taped pane and the new crack on "never" (N09/N10), the one cut to the cracked window from outside, and the push back in through it.
+  - It ends on that push, fading out in the instrumental bar before verse 2. No fact card. It opens with the `AI-generated satire` label and has burned-in captions.
+- **Deadline:** before Patch Tuesday, Tuesday 2026-11-10 (the second Tuesday of November).
+- **Order of work:**
+  - C5 renders this span (about 910 frames) first on the 5090 box.
+  - It needs the mastered track (the human, R4).
+  - The human publishes it (R4).
+- **Brief:**
+  - Section 7 has the new paragraph.
+  - The deliverables now read "Two 9:16 vertical cuts".
+  - The C6 checklist item covers both cuts, the windows cut first.
+  - Updated in the Claude Doc (rev 30) and mirrored in `docs/brief.md`.
