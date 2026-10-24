@@ -101,3 +101,6 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** At N36 the music box isn't held long enough and barely reads as a music box. At N37/N38 the crib rail hides too much of the probe: pan a little more. The probe appears out of thin air: have it open the blanket with its arms.
 - **Note from the human:** "N36: the music box is not held for long enough, and the fact that it is a music box in the first place is barely visible" / "N37/N38: the railing is obscuring the probe a bit too much -- pan a little more. now, the probe is just appearing out of thin air -- see about having it open the blanket with its arms"
 - **Rule:** R1 (rejecting parts of a render, with reasons).
+- **Then:** at N32 the crib hides the COMING SOON tag.
+- **Note from the human:** "also N32: the "COMING SOON" text is obscured by the crib"
+- **Rule:** R1.
