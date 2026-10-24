@@ -127,6 +127,103 @@ def mat_frost(name, owner):
     return m
 
 
+FREEZE_S = json.loads((K.ROOT / "config" / "shot_anchors.json").read_text())["outro"]["freeze"]
+
+
+def mat_reveal(name, role, strength, fade=0.25, dim_to=0.15, dim_fade=1.5):
+    """Emitter for things that appear one piece at a time (the stars, the call graph, the town's crack, the floor
+    gaps): each face carries float attributes "birth" and "dim" (song seconds); the shader compares them with the
+    song time T, driven from the frame and clamped at the pen scratch (FREEZE_S: the stars freeze, N39). Before its
+    birth a face is fully transparent; it fades in over `fade` s; after "dim" it fades to `dim_to` over `dim_fade` s."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+
+    def attr(nm):
+        a = nt.nodes.new("ShaderNodeAttribute")
+        a.attribute_type, a.attribute_name = "GEOMETRY", nm
+        return a.outputs["Fac"]
+
+    tv = nt.nodes.new("ShaderNodeValue")
+    tv.name = "T"
+    fc = tv.outputs[0].driver_add("default_value")
+    fc.driver.type = "SCRIPTED"
+    fc.driver.expression = f"min(frame / {LOOK['fps']}, {FREEZE_S})"
+
+    def ramp(x, a, b):  # clamp((x - a) / (b - a)) built from math nodes; a, b are sockets or floats
+        sub = nt.nodes.new("ShaderNodeMapRange")
+        sub.clamp = True
+        nt.links.new(x, sub.inputs["Value"])
+        for sock, v in (("From Min", a), ("From Max", b)):
+            if isinstance(v, (int, float)):
+                sub.inputs[sock].default_value = v
+            else:
+                nt.links.new(v, sub.inputs[sock])
+        return sub.outputs[0]
+
+    def add(x, c):
+        n = nt.nodes.new("ShaderNodeMath")
+        n.operation = "ADD"
+        nt.links.new(x, n.inputs[0])
+        n.inputs[1].default_value = c
+        return n.outputs[0]
+
+    birth, dim = attr("birth"), attr("dim")
+    on = ramp(tv.outputs[0], birth, add(birth, fade))
+    off = ramp(tv.outputs[0], dim, add(dim, dim_fade))
+    k = nt.nodes.new("ShaderNodeMapRange")  # 1 -> dim_to as off goes 0 -> 1
+    nt.links.new(off, k.inputs["Value"])
+    k.inputs["To Min"].default_value, k.inputs["To Max"].default_value = 1.0, dim_to
+    lvl = nt.nodes.new("ShaderNodeMath")
+    lvl.operation = "MULTIPLY"
+    nt.links.new(on, lvl.inputs[0])
+    nt.links.new(k.outputs[0], lvl.inputs[1])
+    em = nt.nodes.new("ShaderNodeEmission")
+    em.inputs["Color"].default_value = K.col(role)
+    st = nt.nodes.new("ShaderNodeMath")
+    st.operation = "MULTIPLY"
+    nt.links.new(lvl.outputs[0], st.inputs[0])
+    st.inputs[1].default_value = strength
+    nt.links.new(st.outputs[0], em.inputs["Strength"])
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(on, mix.inputs[0])
+    nt.links.new(tr.outputs[0], mix.inputs[1])
+    nt.links.new(em.outputs[0], mix.inputs[2])
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    nt.links.new(mix.outputs[0], out.inputs[0])
+    m.surface_render_method = "BLENDED"
+    return m
+
+
+def set_times(obj, births, dims=None, per=None):
+    """Write per-face "birth" and "dim" attributes. births/dims are per element; `per` maps each face to its element
+    (default: one element per face)."""
+    me = obj.data
+    nf = len(me.polygons)
+    per = per or list(range(nf))
+    for nm, vals in (("birth", births), ("dim", dims)):
+        a = me.attributes.get(nm) or me.attributes.new(nm, "FLOAT", "FACE")
+        a.data.foreach_set("value", [float((vals[i] if vals is not None and i < len(vals) else 1e6)) for i in per])
+
+
+def ribbon_mesh(name, segments, width, lift=Vector((0, 0, 0))):
+    """Thin flat ribbons for line drawings (cracks, graph edges): `segments` is a list of (a, b, normal) triples.
+    Returns the object and, per face, its segment index."""
+    bm = bmesh.new()
+    per = []
+    for i, (a, b, nrm) in enumerate(segments):
+        d = (b - a).normalized()
+        side = d.cross(nrm).normalized() * width / 2
+        bm.faces.new([bm.verts.new(v + lift) for v in (a - side, b - side, b + side, a + side)])
+        per.append(i)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    return K.link(bpy.data.objects.new(name, me)), per
+
+
 # ---------------------------------------------------------------- primitives
 
 def box(name, mat, loc, size, parent=None, bev=0.0, rot=(0, 0, 0)):
@@ -720,7 +817,7 @@ def star_projector(name, loc, parent=None):
     return root, Vector(loc) + Vector((0, 0, 0.66))
 
 
-def projected_stars(origin, n, seed, count=1.0):
+def projected_stars(origin, n, seed, count=1.0, reveal=False):
     """The stars on the glass (brief: "the stars are the findings"): `n` star directions from the projector, seeded,
     landing on the glass walls' and roof's inside faces as small cream glows. One mesh; each star a 5-point star
     shape, so up close they read as projected stars, not dots. `count` (0-1) keeps the first fraction (C1 shows a
@@ -729,6 +826,8 @@ def projected_stars(origin, n, seed, count=1.0):
     bm = bmesh.new()
     lo, hi = Vector((-ROOM + 0.01, -ROOM + 0.01, PL_H + 0.5)), Vector((ROOM - 0.01, ROOM - 0.01, TOP - 0.01))
     placed = 0
+    per = []  # face -> star index (for the birth/dim attributes)
+    where = []
     for i in range(n):
         # Directions: uniform over the sphere, upper half favoured (the dome's holes face up and out).
         z = rnd.uniform(-0.25, 1.0)
@@ -765,15 +864,44 @@ def projected_stars(origin, n, seed, count=1.0):
         c = bm.verts.new(p)
         for k in range(10):
             bm.faces.new((c, verts[k], verts[(k + 1) % 10]))
+            per.append(placed)
+        where.append(tuple(p))
         placed += 1
     me = bpy.data.meshes.new("stars_projected")
     bm.to_mesh(me)
     bm.free()
     o = K.link(bpy.data.objects.new("stars_projected", me))
-    o.data.materials.append(K.mat_emission("star_proj", "comfort", LOOK["projected_star"]))
+    o.data.materials.append(mat_reveal("star_proj", "comfort", LOOK["projected_star"]) if reveal
+                            else K.mat_emission("star_proj", "comfort", LOOK["projected_star"]))
     o.visible_shadow = False
     o["placed"] = placed
+    o["per"] = per
+    o["where"] = [c for p in where for c in p]
+    if reveal:
+        set_times(o, [], per=per)
     return o
+
+
+def call_graph(stars_obj, seed):
+    """N05 ("the branches that nobody reads"): stars on the ceiling linked into a branching tree, like a call graph.
+    Each edge joins a ceiling star to its nearest earlier one; edges are thin cream ribbons just under the roof, born
+    one by one (birth times set by the animation). Returns (object, per-face edge index, edge count)."""
+    w = list(stars_obj["where"])
+    pts = [Vector(w[i:i + 3]) for i in range(0, len(w), 3)]
+    roof = [p for p in pts if p.z > TOP - 0.05]
+    rnd = random.Random(seed)
+    rnd.shuffle(roof)
+    roof = roof[:24]
+    segs = []
+    for k in range(1, len(roof)):
+        j = min(range(k), key=lambda i: (roof[i] - roof[k]).length)
+        segs.append((roof[j], roof[k], Vector((0, 0, -1))))
+    o, per = ribbon_mesh("call_graph", segs, 0.006, lift=Vector((0, 0, -0.004)))
+    o.data.materials.append(mat_reveal("call_graph", "comfort", LOOK["projected_star"] * 0.6))
+    o.visible_shadow = False
+    set_times(o, [], per=per)
+    o["per"] = per
+    return o, len(segs)
 
 
 def dresser(name, loc, rot_z=0.0, parent=None):
@@ -798,6 +926,15 @@ def dresser(name, loc, rot_z=0.0, parent=None):
                     elif nd.type == "BSDF_PRINCIPLED":
                         nd.inputs["Base Color"].default_value = K.col("felt_blue")
     bpy.data.objects[f"{name}.musicbox.glow"].data.color = K.col("comfort")[:3]
+    # N36: "the music box now has a coin slot; a coin drops in": a brass slot plate on the case's side (shown from
+    # N36) and a coin that falls into it ("coin" 0 above .. 1 in).
+    slot = K.empty(f"{name}.coinslot", (0.105, 0.0, 0.05), mb)
+    K.prop(slot, "coin", 0.0)
+    box(f"{name}.coinslot_plate", K.mat_metal(f"{name}.slot", "brass", 0.25), (0, 0, 0), (0.004, 0.05, 0.03), slot)
+    box(f"{name}.coinslot_slit", K.mat_plastic(f"{name}.slit", "shadow", 0.5), (0.0025, 0, 0), (0.002, 0.03, 0.004), slot)
+    coin = cyl(f"{name}.coin", K.mat_metal(f"{name}.coin", "brass", 0.15), (0.012, 0, 0.09), 0.011, 0.002, slot,
+               rot=(0, math.pi / 2, 0), verts=24)
+    K.drive(coin, "location", 2, slot, "coin", "0.09 - 0.09 * x")
     # Recolour its lacquer case from the Lab's dark blue to the nursery's pastel, so it belongs to this room.
     case = bpy.data.objects[f"{name}.musicbox.case"]
     case.data.materials[0] = mat_paint(f"{name}.mb_case", "pastel", 0.3)
@@ -826,8 +963,10 @@ def growth_chart(name, loc, rot_z=0.0, parent=None):
         box(f"{name}.tick{k}", ink, (0.08, -0.011, 0.2 + k * 0.17), (0.05, 0.002, 0.006), root)
     # Marks: gaps grow, then crowd at the very top.
     z, gap, k = 0.35, 0.04, 0
+    root["marks"] = 0
     while z < 1.82:
         box(f"{name}.mark{k}", ink, (-0.03, -0.0115, z), (0.12, 0.002, 0.004), root)
+        root["marks"] = k + 1
         z += gap
         gap = gap * 1.35 if z < 1.55 else max(0.012, gap * 0.45)
         k += 1
@@ -1088,16 +1227,269 @@ def haze(density):
     return o
 
 
-def build(star_count=1.0):
+def floor_gaps():
+    """N20 ("lamp light leaks up through the floor gaps"): thin tungsten slits in the nursery floor between its boards,
+    lit from the basement below (reveal material: birth set by the animation)."""
+    segs = [(Vector((-1.8, y, PL_H + 0.002)), Vector((1.8, y, PL_H + 0.002)), Vector((0, 0, 1)))
+            for y in (-1.2, -0.6, 0.0, 0.6)]
+    o, per = ribbon_mesh("floor_gaps", segs, 0.008)
+    o.data.materials.append(mat_reveal("floor_gaps", "tungsten", 6.0, fade=1.2))
+    o.visible_shadow = False
+    set_times(o, [], per=per)
+    return o
+
+
+def town_crack(street_out, seed):
+    """N25 ("it found the old crack under most of the net"): a fine crack runs down the road and branches under every
+    house. Ribbons on the hill, faintly lit (reveal: each segment's birth set by the animation, top to bottom)."""
+    ground, pts, homes = street_out["ground"], street_out["road_pts"], street_out["homes"]
+    rnd = random.Random(seed)
+    segs, order = [], []
+    up = Vector((0, 0, 1))
+    trunk = [Vector((p.x + rnd.uniform(-0.3, 0.3), p.y, p.z + 0.03)) for p in reversed(pts)]
+    for a, b in zip(trunk, trunk[1:]):
+        segs.append((a, b, up))
+        order.append(1.0 - (b.y - 30) / 30)
+    for (x, y, g) in homes:  # a branch from the nearest trunk point to under each house
+        a = min(trunk, key=lambda p: (p - Vector((x, y, g))).length)
+        n = 6
+        prev = a
+        for i in range(1, n + 1):
+            f = i / n
+            q = a.lerp(Vector((x, y - 1.3, g + 0.03)), f) + Vector((rnd.uniform(-0.4, 0.4), 0, 0))
+            q.z = ground(q.x, q.y) + 0.03
+            segs.append((prev, q, up))
+            order.append(1.0 - (a.y - 30) / 30 + 0.15 * f)
+            prev = q
+    o, per = ribbon_mesh("town_crack", segs, 0.12)
+    o.data.materials.append(mat_reveal("town_crack", "frost", 3.0, fade=0.3))
+    o.visible_shadow = False
+    set_times(o, [], per=per)
+    o["order"] = order
+    o["per"] = per
+    return o
+
+
+def moat():
+    """N22 ("…and the moat, while we're at it, defended"): a thin ring of still water around the plinth, which
+    appears there (hidden until then; the animation keys its visibility)."""
+    bpy.ops.mesh.primitive_circle_add(vertices=128, radius=4.8, fill_type="NOTHING", location=(0, 0, 0.004))
+    o = bpy.context.active_object
+    o.name = "moat"
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.extrude_region_shrink_fatten(TRANSFORM_OT_shrink_fatten={"value": 0.7})
+    bpy.ops.mesh.edge_face_add()
+    bpy.ops.object.mode_set(mode="OBJECT")
+    m, b = K._principled("moat")
+    b.inputs["Base Color"].default_value = K.col("void")
+    b.inputs["Roughness"].default_value = 0.02
+    b.inputs["Specular IOR Level"].default_value = 0.8
+    o.data.materials.append(m)
+    return o
+
+
+def velvet_rope():
+    """N30 ("some locks are for danger, and some are for class"): a velvet rope on two brass posts in front of the
+    vault door, the second lock. Navy velvet: no red anywhere (brief). Shown from N29 on."""
+    root = K.empty("rope", (0, -ROOM - 0.85, PL_H))
+    brass = K.mat_metal("rope.brass", "brass", 0.15)
+    for k, x in enumerate((-0.75, 0.75)):
+        cyl(f"rope.post{k}", brass, (x, 0, 0.45), 0.025, 0.9, root, verts=24)
+        cyl(f"rope.base{k}", brass, (x, 0, 0.02), 0.12, 0.04, root, verts=48)
+        sphere(f"rope.knob{k}", brass, (x, 0, 0.92), 0.045, root, 20)
+    cd = bpy.data.curves.new("rope.curve", "CURVE")
+    cd.dimensions, cd.bevel_depth, cd.bevel_resolution = "3D", 0.022, 4
+    sp = cd.splines.new("BEZIER")
+    sp.bezier_points.add(2)
+    for bp, p in zip(sp.bezier_points, ((-0.72, 0, 0.86), (0, 0, 0.62), (0.72, 0, 0.86))):
+        bp.co, bp.handle_left_type, bp.handle_right_type = p, "AUTO", "AUTO"
+    rope = K.link(bpy.data.objects.new("rope.velvet", cd))
+    rope.parent = root
+    rope.data.materials.append(mat_felt("rope.velvet", "fill"))
+    return root
+
+
+def basement():
+    """The basement (brief: "directly under the glass room, reached by a cutaway through the plinth: a low room, one
+    desk lamp, a laptop and a paper avalanche of printed tickets"). Below the hall floor: x, y -2.4..2.4, z -2.8..0.
+    The maintainer is seen from behind, no face (N16). A jar of peanuts, a donation jar with three coins (N15), sheets
+    that glow faintly cream among grey ones (N17), a mail slot in the ceiling whose flap clatters on the beat (N18).
+    Returns its rigs."""
+    out = {}
+    Z0, Z1, W = -2.8, -0.02, 2.4
+    wall = mat_stone("base.wall", "house_wall", 0.9)
+    box("base.floor", mat_stone("base.floor", "plinth", 0.8), (0, 0, Z0 - 0.05), (2 * W, 2 * W, 0.1))
+    for k, (p, sz) in enumerate((((0, W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)), ((0, -W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)),
+                                 ((W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)), ((-W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)))):
+        box(f"base.wall{k}", wall, p, sz)
+    ceil = box("base.ceiling", mat_stone("base.ceil", "hall_wall", 0.9), (0, 0, Z1 - 0.03), (2 * W, 2 * W, 0.04))
+    ceil.visible_camera = True
+    # The desk, its lamp, the laptop.
+    wood = mat_paint("base.desk", "wood", 0.6)
+    dz = Z0 + 0.75
+    box("base.desk_top", wood, (0.5, 1.3, dz), (1.5, 0.75, 0.04), bev=0.01)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            box(f"base.desk_leg{sx}{sy}", wood, (0.5 + sx * 0.7, 1.3 + sy * 0.33, Z0 + 0.37), (0.04, 0.04, 0.74))
+    metal = K.mat_metal("base.lamp", "steel", 0.4)
+    cyl("base.lamp_foot", metal, (1.05, 1.5, dz + 0.03), 0.07, 0.02, verts=32)
+    bar("base.lamp_arm", metal, (1.05, 1.5, dz + 0.04), (0.85, 1.35, dz + 0.42), 0.008)
+    shade = K.mesh_obj("base.lamp_shade", bpy.ops.mesh.primitive_cone_add, metal, None, vertices=32, radius1=0.09,
+                       radius2=0.03, depth=0.12, location=(0.82, 1.32, dz + 0.4), rotation=(0.5, -0.3, 0))
+    K.smooth(shade)
+    sphere("base.bulb", K.mat_emission("base.bulb", "tungsten", 40.0), (0.81, 1.31, dz + 0.36), 0.02, None, 12)
+    out["lamp"] = light("base.lamp_light", "SPOT", (0.81, 1.31, dz + 0.37), 60.0, "tungsten", 0.03,
+                        target=(0.55, 1.2, dz), spot=(1.6, 0.5))
+    light("base.fill", "AREA", (0, -1.0, Z1 - 0.2), 6.0, "tungsten", 2.0, target=(0.4, 1.0, Z0), specular=0.1)
+    box("base.laptop_base", K.mat_plastic("base.laptop", "lab_dark", 0.4), (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015))
+    scr = box("base.laptop_screen", K.mat_emission("base.screen", "house", 1.5), (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22))
+    scr.rotation_euler = (-0.2, 0, 0)
+    # The jar of peanuts and the donation jar with three coins.
+    jar = K.mat_acrylic("base.jar", "glass", alpha=0.25)
+    cyl("base.peanut_jar", jar, (-0.05, 1.45, dz + 0.08), 0.05, 0.14, verts=24)
+    rnd = random.Random(SEEDS["main"] + 3)
+    nut = mat_paint("base.nut", "felt_cream", 0.7)
+    for k in range(14):
+        sphere(f"base.nut{k}", nut, (-0.05 + rnd.uniform(-0.03, 0.03), 1.45 + rnd.uniform(-0.03, 0.03),
+                                     dz + 0.03 + rnd.uniform(0, 0.08)), 0.012, None, 8)
+    cyl("base.tip_jar", jar, (-0.2, 1.5, dz + 0.07), 0.045, 0.12, verts=24)
+    K.text("base.tip_label", "DONATIONS", 0.018, K.mat_ink("base.tip_ink", "shadow"), loc=(-0.2, 1.454, dz + 0.08),
+           rot=(math.pi / 2, 0, 0))
+    coin = K.mat_metal("base.coin", "brass", 0.2)
+    for k in range(3):
+        cyl(f"base.coin{k}", coin, (-0.2 + 0.012 * (k - 1), 1.5, dz + 0.013 + 0.003 * k), 0.012, 0.002, verts=16)
+    # The maintainer, from behind: chair, torso, shoulders, head; "breath" lifts the shoulders a little.
+    m_root = K.empty("maintainer", (0.45, 0.55, Z0))
+    K.prop(m_root, "breath", 0.0)
+    cloth = mat_felt("base.cloth", "felt_grey")
+    skin = mat_paint("base.hair", "pencil", 0.8)
+    box("base.chair_seat", wood, (0, 0, 0.45), (0.45, 0.45, 0.05), m_root, bev=0.01)
+    box("base.chair_back", wood, (0, -0.2, 0.75), (0.45, 0.04, 0.55), m_root, bev=0.01)
+    torso = K.empty("maintainer.torso", (0, 0.02, 0.5), m_root)
+    K.drive(torso, "location", 2, m_root, "breath", "0.5 + 0.012 * x")
+    body = sphere("maintainer.body", cloth, (0, 0, 0.32), 0.2, torso, 24)
+    body.scale = (1.15, 0.75, 1.55)
+    sphere("maintainer.head", skin, (0, 0.05, 0.7), 0.11, torso, 24).scale = (0.9, 1.0, 1.05)
+    for sx in (-1, 1):
+        bar(f"maintainer.arm{sx}", cloth, (sx * 0.22, 0.0, 0.5), (sx * 0.15, 0.45, 0.25), 0.05, torso)
+    out["maintainer"] = m_root
+    # The paper avalanche: drifts of printed tickets across the desk and floor, reaching the desk edge (N16).
+    grey = K.mat_matte("base.paper", "paper")
+    rnd = random.Random(SEEDS["main"] + 4)
+    out["sheets_glow"] = []
+    glow = K.empty("base.glow")
+    K.prop(glow, "glow", 0.0)
+    for k in range(220):
+        r = rnd.random() ** 0.6
+        a = rnd.uniform(0, math.tau)
+        x, y = -0.8 + 1.4 * r * math.cos(a), 1.6 - 1.2 * r * abs(math.sin(a))
+        z = Z0 + 0.01 + 0.35 * (1 - r) * rnd.random() if rnd.random() < 0.7 else dz + 0.03 + 0.12 * rnd.random()
+        lit = k % 17 == 0
+        mat = K.mat_emission(f"base.sheet_glow{k}", "comfort", 1.5, glow, "glow", floor=0.0) if lit else grey
+        sh = box(f"base.sheet{k}", mat, (x, y, z), (0.21, 0.297, 0.001), rot=(rnd.uniform(-0.3, 0.3),
+                 rnd.uniform(-0.3, 0.3), rnd.uniform(0, math.tau)))
+        if lit:
+            out["sheets_glow"].append(sh)
+    out["glow"] = glow
+    # The mail slot in the ceiling: a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
+    slot = K.empty("mailslot", (0.2, 1.6, Z1 - 0.05))
+    K.prop(slot, "flap", 0.0)
+    box("mailslot.frame", K.mat_metal("mailslot.brass", "brass", 0.3), (0, 0, 0), (0.36, 0.1, 0.02), slot)
+    hinge = K.empty("mailslot.hinge", (0, 0.04, -0.012), slot)
+    K.drive(hinge, "rotation_euler", 0, slot, "flap", "-1.1 * x")
+    box("mailslot.flap", K.mat_metal("mailslot.flap", "brass", 0.3), (0, -0.04, 0), (0.32, 0.08, 0.004), hinge)
+    out["mailslot"] = slot
+    return out
+
+
+def tickets():
+    """Printed tickets: the stacks the mobile's pieces carry away (N13), the one that falls through the floor (N14,
+    "fall" 0 at the mobile .. 1 on the basement desk), and the drift that piles against the glass (N29-N37,
+    "drift" 0 .. 1 scales the pile)."""
+    out = {}
+    paper = K.mat_matte("ticket.paper", "paper")
+    fall = K.empty("ticket.fall")
+    t = box("ticket.fall.card", paper, (0, 0, 0), (0.11, 0.15, 0.001), fall)
+    t.visible_shadow = False
+    out["fall"] = fall
+    pile = K.empty("ticket.pile", (0, -ROOM - 0.12, PL_H))
+    K.prop(pile, "drift", 0.0)
+    rnd = random.Random(SEEDS["main"] + 5)
+    for k in range(60):
+        x = rnd.uniform(-1.9, 1.9)
+        if abs(x) < 1.0 and rnd.random() < 0.7:
+            x = math.copysign(1.0 + rnd.random() * 0.9, x)
+        box(f"ticket.pile{k}", paper, (x, -rnd.uniform(0, 0.25), rnd.uniform(0, 0.12)),
+            (0.11, 0.15, 0.001), pile, rot=(rnd.uniform(-0.6, 0.6), rnd.uniform(-0.6, 0.6), rnd.uniform(0, math.tau)))
+    for i in range(3):
+        K.drive(pile, "scale", i, pile, "drift", "max(0.001, x)")
+    out["pile"] = pile
+    return out
+
+
+def shop_twin(shop):
+    """Verse 4's twin in the shop crib (brief: "an identical crib, a green glint under a blanket", "mittens over two
+    thin arms; a waiver on a clipboard, its pen on a string"): the chassis stays under the blanket (hidden until N38
+    everywhere, brief), so only the glint, two thin chrome forearms over the blanket's edge in felt mittens, and the
+    clipboard show. Also the price tag's second face (AVAILABLE, from N36) and the display screen's placeholder for the
+    real pages (N33, N34: composited at C5)."""
+    out = {}
+    c = shop["crib"]["root"]
+    chrome = K.mat_chrome("twin.chrome")
+    mitt = mat_felt("twin.mitten", "felt_cream")
+    for sx in (-1, 1):
+        a = Vector((-0.44, sx * 0.09, 0.53))
+        b = Vector((-0.3, sx * 0.13, 0.55))
+        bar(f"twin.arm{sx}", chrome, a, b, 0.004, c, verts=10)
+        sphere(f"twin.mitten{sx}", mitt, b + Vector((0.025, 0, 0.005)), 0.028, c, 16).scale = (1.4, 1.0, 0.8)
+    clip = K.empty("twin.clipboard", (-0.66, 0.0, 0.62), c)
+    clip.rotation_euler = (0, -0.25, math.pi / 2)
+    box("twin.board", mat_paint("twin.board", "wood", 0.6), (0, 0, 0), (0.22, 0.3, 0.006), clip)
+    box("twin.waiver", K.mat_matte("twin.waiver", "paper"), (0, 0, 0.004), (0.2, 0.27, 0.001), clip)
+    K.text("twin.waiver_text", "WAIVER", 0.03, K.mat_ink("twin.ink", "shadow"), loc=(0, 0.09, 0.006), rot=(0, 0, 0),
+           parent=clip)
+    for k in range(6):
+        box(f"twin.line{k}", K.mat_matte("twin.lines", "steel"), (0, 0.04 - k * 0.03, 0.006), (0.15, 0.003, 0.0005), clip)
+    bar("twin.pen", K.mat_plastic("twin.pen", "shadow", 0.3), (0.06, -0.12, 0.01), (0.12, -0.02, 0.01), 0.004, clip)
+    bar("twin.string", K.mat_matte("twin.string", "felt_grey"), (0.1, 0.15, 0.004), (0.12, -0.02, 0.01), 0.001, clip)
+    tag2 = K.text("shop.tag_text2", "AVAILABLE", 0.03, K.mat_ink("tag_ink2", "shadow"), loc=(0, 0, 0.001),
+                  rot=(0, 0, 0), font="Inter-Medium-flat.ttf", parent=bpy.data.objects["shop.tag"])
+    out["tag_soon"], out["tag_available"] = bpy.data.objects["shop.tag_text"], tag2
+    scr = shop["screen"]
+    ph = K.empty("shop.screen_ph", scr.matrix_world.translation + Vector((-0.025, 0, 0)))
+    K.prop(ph, "page", 0.0)
+    pl = K.mesh_obj("shop.screen_page", bpy.ops.mesh.primitive_plane_add,
+                    K.mat_emission("shop.page", "commerce", 2.0, ph, "page", floor=0.0), ph, size=1,
+                    rotation=(math.pi / 2, 0, -math.pi / 2))
+    pl.scale = (0.86, 0.5, 1)
+    K.text("shop.screen_label", "[ real page, composited at C5 ]", 0.03, K.mat_ink("shop.ph_ink", "shadow"),
+           loc=(-0.002, 0, 0), rot=(math.pi / 2, 0, -math.pi / 2), parent=ph)
+    out["screen_ph"] = ph
+    return out
+
+
+def build(star_count=1.0, reveal=False):
     """The whole set; returns a dict of named rigs for the shot scripts."""
     S = {}
     S.update(hall())
     S.update(plinth())
     S.update(glass_room())
     S.update(nursery(S["root"]))
-    S["stars"] = projected_stars(S["projector_pt"], 320, SEEDS["main"], star_count)
-    S.update({f"street_{k}": v for k, v in street().items()})
-    S.update({f"shop_{k}": v for k, v in shop_window().items()})
+    S["stars"] = projected_stars(S["projector_pt"], 320, SEEDS["main"], star_count, reveal=reveal)
+    st = street()
+    S.update({f"street_{k}": v for k, v in st.items()})
+    shop = shop_window()
+    S.update({f"shop_{k}": v for k, v in shop.items()})
+    if reveal:  # the C4+ additions: everything that appears, falls or lights during the song
+        S["call_graph"], S["call_graph_n"] = call_graph(S["stars"], SEEDS["main"] + 1)
+        S["floor_gaps"] = floor_gaps()
+        S["town_crack"] = town_crack(st, SEEDS["main"] + 2)
+        S["moat"] = moat()
+        S["rope"] = velvet_rope()
+        S.update({f"base_{k}": v for k, v in basement().items()})
+        S.update({f"ticket_{k}": v for k, v in tickets().items()})
+        S.update({f"twin_{k}": v for k, v in shop_twin(shop).items()})
     S.update(hall_lights())
     if LOOK.get("haze_density"):
         S["haze"] = haze(LOOK["haze_density"])

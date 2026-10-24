@@ -214,3 +214,17 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Outputs:** `scripts/pen_scratch.py`, `audio/sfx/pen_scratch.wav` (1.62 s, 48 kHz, 24-bit, seed 41), `config/audio.json`, `config/seeds.json`, `scripts/timing_map.py`, `timing/timing_map.{json,md}`, `config/shot_anchors.json`, `renders/c3/outro_pen_scratch_preview.wav`
 - **Level:** over the scratch's 1.8 s, the mix's mean level rises from −32.9 to −29.2 dB. The level gets judged by ear at C5.
 - **Why:** Human interventions, C3 approval (R1).
+
+## 2026-10-24T03:35:00-04:00 — Pen scratch: the human-chosen recording replaces the synthesised one
+
+- **What:**
+  - Copied the human's download of Pixabay "scribble" (sound effect 6144; royalty-free, attribution not required) into `audio/sfx/` (`cmp` OK). It's 1.23 s, mono, 44.1 kHz, and the scribble starts at 0 s.
+  - `config/audio.json` places it at 229.42 s with +11 dB gain (its peak is −24.9 dB), panned a little right, on top of the unedited track.
+  - Archived the rejected synthesised sound and its script. Remixed the outro preview.
+- **Commands:**
+  - `cp -p ~/Downloads/freesound_community-scribble-6144.mp3 audio/sfx/`; `git mv scripts/pen_scratch.py archive/scripts/pen_scratch_rejected_not-a-pen.py`
+  - `ffmpeg -ss 220 -i <track> -i audio/sfx/freesound_community-scribble-6144.mp3 -filter_complex "[1:a]aresample=48000,volume=11dB,pan=stereo|c0=0.95*c0|c1=c0,adelay=9420|9420[s];[0:a][s]amix=inputs=2:duration=first:normalize=0" renders/c3/outro_pen_scratch_preview.wav`
+- **Outputs:** `audio/sfx/freesound_community-scribble-6144.mp3`, `config/audio.json`, `renders/c3/outro_pen_scratch_preview.wav`
+- **Archived:** `archive/audio/sfx/pen_scratch_rejected_not-a-pen.wav`, `archive/scripts/pen_scratch_rejected_not-a-pen.py`, `archive/renders/c3/outro_pen_scratch_preview_rejected_synth.wav`
+- **Level:** the mean over the scratch is −29.6 dB, against −32.9 dB for the track alone. The final level is set by ear at C5, on the mastered track.
+- **Why:** Human interventions, 03:25 (R1, plus an exception for a recorded sound).

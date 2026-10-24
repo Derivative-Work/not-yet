@@ -1,13 +1,14 @@
 {
- "_doc": "Audio for the edit (scripts/pen_scratch.py, the human's C3 choices). The track itself is not edited.",
+ "_doc": "Audio for the edit. The track itself is not edited (human, C3); effects are mixed on top at the final mix.",
  "track": "audio/track/Sleep, Little Secret.wav",
  "master": null,
  "sfx": [
   {
-   "file": "audio/sfx/pen_scratch.wav",
+   "file": "audio/sfx/freesound_community-scribble-6144.mp3",
    "at_s": 229.42,
-   "gain_db": 0.0,
-   "why": "N39: the waiver's pen, off screen, on top of the existing audio"
+   "gain_db": 11.0,
+   "source": "Pixabay sound effect 6144 'scribble' (uploader freesound_community), https://pixabay.com/sound-effects/film-special-effects-scribble-6144/, Pixabay Content License: royalty-free, attribution not required",
+   "why": "N39: the waiver's pen, off screen, on top of the existing audio. Chosen by the human after the synthesised scratch didn't read as a pen (logged as an exception)"
   }
  ]
 }
