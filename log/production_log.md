@@ -44,3 +44,28 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 - **Outputs:** `log/audits/{01_gemini,02_chatgpt,03_glm}_raw.md`; `log/audits/README.md` and the three per-audit notes updated
 - **Findings:** Each auditor saw a different draft: Gemini saw v1, ChatGPT saw Gemini's revision and GLM saw v3. None audited v3.1 itself. GLM's "hallucination" line for N34 is in its section II.1. Gemini's and GLM's raw outputs also show the mistakes the brief wants on screen: Gemini calls the named events "hypothetical or fictionalized", and GLM pins verse 1 on Big Sleep and SQLite.
 - **Why:** Brief, "Production rules": the auditors' outputs are saved verbatim with model name, version and date.
+
+## 2026-10-23T21:58:00-04:00 — C1: style spec, look config, the set, and two test frames
+
+- **What:** Wrote the style spec and `config/look.json`: the six colour-role hex values, materials, lighting, 60 fps, AgX Base Contrast. Vendored Sandbox Rhapsody's kit unchanged. Built the whole set as one procedural module: hall, plinth, glass room with frost and vault door, nursery, projected stars, street, shop window, lights and haze. Rendered the two C1 test frames at 720p and made a review sheet.
+- **Commands:**
+  - `cp ../sandbox-rhapsody/scenes/blender/lib/{sr_kit,sr_anim}.py scenes/blender/lib/`, unchanged. Source: Sandbox Rhapsody HEAD 5a56d3c; the files were last changed in f77185c. SHA-256: sr_kit 064ed831…, sr_anim c6894599…
+  - `cp ../sandbox-rhapsody/assets/fonts/* assets/fonts/` (`sha256sum -c SHA256SUMS` OK)
+  - `blender -b --factory-startup --python scenes/blender/c1_test_frame.py -- renders/c1/c1_test_frame_{wide,close}.png 1280 720 64 {wide,close}` (about 21 s each on the GTX 970)
+  - `.venv/bin/python -I scripts/c1_sheet.py renders/c1/c1_test_frame_wide.png renders/c1/c1_test_frame_close.png renders/c1/c1_sheet.jpg`
+- **Outputs:** `style/style_spec.md`, `config/look.json`, `config/seeds.json` (the `stars` process), `scenes/blender/sets/nursery.py`, `scenes/blender/c1_test_frame.py`, `scripts/c1_sheet.py`, `scenes/blender/lib/{sr_kit,sr_anim}.py`, `assets/fonts/`, `renders/c1/c1_test_frame_{wide,close}.png`, `renders/c1/c1_sheet.jpg`
+- **Iterations** (16-sample 720p drafts, judged by the agent):
+  1. Interior all blue, door navy, shop blown out, street hidden. Raised the night-light (6→30 W) and the nursery fill (40→70 W), lowered the shop light (900→220 W, tubes 30→6), added the door's front light, raised the hill.
+  2. The solid pastel door surround hid the nursery, and the street wasn't in the window's sightline. Made the door bay glass with a pastel ring frame. Placed the neighbor's house and the moon on the camera's line through the window, and brightened the sky.
+  3. Frost was invisible (the shader read the plane's degenerate Z, and the coverage was mis-scaled), and the close camera sat on the door. Fixed both; the wide camera moved round so the crib and mobile show.
+  4. The crib's end arches read as white ovals; flattened them. Moved the glint to the blanket's lip.
+  - Mistake: I rendered drafts 1–3 to the same path, so only the last survives (`archive/renders/c1/draft_{wide,close}_superseded_c1-iteration.png`). That breaks the never-overwrite rule for intermediate renders. From here on every render gets a versioned name.
+- **Kit notes:**
+  - Some kit drivers made during the build were invalid at first evaluation: the music box's teeth and glow, and the mobile's hangers. `K.rebind_drivers()` before `K.refresh()` fixes them, as in Sandbox Rhapsody; none are left invalid.
+  - Sandbox Rhapsody's music box glows amber, so it is recoloured on import (brief: amber belongs to the neighbor's window).
+- **Self-assessment for C1:**
+  - Holds up: the wide frame's composition (glowing glass room, stars, the amber window framed by the tall window, the shop and the tungsten slit) and the cold-out, warm-in split.
+  - Weaker: the hall is very dark, apart from the haze, the spots and the moon patch. The shop window is still the brightest thing in the frame. The glint isn't visible in either frame.
+  - Not in C1: the probe (C2), animation, and real reflections in the glass (planar probes, C4/C5).
+- **Why:** Brief, checkpoint C1.
+- **Status:** **C1 is ready for review.** The agent stops here for approval, per the brief.
