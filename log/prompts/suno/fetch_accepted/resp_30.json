@@ -1,0 +1,1 @@
+{"url":"https://api.stripe.com/v1/radar/session/rse_1UTtANE1icI7lnWdfkuo4kDE/attach_hcaptcha_token","body":"{\n  \"id\": \"rse_1UTtANE1icI7lnWdfkuo4kDE\",\n  \"flags_config\": {\n    \"human_security_enabled\": true\n  },\n  \"passive_captcha_site_key\": \"9883b18b-8cd9-4469-b478-05c06d8252d8\"\n}"}

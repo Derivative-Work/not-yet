@@ -19,3 +19,20 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
   - Stems: Vocals, Backing Vocals, Keyboard, Strings, Guitar, Bass and Percussion, each with a MIDI file. By its MIDI, Keyboard is an orchestral harp line (1238 notes, 0–246 s), the likely music box. Percussion is a vibraphone line (247 notes), the likely celesta. There are no drums despite the stem's name. The MIDI tempo is about 115→112 bpm. Every MIDI file carries an undecodable key signature, as in Sandbox Rhapsody, so `scripts/midi_io.py` is reused.
 - **Why:** Brief, "Production rules": inherited setup before the first commit; read both briefs in full before the first action.
 - **Environment:** Claude Code (Opus 5.5); Blender 5.2.2 LTS; ffmpeg 8.0.1; uv 0.13.1; Node v24.22.0; git. GPU: GTX 970 4 GB, driver 580.178.04 (draft box; finals move to the RTX 5090). Disk: 138 GB free.
+
+## 2026-10-23T21:05:00-04:00 — Step 2: Suno take, drafting chat and audits logged retroactively
+
+- **What:** Fetched the Suno share page and the drafting chat's share page with Sandbox Rhapsody's scripts. Extracted the take's metadata and submitted lyrics. Converted the chat to Markdown, and saved each audit's messages verbatim in `log/audits/`. Wrote `log/prompts/suno/takes.md`.
+- **Commands:**
+  - `cp ../sandbox-rhapsody/scripts/{fetch_share.mjs,fetch_suno.mjs,chat_snapshot_to_md.py,suno_meta.py} scripts/`; `package.json` and lock from Sandbox Rhapsody (renamed); `npm ci`
+  - `node scripts/fetch_suno.mjs https://suno.com/s/3EJeKdHkJJEsodzS log/prompts/suno/fetch_accepted`; `.venv/bin/python -I scripts/suno_meta.py log/prompts/suno/fetch_accepted` (lyrics bounds changed to `[Verse 1]` … `Goodnight.`)
+  - `node scripts/fetch_share.mjs https://claude.ai/share/b0788d14-90a8-4d6e-adbf-8ad3011e43c1 docs/drafting_chat/drafting_chat`; `.venv/bin/python -I scripts/chat_snapshot_to_md.py docs/drafting_chat/drafting_chat.json <url> > docs/drafting_chat/drafting_chat.md`
+  - Audits: an inline Python script that writes chat messages 21–26 verbatim, two per auditor, to `log/audits/0{1,2,3}_*.md`
+- **Outputs:** `docs/drafting_chat/drafting_chat.{json,html,txt,md}`, `log/prompts/suno/fetch_accepted/`, `log/prompts/suno/takes.md`, `log/audits/{README,01_gemini,02_chatgpt,03_glm}.md`
+- **Findings:**
+  - The take is Suno V6 (`chirp-hawk`), created 2026-10-23T08:28:20Z.
+  - Suno's page lyrics equal v3.1. Step 1's doubled bridge line exists only in the MP3's lyrics tag, and the human confirms it isn't sung. So there is no lyric exception, and no submitted-vs-drafted difference.
+  - The style prompt asks for music box and celesta. Suno added pizzicato strings, flute, bass, electric piano and a pad (step 1 MIDI inventory). That is an AI change, logged here, not a human one.
+  - Each auditor's full response was a file attached to the chat. The public share doesn't expose attachments (`viewer_can_access_files: false`; `file_count: 1` on messages 21, 23 and 25). What the share does hold: Gemini's and ChatGPT's suggested lyrics, Claude's resolution tables, and Claude's summary of GLM's findings. The raw outputs are still needed from the human for N34, which shows them on screen.
+  - Model versions: Gemini "Argon" (Gemini 4 Argon per message 22); ChatGPT's version is not recorded; GLM 5.3 Flash.
+- **Why:** Brief, "Production rules": save the drafting chat and the audits verbatim with model, version and date, plus the resolution tables. Sandbox Rhapsody's pre-production step 2: log the audio retroactively.

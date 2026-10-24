@@ -1,0 +1,1 @@
+{"url":"https://google.com/.well-known/web-identity","body":"{\n  \"provider_urls\": [\n    \"https://accounts.google.com/gsi/fedcm.json\"\n  ],\n  \"accounts_endpoint\": \"https://accounts.google.com/gsi/fedcm/listaccounts\",\n  \"login_url\": \"https://accounts.google.com/gsi/fedcm/signin\"\n}\n"}
