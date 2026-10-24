@@ -62,7 +62,8 @@ KEYS = [
     ("N14", 2.7, (0.6, 0.3, 0.9), (0.5, 0.65, 0.42), 30),
     ("N15", 0.0, (-0.7, -0.6, -1.55), (0.4, 1.3, -2.05), 28),    # the basement: lamp, peanuts, donation jar
     ("N16", 0.0, (0.05, -0.75, -1.8), (0.45, 0.9, -2.05), 30),   # the maintainer from behind
-    ("N17", 0.0, (0.95, 0.15, -1.75), (0.2, 1.45, -2.1), 32),    # a few sheets glow cream
+    ("N17", 0.0, (0.92, 0.66, -1.6), (0.35, 1.28, -1.93), 36),   # a few sheets glow cream; over the shoulder, the
+    ("N17", 3.2, (0.86, 0.78, -1.62), (0.35, 1.28, -1.92), 40),  # laptop's advisory feed (human, C4 v3 review)
     ("N18", 0.0, (0.42, 1.2, -1.15), (0.2, 1.58, -0.1), 30),    # the mail slot in the ceiling, tickets dropping
     ("N18", 3.4, (0.8, 0.3, -1.4), (0.3, 1.3, -0.5), 30),
     ("N19", -2.6, (0.62, 0.0, 0.2), (0.25, 1.0, 1.9), 28),       # through the plinth looking up, at the crib and mobile

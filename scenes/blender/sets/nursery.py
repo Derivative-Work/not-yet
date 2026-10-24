@@ -1581,6 +1581,36 @@ def basement():
     box("base.laptop_base", K.mat_plastic("base.laptop", "lab_dark", 0.4), (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015))
     scr = box("base.laptop_screen", K.mat_emission("base.screen", "house", 1.5), (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22))
     scr.rotation_euler = (-0.2, 0, 0)
+    # The page on the laptop (human, C4 v3 review: "something about warnings or CVEs"): a security advisory feed, a
+    # thousand new warnings, a few critical, mostly noise (N17's line). The real bugs are the ones the words allude to
+    # (human, C4 v3 review): PHP2Shell, CVE-2026-109618 and CVE-2026-109619 (the bridge's "old crack under most of the
+    # net"; critical, per the PHP advisories), and Mythos's 27-year-old OpenBSD SACK bug (verse 1), which has no CVE:
+    # OpenBSD fixed it as 7.8 errata 025. The rest is noise, with no IDs made up. Ink on a lit page, just in front of
+    # the screen, on a pivot with the screen's tilt so the text keeps its proportions.
+    pg = K.empty("base.laptop_page", (0.35, 1.28 - 0.0065 * math.cos(0.2), dz + 0.15 - 0.0065 * math.sin(0.2)))
+    pg.rotation_euler = (-0.2, 0, 0)
+    K.mesh_obj("base.page", bpy.ops.mesh.primitive_plane_add, K.mat_emission("base.page", "commerce", 1.1), pg, size=1,
+               rotation=(math.pi / 2, 0, 0)).scale = (0.31, 0.2, 1)
+    K.mesh_obj("base.page_bar", bpy.ops.mesh.primitive_plane_add, K.mat_emission("base.page_bar", "amber", 1.6), pg,
+               size=1, location=(0, -0.0004, 0.082), rotation=(math.pi / 2, 0, 0)).scale = (0.31, 0.036, 1)
+    ink = K.mat_ink("base.page_ink", "shadow")
+    mono = "JetBrainsMono-SemiBold-flat.ttf"
+    K.text("base.page_title", "SECURITY ADVISORIES", 0.019, ink, loc=(-0.145, -0.0008, 0.082), font=mono,
+           align="LEFT", parent=pg)
+    K.text("base.page_count", "1,024 new warnings  ·  2 critical", 0.0115, ink, loc=(-0.145, -0.0008, 0.052),
+           align="LEFT", parent=pg)
+    rows = (("CVE-2026-109618", "CRITICAL"), ("WARNING", "unused var"), ("OpenBSD errata 025", "27 years old"),
+            ("AI report", "unverified"), ("CVE-2026-109619", "CRITICAL"), ("WARNING", "deprecated"),
+            ("AI report", "duplicate"), ("AI report", "???"))
+    for k, (a, b) in enumerate(rows):
+        z = 0.03 - k * 0.0165
+        # The rows in Inter: the mono's dotted zero reads as an 8 at 720p ("2826").
+        K.text(f"base.page_id{k}", a, 0.0125, ink, loc=(-0.145, -0.0008, z), align="LEFT", parent=pg)
+        K.text(f"base.page_sev{k}", b, 0.0125, ink, loc=(0.145, -0.0008, z), align="RIGHT", parent=pg)
+        if b == "CRITICAL":
+            K.mesh_obj(f"base.page_hi{k}", bpy.ops.mesh.primitive_plane_add,
+                       K.mat_emission(f"base.page_hi{k}", "amber", 1.3), pg, size=1,
+                       location=(0.115, -0.0005, z), rotation=(math.pi / 2, 0, 0)).scale = (0.072, 0.014, 1)
     # The jar of peanuts and the donation jar with three coins.
     jar = K.mat_acrylic("base.jar", "glass", alpha=0.25)
     cyl("base.peanut_jar", jar, (-0.05, 1.45, dz + 0.08), 0.05, 0.14, verts=24)
@@ -1621,6 +1651,8 @@ def basement():
         a = rnd.uniform(0, math.tau)
         x, y = -0.8 + 1.4 * r * math.cos(a), 1.6 - 1.2 * r * abs(math.sin(a))
         z = Z0 + 0.01 + 0.35 * (1 - r) * rnd.random() if rnd.random() < 0.7 else dz + 0.03 + 0.12 * rnd.random()
+        if z > dz and -0.15 < x < 0.85 and 0.7 < y < 1.6:  # keep the laptop's screen clear (N17's feed)
+            z = Z0 + 0.01 + 0.35 * (1 - r) * rnd.random()
         lit = k % 17 == 0
         mat = K.mat_emission(f"base.sheet_glow{k}", "comfort", 1.5, glow, "glow", floor=0.0) if lit else grey
         sh = box(f"base.sheet{k}", mat, (x, y, z), (0.21, 0.297, 0.001), rot=(rnd.uniform(-0.3, 0.3),
@@ -1724,8 +1756,11 @@ def shop_twin(shop):
         for k in (-1, 1):
             bpy.data.objects[f"twin.finger_{side}{k}"].hide_render = True  # inside the mitten
     out["probe"] = tw
-    clip = K.empty("twin.clipboard", (-0.66, 0.0, 0.62), c)
-    clip.rotation_euler = (0, -0.25, math.pi / 2)
+    # The clipboard lies on the blanket just past the mittens, as if held out to them (human, C4 v3 review: it stood
+    # against the headboard and passed through it); it rides the blanket's breath there.
+    clip = K.empty("twin.clipboard", (-0.02, 0.0, 0.0), c)
+    clip.rotation_euler = (0, 0, math.pi)  # the waiver reads from the hall
+    K.drive(clip, "location", 2, c, "breath", "0.478 + 0.004*x")
     box("twin.board", mat_paint("twin.board", "wood", 0.6), (0, 0, 0), (0.22, 0.3, 0.006), clip)
     box("twin.waiver", K.mat_matte("twin.waiver", "paper"), (0, 0, 0.004), (0.2, 0.27, 0.001), clip)
     K.text("twin.waiver_text", "WAIVER", 0.03, K.mat_ink("twin.ink", "shadow"), loc=(0, 0.09, 0.006), rot=(0, 0, 0),

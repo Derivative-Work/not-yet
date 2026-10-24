@@ -238,10 +238,10 @@ def hall_window(S):
 def ticket(S):
     fall = S["ticket_fall"]
     t0, t1, t2, t3 = SHOT["N14"] - 0.4, SHOT["N14"] + 2.7, SHOT["N15"] - 0.8, SHOT["N15"] + 0.3
-    p = [(t0, (0.45, 1.0, 1.88)), (t1, (0.5, 0.62, 0.42)), (t2, (0.5, 0.9, -1.6)), (t3, (0.52, 1.25, -2.0))]
+    p = [(t0, (0.45, 1.0, 1.88)), (t1, (0.5, 0.62, 0.42)), (t2, (0.6, 0.9, -1.6)), (t3, (0.76, 1.12, -2.028))]  # flat on the desk, clear of the screen
     for i in range(3):
         path_keys(fall, "location", [(0.0, p[0][1][i], "CONSTANT")] + [(t, xyz[i]) for t, xyz in p], index=i)
-    for i, w in enumerate((1.4, 0.0, 2.2)):
+    for i, w in enumerate((2 * math.pi / 3, 0.0, 2.2)):  # x ends a whole turn: lying flat
         path_keys(fall, "rotation_euler", [(t0, 0.0), (t3, w * 3)], index=i)
     visible(fall, t0, SHOT["N19"])
     keys(S["ticket_pile"], "drift", [(0.0, 0.0), (SHOT["N14"], 0.0), (SHOT["N29"], 0.35), (SHOT["N37"], 1.0)])

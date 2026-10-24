@@ -385,3 +385,27 @@ N17's laptop screen to show warnings/CVEs; N32's clipboard clips through the bed
   - The deliverables now read "Two 9:16 vertical cuts".
   - The C6 checklist item covers both cuts, the windows cut first.
   - Updated in the Claude Doc (rev 30) and mirrored in `docs/brief.md`.
+
+## 2026-10-24T15:00 — C4 v4: N17's advisory feed, N32's clipboard on the blanket
+
+From the C4 v3 review and its follow-up (`log/human_interventions.md`, 13:20 and 14:05).
+
+- **N17 (the laptop):**
+  - The screen carries a security advisories page: an amber title bar, "1,024 new warnings · 2 critical", and eight rows. The real bugs are PHP2Shell's CVE-2026-109618 and CVE-2026-109619 (CRITICAL, marked in amber) and "OpenBSD errata 025 · 27 years old". The rest is noise (14:05 entry).
+  - The camera at N17 is over the maintainer's right shoulder at 36 mm, easing to 40 mm by N17 + 3.2 s, so the page reads through the line.
+  - Loose sheets that landed on the desk in front of the laptop now land on the floor.
+  - N14's falling ticket now lands flat beside the laptop (it ended tilted against the screen). Its x spin ends on a whole turn.
+- **N32 (the clipboard):** it stood against the shop crib's headboard and passed through it. It now lies on the blanket just past the mittens, reading the right way up from the hall, and rides the blanket's breath.
+- **Housekeeping:** `renders/c4/review_v4a.log` (a review render's log) was deleted by mistake; its stills are kept.
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v4 --step 2` (3,510 frames)
+  - `… -- --out renders/c4/anchors_v7 --anchors`
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v4 2 renders/c4/c4_animatic_v4.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v7 renders/c4/c4_anchor_sheet_v4.jpg 6`
+  - Review stills are in `renders/c4/review_v4a`–`v4f`.
+- **Archived:**
+  - `archive/renders/c4/c4_animatic_v3_rejected_c4-v3-review.mp4`
+  - `archive/renders/c4/c4_anchor_sheet_v3_rejected_c4-v3-review.jpg`
+  - `archive/renders/c4_anchors_v6_rejected_c4-v3-review/`
+- **Outputs:** `renders/c4/c4_animatic_v4.mp4` (252 s), `renders/c4/c4_anchor_sheet_v4.jpg`.
+- **Status:** **C4 v4 is ready for review.**
