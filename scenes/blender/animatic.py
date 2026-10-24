@@ -4,11 +4,12 @@ Eevee at low resolution and few samples.
 
 Modes:
   --anchors   one still per shot anchor (N02..N40) -> <out>/anchor_<ID>.png, for the contact sheet
+  --times     stills at the given song seconds -> <out>/t_<seconds>.png (review frames)
   default     every --step'th frame from --from to --to (song seconds; default the whole move, to N40's black)
               -> <out>/f_<frame>.png (frame numbers are the song's, at the video's fps)
 
 Usage: blender -b --factory-startup --python scenes/blender/animatic.py -- --out DIR [--size W H] [--samples N]
-       [--step K] [--from S] [--to S] [--anchors]
+       [--step K] [--from S] [--to S] [--anchors | --times S ...]
 """
 import argparse
 import sys
@@ -33,6 +34,7 @@ ap.add_argument("--step", type=int, default=1)
 ap.add_argument("--from", dest="t0", type=float, default=0.0)
 ap.add_argument("--to", dest="t1", type=float, default=None)
 ap.add_argument("--anchors", action="store_true")
+ap.add_argument("--times", nargs="+", type=float)
 args = ap.parse_args(sys.argv[sys.argv.index("--") + 1:])
 
 t_start = time.time()
@@ -47,8 +49,10 @@ black = animate.OUT["black"]
 f_end = A.frame(black)
 cam = camera_path.build(K, bpy, 0, f_end)
 # The cutaway through the plinth (brief, N14-N15 and N19): while the eye passes the floor's layers (z -0.15..0.55),
-# the layers it would be inside are hidden, so the frame opens from the nursery straight into the basement.
-CUT = ["plinth", "nursery.rug", "floor", "base.ceiling", "floor_gaps"] + [f"plinth.band{k}" for k in range(4)]
+# the layers it would pass through are hidden (the nursery floor slab, the rug, the basement's ceiling), so the frame
+# opens from the nursery straight into the basement. The plinth is hollow and its sides stay, so nothing outside it
+# shows on the way (human, C4 review).
+CUT = ["plinth", "nursery.rug", "base.ceiling", "floor_gaps"]
 inside = [f for f in range(f_end + 1) if -0.15 <= camera_path.pose(f / A.FPS)[0].z <= 0.55]
 spans = []
 for f in inside:
@@ -76,7 +80,13 @@ if bad:
 out = Path(args.out)
 out.mkdir(parents=True, exist_ok=True)
 scene.render.image_settings.file_format = "PNG"
-if args.anchors:
+if args.times:
+    for t in args.times:
+        scene.frame_set(min(A.frame(t), f_end))
+        scene.render.filepath = str(out / f"t_{t:07.2f}.png")
+        bpy.ops.render.render(write_still=True)
+        print("still", t, flush=True)
+elif args.anchors:
     shots = [s for s in A.timing_map()["shots"] if s["t"] is not None and s["t"] <= black]
     for s in shots:
         f = min(A.frame(s["t"]) + 2, f_end)

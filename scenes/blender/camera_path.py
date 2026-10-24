@@ -1,10 +1,13 @@
-"""The one continuous camera move, N02 to N40 (brief: "N03 to N38 are one continuous camera move with no cuts: the IDs
-mark where the move must be at each anchor").
+"""The camera move, N02 to N40 (brief: "N03 to N38 are one continuous camera move with no cuts: the IDs mark where the
+move must be at each anchor"), with the one cut the human added at C4 review: right before "windows are never quite
+mended" (N10) it cuts to the taped, cracked hall window seen from outside, then comes in through the window and pans
+slowly around the set to the door, with no second cut (log/human_interventions.md, an EXCEPTION).
 
 KEYS are poses (eye, target, lens) at times given as a shot ID (its anchor in timing/timing_map.json) plus an optional
 offset in seconds. The eye and the target each run on a centripetal Catmull-Rom spline through their keys,
 parameterised by time, and are baked once per frame (linear between frames), so the move never stops or eases at a
-key: velocity is continuous through every anchor. Lens is interpolated the same way. Speed is reported by
+key: velocity is continuous through every anchor. CUT splits KEYS into two splines: the one before it ends on its last
+key at the cut, the one after starts on its first; build() keys the jump so it never interpolates across it. Lens is interpolated the same way. Speed is reported by
 speed_profile() for the log; the brief's "constant speed" can't hold exactly, because the itinerary mixes close
 details with crossings of the hall, so the path is drawn to keep speed changes gradual.
 
@@ -31,6 +34,8 @@ SCREEN = (12.28, -1.1, 1.55)
 NEIGHBOR = (-1.4, 54.7, 7.9)
 
 # (anchor, offset s, eye, target, lens mm)
+CUT = ("N10", 0.03)  # 52.00 s: on the beat, after "...and", right before "windows are never quite mended"
+
 KEYS = [
     ("N02", 0.0, (-1.6, -13.2, 1.9), (0.0, 0.0, 1.7), 35),
     ("N03", 0.0, (-1.45, -12.1, 1.88), (0.0, 0.0, 1.7), 35),
@@ -40,10 +45,17 @@ KEYS = [
     ("N07", 0.0, (1.55, -3.55, 1.64), NOTE, 40),                 # at the door: the sticky note
     ("N08", 0.0, (1.75, -3.2, 1.6), (0.4, 0.6, 1.5), 36),        # through the glass: two stars dim
     ("N09", 0.0, (1.55, -3.15, 1.6), (0.6, 0.6, 1.5), 36),       # the taped hall window in the glass (C5: reflection)
-    ("N10", 0.0, (1.2, -3.1, 1.58), (0.3, 0.6, 1.45), 36),       # a new hairline crack beside the tape
-    ("N11", -5.0, (0.85, -3.0, 1.55), (0.5, -1.0, 1.55), 34),
-    ("N11", 0.5, (0.6, -1.95, 1.55), (0.9, -0.6, 1.6), 32),      # through the opening, right of centre
-    ("N11", 2.5, (0.98, -1.3, 1.58), (0.4, 0.5, 1.8), 30),       # past the door's free edge
+    ("N10", 0.03, (1.4, -3.13, 1.59), (0.5, 0.6, 1.48), 36),     # -- the cut --
+    ("N10", 0.03, (-4.0, -19.0, 2.6), (-4.0, -14.1, 2.6), 40),   # outside: the taped pane, the new crack on "never"
+    ("N10", 3.5, (-4.1, -17.6, 2.5), (-4.15, -14.1, 2.48), 39),
+    ("N10", 4.8, (-4.4, -15.8, 2.18), (-4.5, -11.0, 2.12), 36),
+    ("N10", 6.0, (-4.53, -14.03, 2.07), (-4.4, -9.5, 2.0), 35),  # through the lower-left pane
+    ("N10", 8.2, (-4.0, -10.6, 2.05), (-1.0, -1.0, 1.8), 32),    # the slow pan around the set
+    ("N10", 10.9, (-2.6, -6.6, 1.9), (0.0, 0.0, 1.6), 32),
+    ("N10", 12.85, (-0.6, -4.2, 1.7), (0.4, -1.2, 1.55), 34),
+    ("N11", 1.0, (0.85, -3.0, 1.55), (0.5, -1.0, 1.55), 34),
+    ("N11", 2.6, (0.6, -1.95, 1.55), (0.9, -0.6, 1.6), 32),      # through the opening, right of centre
+    ("N11", 3.8, (0.98, -1.3, 1.58), (0.4, 0.5, 1.8), 30),       # past the door's free edge
     ("N12", 0.0, (0.95, -0.45, 1.5), (0.15, 1.05, 2.0), 30),     # the mobile's pieces lower to peer in
     ("N13", 0.0, (0.75, 0.05, 1.55), (0.2, 1.05, 1.95), 30),     # they rise with tickets
     ("N14", 0.0, (0.65, 0.2, 1.45), (0.45, 0.95, 1.55), 32),     # follow one ticket down
@@ -51,8 +63,9 @@ KEYS = [
     ("N15", 0.0, (-0.7, -0.6, -1.55), (0.4, 1.3, -2.05), 28),    # the basement: lamp, peanuts, donation jar
     ("N16", 0.0, (0.05, -0.75, -1.8), (0.45, 0.9, -2.05), 30),   # the maintainer from behind
     ("N17", 0.0, (0.95, 0.15, -1.75), (0.2, 1.45, -2.1), 32),    # a few sheets glow cream
-    ("N18", 0.0, (0.95, 0.2, -1.9), (0.25, 1.5, -0.95), 26),     # the mail slot in the ceiling, the desk below
+    ("N18", 0.0, (0.42, 1.2, -1.15), (0.2, 1.58, -0.1), 30),    # the mail slot in the ceiling, tickets dropping
     ("N18", 3.4, (0.8, 0.3, -1.4), (0.3, 1.3, -0.5), 30),
+    ("N19", -2.6, (0.62, 0.0, 0.2), (0.25, 1.0, 1.9), 28),       # through the plinth looking up, at the crib and mobile
     ("N19", 0.0, (0.5, -0.3, 1.25), (0.2, 0.8, 1.05), 30),       # back up into the nursery
     ("N20", 0.0, (-0.25, -0.35, 1.3), (-0.7, -1.25, 0.42), 30),  # lamp light through the floor gaps
     ("N21", 0.0, (0.6, -1.25, 1.62), NOTE, 34),                  # the note from inside, peeling further
@@ -67,13 +80,17 @@ KEYS = [
     ("N29", 0.0, (-0.3, -6.1, 2.75), (0.0, 0.0, 2.0), 28),       # wide: the glass room in the hall
     ("N30", 0.0, (0.5, -4.8, 1.45), (0.0, -2.2, 1.3), 35),       # two locks: the dial and the velvet rope
     ("N31", 0.0, (4.6, -2.7, 1.5), SHOP_CRIB, 34),               # across the hall to the shop window
-    ("N32", 0.0, (10.25, 0.05, 1.45), (11.6, 0.35, 1.18), 50),   # mittens, the waiver
-    ("N33", 0.0, (9.2, -0.55, 1.58), SCREEN, 45),                # the real model page
-    ("N34", 0.0, (9.45, -0.75, 1.57), SCREEN, 50),               # the audits
-    ("N35", 0.0, (2.9, -3.15, 1.62), NOTE, 40),                  # the note falls
-    ("N35", 3.3, (0.6, -2.3, 1.52), (0.9, -0.8, 1.5), 32),
-    ("N35", 4.6, (0.98, -1.4, 1.55), (1.4, 0.0, 1.35), 32),
-    ("N36", 0.0, (1.15, -0.55, 1.45), MBOX, 40),                 # the music box's coin slot
+    ("N32", 0.0, (10.75, 0.0, 1.85), (11.95, 0.1, 1.2), 55),  # over the rail: the mittens, the waiver
+    # The screen fills most of the frame and holds to the end of N34's bar (human, C4 review: closer, longer).
+    ("N33", 0.0, (10.75, -1.02, 1.55), SCREEN, 42),              # the real model page
+    ("N33", 3.0, (10.88, -1.09, 1.55), SCREEN, 45),
+    ("N34", 0.0, (10.93, -1.1, 1.55), SCREEN, 46),               # the audits
+    ("N34", 5.8, (10.9, -1.13, 1.555), SCREEN, 46),
+    ("N35", 0.8, (4.6, -4.6, 1.65), NOTE, 50),                   # the note falls (animate: N35 + 1.2), clear of
+    ("N35", 3.6, (2.4, -3.9, 1.62), NOTE, 42),                   # the open door's edge
+    ("N35", 5.4, (0.6, -2.3, 1.52), (0.9, -0.8, 1.5), 32),
+    ("N35", 6.3, (0.98, -1.4, 1.55), (1.4, 0.0, 1.35), 32),
+    ("N36", 1.2, (1.15, -0.55, 1.45), MBOX, 40),                 # the music box's coin slot (animate: N36 + 1.6)
     ("N37", 0.0, (0.75, -0.45, 1.65), (-0.4, 1.2, 2.6), 24),     # walls crowded with stars, frost gone
     ("N38", 0.0, (0.2, 0.42, 1.7), PROBE, 45),                   # the push reaches the crib: the reveal
     ("N39", 0.0, (0.14, 0.52, 1.62), PROBE, 50),
@@ -84,6 +101,17 @@ KEYS = [
 
 def key_times():
     return [ANCHOR[a] + off for a, off, *_ in KEYS]
+
+
+def cut_t():
+    return ANCHOR[CUT[0]] + CUT[1]
+
+
+def _segment(t):
+    """(times, keys) of the spline that holds t: before the cut, or from the cut on."""
+    ts, tc = key_times(), cut_t()
+    i = next(k for k, x in enumerate(ts) if abs(x - tc) < 1e-9 and k + 1 < len(ts) and abs(ts[k + 1] - tc) < 1e-9)
+    return (ts[:i + 1], KEYS[:i + 1]) if t < tc else (ts[i + 1:], KEYS[i + 1:])
 
 
 def catmull(ts, ps, t, alpha=0.5):
@@ -112,10 +140,10 @@ def catmull(ts, ps, t, alpha=0.5):
 
 
 def pose(t):
-    ts = key_times()
-    eye = catmull(ts, [Vector(k[2]) for k in KEYS], t)
-    tgt = catmull(ts, [Vector(k[3]) for k in KEYS], t)
-    lens = catmull(ts, [Vector((k[4], 0, 0)) for k in KEYS], t).x
+    ts, keys = _segment(t)
+    eye = catmull(ts, [Vector(k[2]) for k in keys], t)
+    tgt = catmull(ts, [Vector(k[3]) for k in keys], t)
+    lens = catmull(ts, [Vector((k[4], 0, 0)) for k in keys], t).x
     return eye, tgt, lens
 
 
@@ -127,7 +155,8 @@ def speed_profile(step=0.5):
     while t < end:
         t += step
         e = pose(t)[0]
-        out.append((round(t, 2), round((e - prev).length / step, 3)))
+        if not (t - step < cut_t() <= t):  # the cut is not a speed
+            out.append((round(t, 2), round((e - prev).length / step, 3)))
         prev = e
     return out
 
@@ -150,12 +179,21 @@ def build(K, bpy, f0, f1):
         cam.keyframe_insert("location", frame=f)
         tgt.keyframe_insert("location", frame=f)
         cd.keyframe_insert("lens", frame=f)
+    # The cut: the last frame before it holds until half a frame before the cut, where the new shot's first pose is
+    # keyed, so nothing (a motion-blur sample included) interpolates across it.
+    fcut = math.ceil(cut_t() * FPS - 1e-6)
+    if f0 < fcut <= f1:
+        eye, t, lens = pose(fcut / FPS)
+        cam.location, tgt.location, cd.lens = eye, t, lens
+        for ob, path in ((cam, "location"), (tgt, "location"), (cd, "lens")):
+            ob.keyframe_insert(path, frame=fcut - 0.5)
     for ob in (cam, tgt, cd):
         ad = ob.animation_data
         if ad and ad.action:
             for fc in _fcurves(ad):
                 for kp in fc.keyframe_points:
-                    kp.interpolation = "LINEAR"
+                    held = f0 < fcut <= f1 and fcut - 1.01 < kp.co.x < fcut - 0.01
+                    kp.interpolation = "CONSTANT" if held else "LINEAR"
     bpy.context.scene.camera = cam
     return cam
 

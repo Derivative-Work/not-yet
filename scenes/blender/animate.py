@@ -12,22 +12,25 @@ What drives what (brief, "Running devices", shot list and texture pass; config/i
                 "week"), rise again (N13) with ticket stacks; stops at the pen scratch
   blanket       breathes (crib); the chair's blanket slips each chorus and falls at the pen scratch
   door          opens a crack as the camera arrives (N11)
-  sticky note   peels a corner at N07, further at N21, falls at N35
+  sticky note   peels a corner at N07, further at N21, falls early in N35 (once the camera is back from the shop)
   frost         thins over the song; gone by N37
   night-light   clicks on at N04 (before "twenty-seven-year", never on it)
   moon          the moonlight clock: the back window's patch creeps from the window's base (N02) to the crib (N38)
   growth chart  marks appear by N05, more by N22, the last near the top by N37
-  hall window   the new hairline crack grows on "never" (N10)
+  hall window   the new hairline crack grows on "never" (N10), on the front window and the back one, and stays
   ticket        falls from the mobile through the floor to the basement desk (N14); the drift piles from N29 to N37
-  basement      lamp on; the maintainer breathes; a few sheets glow (N17); the flap clatters on each beat of N18;
+  basement      lamp on; the maintainer breathes; a few sheets glow (N17); the flap clatters on each beat of N18
+                and folded tickets push through the slot on every other beat, dropping to the desk;
                 the floor gaps glow from N20
   neighbor      flickers once at N20; lights on "light" (N23); the glow walks the sill (N24)
-  town          the crack runs down the road (N25); porch lights go out house by house, most return (N26); the far
+  town          the crack runs down the road (N25); porch lights, house windows and streetlights go out house by
+                house, lamp by lamp, most return (N26); the far
                 hills' windows light amber (N27)
   moat          appears at N22
   velvet rope   in front of the door from N29
   shop          tag COMING SOON until N36, then AVAILABLE; the screen lights for the real pages (N33, N34)
-  probe         hidden until N38; its glint widens as the iris opens (N38); the crib's glint goes out as it does
+  probe         hidden until N38, when it lies in the blanket's nest (the nest shape key switches with it); its glint
+                widens as the iris opens (N38); the crib's glint goes out as it does
 """
 import json
 import math
@@ -96,7 +99,7 @@ def music_box(S):
     A.comb(box, evs, lo=min(e["pitch"] for e in evs), hi=max(e["pitch"] for e in evs))
     keys(box, "drum", [(0.0, 0.0, "LINEAR"), (DUR, DUR / 6.0, "LINEAR")])  # one turn every 6 s
     slot = bpy.data.objects["dresser.coinslot"]
-    t = SHOT["N36"] + 0.6
+    t = SHOT["N36"] + 1.6  # the camera settles on the slot at N36 + 1.2
     visible(slot, SHOT["N35"])
     keys(slot, "coin", [(0.0, 0.0, "CONSTANT"), (t, 0.0), (t + 0.45, 1.0)])
 
@@ -189,7 +192,7 @@ def blanket(S):
 def door_and_note(S):
     keys(S["door"], "open", [(0.0, 0.0), (SHOT["N11"] - 3.0, 0.0), (SHOT["N11"] - 0.5, 1.0)])
     note = S["note"]
-    t07, t21, t35 = SHOT["N07"] + 0.8, SHOT["N21"] + 0.6, SHOT["N35"]
+    t07, t21, t35 = SHOT["N07"] + 0.8, SHOT["N21"] + 0.6, SHOT["N35"] + 1.2  # N35: the camera is back by then
     keys(note, "peel", [(0.0, 0.0), (t07, 0.0), (t07 + 0.8, 0.18), (t21, 0.18), (t21 + 1.0, 0.45), (t35, 0.5),
                         (t35 + 0.4, 0.95)])
     # The fall (N35): the note drops from the glass to the plinth, turning.
@@ -228,7 +231,8 @@ def growth_chart(S):
 
 
 def hall_window(S):
-    keys(S["crack_new"], "grow", [(0.0, 0.0), (word("L08", "never") - 0.1, 0.0), (word("L08", "never") + 1.4, 1.0)])
+    for c in (S["crack_new"], S["crack_new_back"]):  # the back window keeps the same state (continuity)
+        keys(c, "grow", [(0.0, 0.0), (word("L08", "never") - 0.1, 0.0), (word("L08", "never") + 1.4, 1.0)])
 
 
 def ticket(S):
@@ -252,11 +256,15 @@ def basement(S):
     keys(m, "breath", pts)
     keys(S["base_glow"], "glow", [(0.0, 0.0), (SHOT["N17"] - 0.3, 0.0), (SHOT["N17"] + 1.0, 1.0)])
     beats = [b for b in TM["beats"] if SHOT["N18"] <= b < LINES["L16"]["end"] + 0.2]
-    per = [[(A.frame(b) - 2, 0.0, "BEZIER"), (A.frame(b), 1.0, "BEZIER", True), (A.frame(b) + 6, 0.0, "BEZIER")]
+    # Between clatters the flap hangs a little ajar (0.2), so the lit chute shows through it.
+    per = [[(A.frame(b) - 2, 0.2, "BEZIER"), (A.frame(b), 1.0, "BEZIER", True), (A.frame(b) + 6, 0.2, "BEZIER")]
            for b in beats]
     A.write_keys(S["base_mailslot"], A.prop_path("flap"), A._merge(per))
-    for k, bt in enumerate(beats[1::max(1, len(beats) // 4)][:4]):  # a sheet drops with some of the clatters
-        keys(S["base_mailslot"], f"drop{k}", [(0.0, 0.0, "CONSTANT"), (bt, 0.0), (bt + 1.3, 1.0)])
+    # A folded ticket on every other clatter: it slides down the chute, through the opening as the flap swings
+    # (0.25 at the beat), and drops to the desk (the drop's own curve is in the driver; keyed linear in time).
+    for k, bt in enumerate(beats[::2][:int(S["base_mailslot_n"])]):
+        keys(S["base_mailslot"], f"drop{k}", [(0.0, 0.0, "CONSTANT"), (bt - 0.3, 0.0, "LINEAR"), (bt, 0.25, "LINEAR"),
+                                             (bt + 0.65, 1.0, "LINEAR")])
     import nursery
     nursery.set_times(S["floor_gaps"], [SHOT["N20"]] * 4)
 
@@ -285,6 +293,15 @@ def neighbor_and_town(S):
         if k not in stay_dark:
             pts.append((b, 1.0, "CONSTANT"))
         keys(lights, f"porch{k}", pts, interp="CONSTANT")
+    # The streetlights go out down the hill as the houses do; two stay dark.
+    lamps = S["street_lamps"]
+    for k in range(len(lamps)):
+        a = t_off + 0.1 + 0.12 * k
+        b = LINES["L24"]["end"] + rnd.uniform(0.2, 1.6)
+        pts = [(0.0, 1.0, "CONSTANT"), (a, 0.0, "CONSTANT")]
+        if k not in (2, 9):
+            pts.append((b, 1.0, "CONSTANT"))
+        keys(lights, f"lamp{k}", pts, interp="CONSTANT")
     far = S["street_far"]
     t_will = word("L25", "others")
     for k in range(int(S["street_far_n"])):
@@ -301,11 +318,15 @@ def moat_rope_shop(S):
                                         (SHOT["N35"], 1.0), (SHOT["N35"] + 1.0, 0.0)])
 
 
+REVEAL_EARLY = 0.5  # s before N38 that the probe (and the blanket's nest) switch in
+
+
 def probe(S):
     p = S["probe"]["probe"]
     cr = S["crib"]["root"]
     t = SHOT["N38"]
-    visible(p, t - 0.5)
+    visible(p, t - REVEAL_EARLY)
+    keys(cr, "nest", [(0.0, 0.0, "CONSTANT"), (t - REVEAL_EARLY, 1.0, "CONSTANT")], interp="CONSTANT")
     keys(p, "led", [(0.0, 0.0, "CONSTANT"), (t - 0.5, 0.3), (t + 1.0, 1.0)])
     keys(p, "sing", [(0.0, 0.0, "CONSTANT"), (t, 0.0), (t + 1.6, 0.55)])
     keys(cr, "glint", [(0.0, 0.6, "CONSTANT"), (t - 0.2, 0.7), (t + 0.6, 0.0)])

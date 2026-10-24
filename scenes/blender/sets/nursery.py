@@ -234,6 +234,21 @@ def box(name, mat, loc, size, parent=None, bev=0.0, rot=(0, 0, 0)):
     return o
 
 
+def boxes_obj(name, mat, extents):
+    """One object made of several axis-aligned boxes, each given as ((x0, y0, z0), (x1, y1, z1)) in world space."""
+    bm = bmesh.new()
+    for a, b in extents:
+        c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]
+        m = Matrix.Translation(c) @ Matrix.Diagonal((b[0] - a[0], b[1] - a[1], b[2] - a[2], 1.0))
+        bmesh.ops.create_cube(bm, size=1.0, matrix=m)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = K.link(bpy.data.objects.new(name, me))
+    o.data.materials.append(mat)
+    return o
+
+
 def cyl(name, mat, loc, r, depth, parent=None, rot=(0, 0, 0), verts=32, smooth=True):
     o = K.mesh_obj(name, bpy.ops.mesh.primitive_cylinder_add, mat, parent, radius=r, depth=depth, vertices=verts,
                    location=loc, rotation=rot)
@@ -326,7 +341,7 @@ def crack(name, mat, origin, length, seed, parent=None, branches=2):
     return root
 
 
-def cross_window(name, wall_y, cx, z0, size, mull, steel, facing=-1, glazed=False, backdrop=None):
+def cross_window(name, wall_y, cx, z0, size, mull, steel, facing=-1, glazed=False, backdrop=None, reflect=0.4):
     """A square window of four panes split by a heavy cross mullion: a plain sash form, never coloured, tilted or
     waved, so it stays generic (brief: no real logos). It carries the chorus's "windows" (human, C1 review: the grid
     window made the play on the word hard to stage). `facing` is the side the hall sees (-1 = its -Y face). Returns
@@ -346,7 +361,7 @@ def cross_window(name, wall_y, cx, z0, size, mull, steel, facing=-1, glazed=Fals
     q = (h + mull / 2) / 2
     out["panes"] = [(cx - q, zc + q), (cx + q, zc + q), (cx - q, zc - q), (cx + q, zc - q)]
     if glazed:
-        g = K.mesh_obj(f"{name}.glass", bpy.ops.mesh.primitive_plane_add, K.mat_glass(f"{name}.glass", reflect=0.4),
+        g = K.mesh_obj(f"{name}.glass", bpy.ops.mesh.primitive_plane_add, K.mat_glass(f"{name}.glass", reflect=reflect),
                        None, size=1, location=(cx, y, zc), rotation=(math.pi / 2, 0, 0))
         g.scale = (size, size, 1)
         g.visible_shadow = False
@@ -370,7 +385,17 @@ def hall():
     street; the front wall (-Y), behind the camera's start, holds a smaller one with a cracked pane taped over (N09)
     and the hairline crack that appears beside the tape (N10, "grow")."""
     out = {}
-    K.floor(size=80.0).data.materials[0] = mat_stone("hall_floor", "floor", LOOK["materials"]["floor_roughness"])
+    # The hall floor (80 m) with a hole the plinth's size: the cutaway passes through the plinth (hollow, see
+    # plinth()), never through the hall floor, so nothing under the hall can show (human, C4 review: N18-N19).
+    s_ = 2.8
+    bm = bmesh.new()
+    for x0, x1, y0, y1 in ((-40, 40, -40, -s_), (-40, 40, s_, 40), (-40, -s_, -s_, s_), (s_, 40, -s_, s_)):
+        bm.faces.new([bm.verts.new(v) for v in ((x0, y0, 0), (x1, y0, 0), (x1, y1, 0), (x0, y1, 0))])
+    me = bpy.data.meshes.new("floor")
+    bm.to_mesh(me)
+    bm.free()
+    fl = K.link(bpy.data.objects.new("floor", me))
+    fl.data.materials.append(mat_stone("hall_floor", "floor", LOOK["materials"]["floor_roughness"]))
     wall = mat_stone("hall_wall", "hall_wall", 0.85)
     H = 9.0
     box("hall.ceiling", wall, (0, -1, H + 0.15), (22.6, 26.6, 0.3))
@@ -384,30 +409,49 @@ def hall():
     # The back window: 4.4 m square, sill at 1.2 m, left of centre so the wide view sees it clear of the room.
     bx, bz, bs = WINDOW_X, 1.2, 4.4
     wall_with_opening("hall.wall_back", wall, 12.15, bx - bs / 2, bx + bs / 2, bz, bz + bs)
-    out["window_panes"] = cross_window("window", 12.15, bx, bz, bs, 0.16, steel, facing=-1)["panes"]
+    # Glazed faintly since the C4 review, to carry the same taped pane as the front window (below).
+    out["window_panes"] = cross_window("window", 12.15, bx, bz, bs, 0.16, steel, facing=-1, glazed=True,
+                                       reflect=0.12)["panes"]
     out["window"] = (bx, 12.0, bz + bs / 2)
-    # The front window, behind the camera: 2.2 m square, glazed, the night sky glowing faintly behind it.
+    # The front window, behind the camera: 2.2 m square, glazed. Since the C4 review it is seen from outside too
+    # (N10: the one cut, then the move comes in through it), so there is no backdrop behind it: the night sky is a
+    # far plane outside, the wall's outer face gets a faint cold fill, and from outside the hall shows through.
     fx, fz, fs = -4.0, 1.5, 2.2
     wall_with_opening("hall.wall_front", wall, -14.15, fx - fs / 2, fx + fs / 2, fz, fz + fs)
-    fw = cross_window("hallwin", -14.15, fx, fz, fs, 0.1, steel, facing=1, glazed=True,
-                      backdrop=K.mat_emission("hallwin_glow", "sky", 0.6))
-    # The cracked pane: the upper pane at -X (the hall's upper right, looking at the front wall), taped with an X
-    # over the old crack; the new crack starts beside the tape.
-    px, pz = fw["panes"][0]
-    yfront = -14.15 + 0.12 + 0.012
+    fw = cross_window("hallwin", -14.15, fx, fz, fs, 0.1, steel, facing=1, glazed=True)
+    sky = box("hallwin.sky", K.mat_emission("hallwin_glow", "sky", 0.6), (0, -45.0, 10.0), (120, 0.1, 40))
+    sky.visible_shadow = False
+    light("hallwin.outside_fill", "AREA", (fx, -19.5, fz + 3.5), 150.0, "sky", 4.0, target=(fx, -14.3, fz + fs / 2),
+          specular=0.2)
+    # The cracked pane: the upper pane at +X, seen from outside at the upper right (as in the C1 hall-window frame
+    # the human picked for the cut), taped with an X on its outer face over the old crack; the new crack starts
+    # beside the tape. Tape and cracks sit just outside the glass, so they read from both sides.
     tape = K.mat_matte("tape", "paper")
     tb = tape.node_tree.nodes["Principled BSDF"]
     tb.inputs["Emission Color"].default_value = K.col("paper")
     tb.inputs["Emission Strength"].default_value = 0.12  # the hall light barely reaches it; tape must read as tape
-    for k, a in enumerate((0.7, -0.7)):
-        box(f"hallwin.tape{k}", tape, (px, yfront, pz), (0.95, 0.004, 0.06), rot=(0, a, 0))
     crack_m = K.mat_emission("crack", "frost", 1.4)
-    seed = SEEDS["main"]
-    crack("hallwin.crack_old", crack_m, (px + 0.05, yfront - 0.002, pz - 0.03), 0.42, seed)
-    new = crack("hallwin.crack_new", crack_m, (px - 0.2, yfront - 0.002, pz - 0.28), 0.3, seed + 1)
-    new["grow"] = 0.0
-    out["crack_new"] = new
+    out["crack_new"] = taped_pane("hallwin", fw["panes"][1], -14.15 + 0.12, -1, 1.0, tape, crack_m)
+    # Continuity (human, C4 review): the back window, the one seen from the nursery after the cut, carries the same
+    # taped pane, upper right from inside, and its new crack grows with the front one's and stays.
+    out["crack_new_back"] = taped_pane("window", out["window_panes"][1], 12.15 - 0.12, -1, 2.0, tape, crack_m)
     return out
+
+
+def taped_pane(name, pane, glass_y, side, scale, tape, crack_m):
+    """An X of tape over an old crack on one pane, and the new hairline crack beside it ("grow" on the returned root,
+    0 at first). `side` is the face (-1 = the -Y side) the tape is stuck on, just off the glass at glass_y; `scale`
+    sizes it to the pane (1 for the front window's 1 m panes)."""
+    px, pz = pane
+    y = glass_y + side * 0.006
+    for k, a in enumerate((0.7, -0.7)):
+        box(f"{name}.tape{k}", tape, (px, y, pz), (0.95 * scale, 0.004, 0.06 * scale), rot=(0, a, 0))
+    seed = SEEDS["main"]
+    yc = glass_y + side * 0.003
+    crack(f"{name}.crack_old", crack_m, (px - 0.05 * scale, yc, pz - 0.03 * scale), 0.42 * scale, seed)
+    new = crack(f"{name}.crack_new", crack_m, (px + 0.2 * scale, yc, pz - 0.28 * scale), 0.3 * scale, seed + 1)
+    new["grow"] = 0.0
+    return new
 
 
 def plinth():
@@ -415,7 +459,15 @@ def plinth():
     from the basement under its front edge (N28)."""
     out = {}
     s = 2.8
-    out["plinth"] = box("plinth", mat_stone("plinth", "plinth", 0.6), (0, 0, PL_H / 2), (2 * s, 2 * s, PL_H), bev=0.01)
+    # Hollow (C4 review): a top slab (the nursery floor, "plinth": the cutaway hides only it) on four side walls
+    # down to the basement's collar, so from inside, between the floors, the eye sees stone, not the hall.
+    stone = mat_stone("plinth", "plinth", 0.6)
+    out["plinth"] = box("plinth", stone, (0, 0, PL_H - 0.03), (2 * s, 2 * s, 0.06), bev=0.005)
+    for k, (p, sz) in enumerate((((0, -s + 0.04, PL_H / 2 - 0.04), (2 * s, 0.08, PL_H + 0.08)),
+                                 ((0, s - 0.04, PL_H / 2 - 0.04), (2 * s, 0.08, PL_H + 0.08)),
+                                 ((-s + 0.04, 0, PL_H / 2 - 0.04), (0.08, 2 * s, PL_H + 0.08)),
+                                 ((s - 0.04, 0, PL_H / 2 - 0.04), (0.08, 2 * s, PL_H + 0.08)))):
+        box(f"plinth.side{k}", stone, p, sz, bev=0.005)
     steel = mat_steel("plinth_band")
     for k, (p, sz) in enumerate((((0, -s, PL_H - 0.02), (2 * s + 0.02, 0.012, 0.04)),
                                  ((0, s, PL_H - 0.02), (2 * s + 0.02, 0.012, 0.04)),
@@ -563,7 +615,7 @@ def vault_door(room):
         tk.rotation_euler = (0, -a + math.pi / 2, 0)
     cyl("door.dial_knob", chrome, (0, -0.03, 0), 0.04, 0.03, dial, rot=(math.pi / 2, 0, 0), verts=32)
     # The sticky note, a little crooked, on the glass beside the door (brief, section 3: "on the nursery's glass
-    # door"): from outside it reads (N07); from inside it shows mirrored, peeling (N21); it falls at N35. It hangs
+    # door"): it reads from outside (N07) and, printed on both sides, from inside, peeling (N21); it falls at N35. It hangs
     # from its top edge (the pivot), so "peel" lifts it away from the glass.
     note = K.empty("note", (1.13, y - 0.004, 1.36), room)  # room-local: its middle at world z 1.66
     K.prop(note, "peel", 0.0)
@@ -573,15 +625,27 @@ def vault_door(room):
     paper = K.empty("note.paper_root", (0, -0.1, 0), note)
     K.mesh_obj("note.paper", bpy.ops.mesh.primitive_plane_add, K.mat_matte("sticky", "note"), paper, size=0.2)
     K.text("note.text", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, 0.0012),
-           rot=(0, 0, 0), font="InstrumentSerif-Italic.ttf", parent=paper)  # faces out; mirrored from inside
+           rot=(0, 0, 0), font="InstrumentSerif-Italic.ttf", parent=paper)  # faces out
+    # The same words on the back, reading the right way from inside (human, C4 review: N20-N21 must read).
+    K.text("note.text_back", "NOT FOR\nTHE PUBLIC :)", 0.036, K.mat_ink("note_ink", "shadow"), loc=(0, 0, -0.0012),
+           rot=(0, math.pi, 0), font="InstrumentSerif-Italic.ttf", parent=paper)
     return out
 
 
 # ---------------------------------------------------------------- the nursery
 
-def crib(name, loc, rot_z=0.0, parent=None, glint=True):
+def nest_z(r):
+    """Crib-local height of a probe's centre (radius r) resting in the blanket's nest (crib(nest=...))."""
+    return 0.455 + r + 0.001
+
+
+def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None):
     """A painted crib (1.3 x 0.7 m, rails 0.95 m) with a mattress and a blanket that breathes ("breath"). Under the
-    blanket's head end, the probe's green LED shows as a glint ("glint"); the probe itself is not built here (C2)."""
+    blanket's head end, the probe's green LED shows as a glint ("glint"); the probe itself is not built here (C2).
+    nest = (x, y, r): a shape key "nest" (0 the plain hump .. 1) presses a cup into the blanket for a sphere of radius r
+    at crib-local (x, y, nest_z(r)), the felt rising to its equator: the reveal's probe lies in it (N38) instead of
+    passing through the felt (human, C4 review). cover = (x, y, r): the blanket is a mound over such a sphere, so
+    the shop twin's chassis stays covered while its arms come out from under it."""
     out = {}
     root = K.empty(name, loc, parent)
     root.rotation_euler = (0, 0, rot_z)
@@ -611,16 +675,42 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True):
     # The blanket: a soft slab over the mattress, its middle raised over the hidden probe at the head end; breath
     # lifts it.
     bm = bmesh.new()
-    nx, ny = 26, 14
+    nx, ny = (78, 42) if (nest or cover) else (26, 14)  # fine enough to hug a 20 cm sphere
+
+    def flat(u, v):
+        drape = -0.07 * (abs(v - 0.5) * 2) ** 6  # the sides fall over the mattress edge
+        ripple = 0.006 * math.sin(u * 23.0 + v * 7.0) * math.sin(v * 11.0)
+        return 0.45 + drape + ripple
+
+    def hump_w(u, v):
+        return math.exp(-((u - 0.28) / 0.17) ** 2 - ((v - 0.5) / 0.28) ** 2)
+
+    def xy(u, v):
+        return (u - 0.5) * (L - 0.1), (v - 0.5) * (W - 0.02)
+
+    def rest_z(u, v):
+        if cover:
+            cx, cy, r = cover
+            x, y = xy(u, v)
+            d = math.hypot(x - cx, y - cy)
+            return flat(u, v) + (2 * r + 0.03) * math.exp(-(d / (1.25 * r)) ** 4)
+        return flat(u, v) + 0.07 * hump_w(u, v)
+
+    def nest_top(u, v):
+        cx, cy, r = nest
+        x, y = xy(u, v)
+        d = math.hypot(x - cx, y - cy)
+        c, rc = nest_z(r), r + 0.003
+        if d < rc:
+            return c - math.sqrt(rc * rc - d * d) - 0.004
+        return flat(u, v) + (c - flat(u, v)) * math.exp(-((d - rc) / 0.07) ** 2)
+
     vs = {}
     for i in range(nx + 1):
         for j in range(ny + 1):
             u, v = i / nx, j / ny
-            x, y = (u - 0.5) * (L - 0.1), (v - 0.5) * (W - 0.02)
-            hump = math.exp(-((u - 0.28) / 0.17) ** 2 - ((v - 0.5) / 0.28) ** 2)
-            drape = -0.07 * (abs(v - 0.5) * 2) ** 6  # the sides fall over the mattress edge
-            ripple = 0.006 * math.sin(u * 23.0 + v * 7.0) * math.sin(v * 11.0)
-            vs[i, j] = bm.verts.new((x, y, 0.45 + 0.07 * hump + drape + ripple))
+            x, y = xy(u, v)
+            vs[i, j] = bm.verts.new((x, y, rest_z(u, v)))
     for i in range(nx):
         for j in range(ny):
             bm.faces.new((vs[i, j], vs[i + 1, j], vs[i + 1, j + 1], vs[i, j + 1]))
@@ -632,13 +722,33 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True):
     bl.parent = root
     bl.data.materials.append(mat_felt(f"{name}.blanket", "felt_blue"))
     K.smooth(bl)
-    # Breathing: a shape key that raises the hump 2 cm, driven by "breath".
+    # Breathing: a shape key that raises the hump 2 cm, driven by "breath". With a nest, the lift is even across the
+    # nest (its centre's weight), so a probe lying in it rides the breath without the felt passing through it.
+    def uv(co):
+        return co.x / (L - 0.1) + 0.5, co.y / (W - 0.02) + 0.5
+
+    def breath_w(u, v):
+        if nest:
+            cx, cy, r = nest
+            x, y = xy(u, v)
+            if math.hypot(x - cx, y - cy) < 1.6 * r:
+                return hump_w(cx / (L - 0.1) + 0.5, cy / (W - 0.02) + 0.5)
+        return hump_w(u, v)
+
     bl.shape_key_add(name="rest")
     sk = bl.shape_key_add(name="in")
     for v in sk.data:
-        x, y = v.co.x / (L - 0.1) + 0.5, v.co.y / (W - 0.02) + 0.5
-        v.co.z += 0.02 * math.exp(-((x - 0.28) / 0.17) ** 2 - ((y - 0.5) / 0.28) ** 2)
+        v.co.z += 0.02 * breath_w(*uv(v.co))
     K.drive(sk, "value", None, root, "breath", "x")
+    if nest:
+        K.prop(root, "nest", 0.0)
+        nk = bl.shape_key_add(name="nest", from_mix=False)
+        for v in nk.data:
+            u, w = uv(v.co)
+            v.co.z += nest_top(u, w) - rest_z(u, w)
+        K.drive(nk, "value", None, root, "nest", "x")
+        cx, cy, r = nest
+        root["nest_breath"] = 0.02 * breath_w(cx / (L - 0.1) + 0.5, cy / (W - 0.02) + 0.5)
     out["blanket"] = bl
     if glint:
         # The green standby LED, seen through a fold of the blanket at the head end: a tiny emitter and a faint light.
@@ -653,6 +763,8 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True):
 
 
 PROBE_SCALE = 3.0  # the crib probe: Sandbox Rhapsody's chassis at 3x (20 cm across), a baby's size in the crib
+PROBE_AT = (-0.42, 0.0)  # crib-local: at the head end, where the blanket's hump is
+PROBE_ARMS = 0.62  # the kit's arm reach that lays the folded arms forward on the blanket (N38)
 
 
 def crib_probe(crib_root, name="crib_probe"):
@@ -661,11 +773,14 @@ def crib_probe(crib_root, name="crib_probe"):
     make, a baby's size; the kit's proportions, materials and rig are untouched."""
     p = K.probe(name, (0, 0, 0), led_role="standby", led=0.6, scale=PROBE_SCALE)
     p.parent = crib_root
-    # On the mattress (top 0.44) under the blanket's head-end lip: the blanket (0.45-0.53 here) covers its lower
-    # third, so at N38 the sphere rises out of the felt rather than sitting on it.
-    p.location = (-0.42, 0.0, 0.44 + K.PROBE_R * PROBE_SCALE * 0.55)
+    # In the blanket's nest (crib(nest=...)): the felt rises to its equator, its arms folded forward on the blanket
+    # (brief, N38). It rides the blanket's breath, so the felt never passes through it (human, C4 review).
+    r = K.PROBE_R * PROBE_SCALE
+    z0 = nest_z(r)
+    p.location = (PROBE_AT[0], PROBE_AT[1], z0)
+    K.drive(p, "location", 2, crib_root, "breath", f"{z0:.4f} + {crib_root.get('nest_breath', 0.0):.4f} * x")
     p.rotation_euler = (0, 0, 0)
-    p["arm_l"] = p["arm_r"] = 0.0
+    p["arm_l"] = p["arm_r"] = PROBE_ARMS
     return {"root": p, "probe": p}
 
 
@@ -988,7 +1103,8 @@ def nursery(room):
     """Everything inside the glass room. Room-local coordinates (z 0 = the nursery floor)."""
     out = {}
     rug("nursery.rug", (0, 0.2, 0.006), 1.35, room)
-    c = crib("crib", (0.35, 1.05, 0), rot_z=0.0, parent=room)
+    c = crib("crib", (0.35, 1.05, 0), rot_z=0.0, parent=room,
+             nest=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE))
     out["crib"] = c
     out["mobile"] = mobile("mobile", (0.35 - 0.2, 1.05, 1.72), room)
     # The mobile's arm: up from the crib's back rail, over to the mobile.
@@ -1067,9 +1183,10 @@ def street():
     lights_root = K.empty("street.lights")
     out["lights"] = lights_root
     out["homes"] = []
-    win_dim = K.mat_emission("house_win", "comfort", 1.2)
     homes = [(-22, 46), (-13, 50), (-6, 53), (2.5, 50), (-2.0, 56), (6, 52), (13, 55), (17, 48), (25, 45), (-9, 63),
-             (8.5, 65), (2, 62), (14, 61), (-15, 60)]
+             (8.5, 65), (2, 62), (14, 61), (-15, 60),
+             # More houses (human, C4 review: the town needs more lights to read when they go out).
+             (-30, 50), (21, 57), (-19, 55), (-26, 62), (19, 66), (-6, 67), (27, 52), (5.5, 58.5)]
     neighbor = 4  # (-2, 56): framed by the back window from inside the room (the bridge) and from N29's wide view
     for k, (x, y) in enumerate(homes):
         g = ground(x, y)
@@ -1083,8 +1200,11 @@ def street():
                    (x + 0.8, y - d / 2 - 0.15, g + 1.0), 0.09, None, 12)
         p.visible_shadow = False
         out["homes"].append((x, y, g))
-        if k % 3 == 1:
-            box(f"house{k}.win", win_dim, (x - 0.7, y - d / 2 - 0.01, g + 1.4), (0.6, 0.02, 0.5))
+        # Every house has a lit window or two; they go out with its porch light (N26).
+        wm_k = K.mat_emission(f"house_win{k}", "comfort", 2.6, lights_root, f"porch{k}", floor=0.0)
+        box(f"house{k}.win", wm_k, (x - 0.7, y - d / 2 - 0.01, g + 1.4), (0.6, 0.02, 0.5)).visible_shadow = False
+        if k % 2 == 0 and k != neighbor:
+            box(f"house{k}.win2", wm_k, (x + 0.7, y - d / 2 - 0.01, g + hh - 0.8), (0.5, 0.02, 0.45)).visible_shadow = False
         if k == neighbor:
             root = K.empty("neighbor", (x, y, g))
             K.prop(root, "amber", 1.0)
@@ -1101,7 +1221,7 @@ def street():
             out["neighbor"] = root
             out["neighbor_window"] = Vector((x + 0.6, y - d / 2, g + hh - 0.9))
     # The road up the hill to the houses, and the fine crack that runs down it and branches under every house (N25).
-    road_pts = [Vector((-1.5 + 0.06 * (yy - 30), yy, ground(-1.5 + 0.06 * (yy - 30), yy) + 0.04)) for yy in range(30, 60, 2)]
+    road_pts = [Vector((-1.5 + 0.06 * (yy - 30), yy, ground(-1.5 + 0.06 * (yy - 30), yy) + 0.04)) for yy in range(30, 70, 2)]
     bm = bmesh.new()
     for a, b in zip(road_pts, road_pts[1:]):
         nrm = Vector((1.6, 0, 0))
@@ -1113,6 +1233,33 @@ def street():
     road.data.materials.append(mat_stone("road", "plinth", 0.8))
     out["road_pts"] = road_pts
     out["ground"] = ground
+    # A cross lane along the hill, and streetlights along both (human, C4 review: more lights, so the town reads when
+    # it kills them; a subtle road). Each lamp is a head on a thin pole with a pool of light under it ("lamp<k>").
+    lane = [Vector((x, 43.0, ground(x, 43.0) + 0.04)) for x in range(-32, 33, 2)]
+    bm = bmesh.new()
+    for a, b in zip(lane, lane[1:]):
+        nrm = Vector((0, 1.2, 0))
+        bm.faces.new([bm.verts.new(v) for v in (a - nrm, a + nrm, b + nrm, b - nrm)])
+    me = bpy.data.meshes.new("street.lane")
+    bm.to_mesh(me)
+    bm.free()
+    K.link(bpy.data.objects.new("street.lane", me)).data.materials.append(mat_stone("road", "plinth", 0.8))
+    pole_m = mat_steel("street.pole")
+    spots = [(-1.5 + 0.06 * (yy - 30) + sx * 2.3, yy) for yy, sx in ((32, 1), (37, -1), (42, 1), (48, -1), (53, 1),
+                                                                     (59, -1), (64, 1), (68.5, -1))]
+    spots += [(x, 43.0 + 1.8 * (1 if k % 2 else -1)) for k, x in enumerate((-29, -23, -17, -11, 7, 13, 19, 25))]
+    out["lamps"] = []
+    for k, (x, y) in enumerate(spots):
+        g = ground(x, y)
+        K.prop(lights_root, f"lamp{k}", 1.0)
+        bar(f"street.pole{k}", pole_m, (x, y, g), (x, y, g + 4.2), 0.06)
+        hd = sphere(f"street.lamp{k}", K.mat_emission(f"lamp{k}", "comfort", 45.0, lights_root, f"lamp{k}", floor=0.0),
+                    (x, y, g + 4.25), 0.22, None, 12)
+        hd.visible_shadow = False
+        lt = light(f"street.lamp{k}.pool", "SPOT", (x, y, g + 4.0), 900.0, "comfort", 0.1, target=(x, y, g),
+                   spot=(1.6, 0.5), specular=0.2)
+        K.drive(lt.data, "energy", None, lights_root, f"lamp{k}", "900.0 * x")
+        out["lamps"].append((x, y, g))
     # Far hills (N27): a second ridge behind the first, with small houses whose windows light amber one by one.
     bm = bmesh.new()
     nx = 60
@@ -1150,11 +1297,14 @@ def shop_window():
     root = K.empty("shop", (11.0, 0, 0))
     commerce = mat_stone("shop.wall", "commerce", 0.7)
     D = 1.8
-    box("shop.floor", mat_stone("shop.floor", "felt_grey", 0.6), (D / 2, 0, 0.55), (D, 3.6, 0.1), root)
-    box("shop.back", commerce, (D + 0.05, 0, 1.8), (0.1, 3.6, 2.6), root)
-    box("shop.ceil", commerce, (D / 2, 0, 3.05), (D, 3.6, 0.1), root)
+    # The box starts behind the hall wall (0.3 m thick): inside the wall its faces lay in the opening's planes and
+    # flickered (human, C4 review: N31). The opening's own reveals frame it.
+    X0 = 0.3
+    box("shop.floor", mat_stone("shop.floor", "felt_grey", 0.6), ((X0 + D) / 2, 0, 0.55), (D - X0, 3.7, 0.1), root)
+    box("shop.back", commerce, (D + 0.05, 0, 1.8), (0.1, 3.7, 2.7), root)
+    box("shop.ceil", commerce, ((X0 + D) / 2, 0, 3.05), (D - X0, 3.7, 0.1), root)
     for s in (-1, 1):
-        box(f"shop.side{s}", commerce, (D / 2, s * 1.85, 1.8), (D, 0.1, 2.6), root)
+        box(f"shop.side{s}", commerce, ((X0 + D) / 2, s * 1.85, 1.8), (D - X0, 0.1, 2.7), root)
     steel = mat_steel("shop.frame")
     box("shop.frame_top", steel, (0.02, 0, 3.02), (0.06, 3.7, 0.06), root)
     box("shop.frame_low", steel, (0.02, 0, 0.6), (0.06, 3.7, 0.06), root)
@@ -1163,7 +1313,8 @@ def shop_window():
                     rotation=(math.pi / 2, 0, math.pi / 2))
     pg.scale = (3.6, 2.4, 1)
     pg.visible_shadow = False
-    c = crib("shop.crib", (0.95, 0.35, 0.6), rot_z=math.pi / 2, parent=root)
+    c = crib("shop.crib", (0.95, 0.35, 0.6), rot_z=math.pi / 2, parent=root,
+             cover=(PROBE_AT[0], PROBE_AT[1], K.PROBE_R * PROBE_SCALE))
     out["crib"] = c
     tag = K.empty("shop.tag", (0.6, 0.35 - 0.6, 0.6 + 0.8), root)
     tag.rotation_euler = (math.pi / 2, 0, -math.pi / 2 + 0.1)
@@ -1333,8 +1484,16 @@ def basement():
     for k, (p, sz) in enumerate((((0, W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)), ((0, -W, (Z0 + Z1) / 2), (2 * W, 0.1, Z1 - Z0)),
                                  ((W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)), ((-W, 0, (Z0 + Z1) / 2), (0.1, 2 * W, Z1 - Z0)))):
         box(f"base.wall{k}", wall, p, sz)
-    ceil = box("base.ceiling", mat_stone("base.ceil", "plinth", 0.9), (0, 0, Z1 - 0.03), (2 * W, 2 * W, 0.04))
-    ceil.visible_camera = True
+    # The ceiling slab, with the mail slot's opening cut through it (x 0.2 +- 0.21, y 1.6 +- 0.065).
+    hx0, hx1, hy0, hy1 = -0.01, 0.41, 1.535, 1.665
+    zc = Z1 - 0.03
+    boxes_obj("base.ceiling", mat_stone("base.ceil", "plinth", 0.9),
+              [((-W, -W, zc - 0.02), (W, hy0, zc + 0.02)), ((-W, hy1, zc - 0.02), (W, W, zc + 0.02)),
+               ((-W, hy0, zc - 0.02), (hx0, hy1, zc + 0.02)), ((hx1, hy0, zc - 0.02), (W, hy1, zc + 0.02))])
+    # The collar: closes the ring between the basement's walls and the plinth's sides at the hall floor's level.
+    for k, (p, sz) in enumerate((((0, 2.6, -0.03), (5.6, 0.42, 0.06)), ((0, -2.6, -0.03), (5.6, 0.42, 0.06)),
+                                 ((2.6, 0, -0.03), (0.42, 5.6, 0.06)), ((-2.6, 0, -0.03), (0.42, 5.6, 0.06)))):
+        box(f"base.collar{k}", wall, p, sz)
     # The desk, its lamp, the laptop.
     wood = mat_paint("base.desk", "wood", 0.6)
     dz = Z0 + 0.75
@@ -1403,24 +1562,50 @@ def basement():
         if lit:
             out["sheets_glow"].append(sh)
     out["glow"] = glow
-    # The mail slot in the ceiling: a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
+    # The mail slot in the ceiling: a lit opening, a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
+    # Folded tickets push through it, crease first, and drop to the desk (human, C4 review: the flat sheets of the
+    # first version didn't read as coming through the slot).
     slot = K.empty("mailslot", (0.2, 1.6, Z1 - 0.06))  # just below the ceiling slab (its underside is Z1 - 0.05)
     K.prop(slot, "flap", 0.0)
-    box("mailslot.frame", K.mat_metal("mailslot.brass", "brass", 0.3), (0, 0, 0), (0.36, 0.1, 0.02), slot)
-    hinge = K.empty("mailslot.hinge", (0, 0.04, -0.012), slot)
+    brass = K.mat_metal("mailslot.brass", "brass", 0.3)
+    SW, SD = 0.42, 0.13  # the opening
+    for k, (p, sz) in enumerate((((0, SD / 2 + 0.02, 0), (SW + 0.08, 0.04, 0.02)), ((0, -SD / 2 - 0.02, 0), (SW + 0.08, 0.04, 0.02)),
+                                 ((SW / 2 + 0.02, 0, 0), (0.04, SD, 0.02)), ((-SW / 2 - 0.02, 0, 0), (0.04, SD, 0.02)))):
+        box(f"mailslot.frame{k}", brass, p, sz, slot)
+    # The chute above the opening, lit by the hall: its far end glows cold, so the slot reads as a way through.
+    chute = mat_stone("mailslot.chute", "plinth", 0.9)
+    for sy in (-1, 1):
+        box(f"mailslot.chute{sy}", chute, (0, sy * (SD / 2 + 0.005), 0.06), (SW, 0.01, 0.1), slot)
+    glow = box("mailslot.glow", K.mat_emission("mailslot.glow", "house", 6.0), (0, 0, 0.11), (SW, SD, 0.005), slot)
+    glow.visible_shadow = False
+    hinge = K.empty("mailslot.hinge", (0, SD / 2, -0.012), slot)
     K.drive(hinge, "rotation_euler", 0, slot, "flap", "-1.1 * x")
-    box("mailslot.flap", K.mat_metal("mailslot.flap", "brass", 0.3), (0, -0.04, 0), (0.32, 0.08, 0.004), hinge)
+    box("mailslot.flap", K.mat_metal("mailslot.flap", "brass", 0.3), (0, -SD / 2, 0), (SW - 0.01, SD, 0.004), hinge)
     # The hall's cold light falls through the slot (N18 looks up at it; the ceiling is otherwise unlit).
-    light("mailslot.light", "AREA", (0.2, 1.6, Z1 - 0.08), 12.0, "house", 0.3, target=(0.3, 1.3, Z0), specular=0.3)
+    light("mailslot.light", "AREA", (0.2, 1.6, Z1 - 0.08), 30.0, "house", 0.3, target=(0.3, 1.3, Z0), specular=0.3)
+    light("mailslot.beam", "SPOT", (0.2, 1.6, Z1 - 0.02), 120.0, "house", 0.05, target=(0.15, 1.45, Z0),
+          spot=(0.55, 0.3), specular=0.3)  # a shaft through the basement's haze, lighting the tickets as they drop
     light("mailslot.ceiling", "POINT", (0.4, 1.3, Z1 - 0.6), 20.0, "tungsten", 0.3, specular=0.0)
-    # Sheets the slot drops on the beat (N18): "drop<k>" 0 at the slot .. 1 on the floor (animate.basement).
-    for k in range(4):
+    # Folded tickets the slot drops on the beat (N18): "drop<k>" 0 up in the chute .. 0.25 through the opening
+    # (crease first) .. 1 on the desk (animate.basement).
+    paper = K.mat_matte("mailslot.sheet", "paper")
+    fall = (Z1 - 0.06) - (dz + 0.03)
+    out["mailslot_n"] = 8
+    for k in range(8):
         K.prop(slot, f"drop{k}", 0.0)
-        d = box(f"mailslot.sheet{k}", K.mat_matte("mailslot.sheet", "paper"), (0, 0, 0), (0.21, 0.297, 0.001), slot)
-        K.drive(d, "location", 2, slot, f"drop{k}", f"-0.05 - {abs(Z0 - Z1) - 0.1:.3f} * x")
-        K.drive(d, "location", 1, slot, f"drop{k}", f"-{0.15 + 0.1 * k:.2f} * x")
-        K.drive(d, "rotation_euler", 0, slot, f"drop{k}", f"{0.6 + 0.4 * k:.2f} * x")
-        K.drive(d, "scale", 0, slot, f"drop{k}", "1.0 if x > 0.01 else 0.001")
+        f = K.empty(f"mailslot.fold{k}", (0, 0, 0), slot)
+        for side in (-1, 1):  # two halves in a tent, the crease at the bottom
+            half = K.empty(f"mailslot.fold{k}.h{side}", (0, 0, 0), f)
+            half.rotation_euler = (side * 0.35, 0, 0)
+            box(f"mailslot.fold{k}.p{side}", paper, (0, 0, 0.05), (0.2, 0.001, 0.1), half)
+        dx, dy = 0.12 * ((k * 5) % 7 - 3) / 3, -0.1 - 0.03 * (k % 4)
+        K.drive(f, "location", 2, slot, f"drop{k}",
+                f"0.1 * (1 - min(x * 4, 1)) - {fall:.3f} * (max(x - 0.25, 0) / 0.75) ** 2")
+        K.drive(f, "location", 0, slot, f"drop{k}", f"{dx:.3f} * max(x - 0.25, 0) / 0.75")
+        K.drive(f, "location", 1, slot, f"drop{k}", f"{dy:.3f} * max(x - 0.25, 0) / 0.75")
+        K.drive(f, "rotation_euler", 0, slot, f"drop{k}", f"{1.2 + 0.3 * k:.2f} * max(x - 0.25, 0) / 0.75")
+        K.drive(f, "rotation_euler", 2, slot, f"drop{k}", f"{0.4 * ((k % 3) - 1):.2f} * max(x - 0.25, 0) / 0.75")
+        K.drive(f, "scale", 0, slot, f"drop{k}", "1.0 if x > 0.01 else 0.001")
     out["mailslot"] = slot
     return out
 
@@ -1453,18 +1638,26 @@ def tickets():
 def shop_twin(shop):
     """Verse 4's twin in the shop crib (brief: "an identical crib, a green glint under a blanket", "mittens over two
     thin arms; a waiver on a clipboard, its pen on a string"): the chassis stays under the blanket (hidden until N38
-    everywhere, brief), so only the glint, two thin chrome forearms over the blanket's edge in felt mittens, and the
-    clipboard show. Also the price tag's second face (AVAILABLE, from N36) and the display screen's placeholder for the
-    real pages (N33, N34: composited at C5)."""
+    everywhere, brief): it is the kit's probe at the crib probe's scale, lying under a mound of blanket (crib(cover=...)),
+    its two arms reaching out from under the felt along the blanket in felt mittens (human, C4 review: the first
+    version's loose wires read as disconnected from any body). Only the glint, the arms and the clipboard show. Also
+    the price tag's second face (AVAILABLE, from N36) and the display screen's placeholder for the real pages (N33,
+    N34: composited at C5)."""
     out = {}
     c = shop["crib"]["root"]
-    chrome = K.mat_chrome("twin.chrome")
+    tw = K.probe("twin", (0, 0, 0), led_role="standby", led=0.6, scale=PROBE_SCALE)
+    tw.parent = c
+    tw.location = (PROBE_AT[0], PROBE_AT[1], nest_z(K.PROBE_R * PROBE_SCALE))
+    tw.rotation_euler = (0, 0, math.pi / 2)  # lens and reach toward the crib's foot: in profile from the hall
+    tw["arm_l"] = tw["arm_r"] = 1.0
     mitt = mat_felt("twin.mitten", "felt_cream")
-    for sx in (-1, 1):
-        a = Vector((-0.44, sx * 0.09, 0.53))
-        b = Vector((-0.3, sx * 0.13, 0.55))
-        bar(f"twin.arm{sx}", chrome, a, b, 0.004, c, verts=10)
-        sphere(f"twin.mitten{sx}", mitt, b + Vector((0.025, 0, 0.005)), 0.028, c, 16).scale = (1.4, 1.0, 0.8)
+    r = K.PROBE_R
+    for side in ("l", "r"):
+        elbow = bpy.data.objects[f"twin.elbow_{side}"]
+        sphere(f"twin.mitten_{side}", mitt, (0, 0, -r * 0.88), r * 0.32, elbow, 16).scale = (1.0, 0.8, 1.5)
+        for k in (-1, 1):
+            bpy.data.objects[f"twin.finger_{side}{k}"].hide_render = True  # inside the mitten
+    out["probe"] = tw
     clip = K.empty("twin.clipboard", (-0.66, 0.0, 0.62), c)
     clip.rotation_euler = (0, -0.25, math.pi / 2)
     box("twin.board", mat_paint("twin.board", "wood", 0.6), (0, 0, 0), (0.22, 0.3, 0.006), clip)

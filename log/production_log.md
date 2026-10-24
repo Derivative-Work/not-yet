@@ -272,3 +272,51 @@ Append-only. One entry per action: timestamp, step (shot ID where relevant), wha
 ## 2026-10-24T10:12 — C4 review received
 
 - The human asked for seven changes (see `log/human_interventions.md`), including one cut before "and windows are never quite mended" (an EXCEPTION to the brief's no-cut move). I'm making them as C4 v2.
+
+## 2026-10-24T11:50 — C4 v2: the review's changes, the one cut at N10
+
+- **The cut (N10, an EXCEPTION, human's call):**
+  - At 52.00 s, on the beat after "…and" and right before "windows are never quite mended", the move cuts to the taped, cracked front window seen from outside. Through it, the glass room glows down the hall.
+  - The new crack grows on "never". The camera then pushes in through the lower-left pane and pans slowly around the set to the door, which it passes at N11 + 2.6 s. There is no second cut.
+  - `camera_path.py`: `CUT` splits the keys into two splines. `build()` holds the last frame before the cut and keys the new pose half a frame early, so nothing, motion blur included, interpolates across the cut.
+  - The front window has no backdrop now: a far sky plane and a faint cold fill outside. The tape and cracks sit just off the glass on the outer face, so they read from outside, upper right as in the C1 frame.
+- **Continuity (human):** the back window, the one seen after the cut (N23–N29), carries the same taped pane, glazed faintly. Its new crack grows with the front one's on "never" and stays.
+- **N18:**
+  - The mail slot is bigger and lit, cut through the basement ceiling, with a short glowing chute and a flap that hangs ajar between clatters.
+  - Folded tickets push through it, crease first, on every other beat, and drop to the desk.
+  - The camera is closer, under the slot.
+- **N18 → N19:**
+  - The plinth is hollow: a top slab on four stone sides, and the hall floor has a hole the plinth's size.
+  - The cutaway hides only the slab, the rug, the basement ceiling and the floor gaps.
+  - On the rise, the camera looks up at the crib and mobile, so neither the hall nor the town shows.
+- **N20/N21:** the sticky note is printed on both sides and reads correctly from inside.
+- **N25–N27 (the town):**
+  - Eight more houses; every house has one or two lit windows that go out with its porch light.
+  - The road now reaches the top of the hill, with a cross lane and 16 streetlights, each a head on a pole with a pool of light.
+  - The streetlights go out down the hill on "killed"; two stay dark.
+- **N31:** the shop's walls flickered: they started inside the hall wall, in the same planes as the opening's faces. The shop box now starts behind the wall. A frame-to-frame measure over N31–N32 changes smoothly, with no alternating jumps.
+- **N32:**
+  - The twin is the kit's probe at the crib scale, under a mound of blanket that covers its chassis (still hidden until N38, per the brief).
+  - Its arms reach out from under the felt along the blanket, the mittens on their hands.
+  - The camera is over the rail at 55 mm.
+- **N33–N34:**
+  - The camera holds 1.4 m from the screen, which fills most of the frame, from N33 to N34 + 5.8 s.
+  - It returns faster (peak 1.96 m/s).
+  - The note now falls at N35 + 1.2 s, framed from in front of the open door. The coin drops at N36 + 1.6 s.
+- **N38:** the blanket has a nest, a cup the probe lies in, with the felt rising to its equator. It switches in with the probe 0.5 s before N38. The probe rides the blanket's breath, so the felt never passes through it. Its arms lie forward on the blanket (brief: "folded on the blanket").
+- **Camera speed:** median 0.19 m/s, p95 1.53, max 1.96 at 201 s (the shop return; v1 1.57). The window entry peaks at 1.85 m/s.
+- **Tools:**
+  - `animatic.py --times` renders stills at chosen song seconds.
+  - `scripts/review_sheet.py` makes a labelled grid of them.
+  - Review rounds: `renders/c4/review_v2a`–`v2d`.
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v2 --step 2` (3,510 frames, 0.96 s/frame)
+  - `… -- --out renders/c4/anchors_v5 --anchors`
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v2 2 renders/c4/c4_animatic_v2.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v5 renders/c4/c4_anchor_sheet_v2.jpg 6`
+- **Archived:**
+  - `archive/renders/c4/c4_animatic_v1_rejected_c4-review.mp4`
+  - `archive/renders/c4/c4_anchor_sheet_v1_rejected_c4-review.jpg`
+  - `archive/renders/c4_anchors_v4_rejected_c4-review/`
+- **Outputs:** `renders/c4/c4_animatic_v2.mp4` (252 s), `renders/c4/c4_anchor_sheet_v2.jpg`.
+- **Status:** **C4 v2 is ready for review.**
