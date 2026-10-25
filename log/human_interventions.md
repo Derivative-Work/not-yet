@@ -178,3 +178,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** While the C4 v8 fixes were in progress, the human added that the quilt flickers as it moves, as if blown downward.
 - **Note from the human:** "There is also flickering in the blanket's movement, almost like it's being blown downwards"
 - **Rule:** R1 (a correction to a render, with a reason).
+
+## 2026-10-25T21:40 — Real CVEs on the desk stacks' top sheets — R1
+
+- **What:** While the C4 v8 fixes were in progress, the human asked for real CVEs on the top sheets of the basement desk's stacks.
+- **Note from the human:** "the top of the desk stacks also need real CVEs on them"
+- **Rule:** R1 (a correction to a render, with a reason).
