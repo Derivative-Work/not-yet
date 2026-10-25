@@ -535,3 +535,28 @@ From the human's direction (`log/human_interventions.md`, 07:39): check the exis
   - `blender -b --factory-startup --python scripts/qc_flicker_cause.py -- renders/qc/cause_shop_arch 5329 715 268 795 328`
   - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/qc/frames_draft720_test_a --profile draft720 --from 58 --to 64` (and `_b` 174–178)
 - **Status:** ready for the full re-render at draft720.
+
+## 2026-10-25T11:05 — C4 v6: the full re-render at draft720 (1280x720, 30 fps, motion blur)
+- **Render:** all 7,019 frames at draft720 (32 samples, 2 motion-blur steps, shutter 0.5), with the z-fight fixes of the previous step. It took 5,261 s on the RTX 5090, averaging 0.75 s/frame; the star-ceiling end of the move runs at about 1.2 s/frame. This is the first C4 render with motion blur applied and the first at 720p.
+- **Outputs:**
+  - `renders/c4/frames_v6/`
+  - `renders/c4/anchors_v9/` (39 stills)
+  - `renders/c4/c4_animatic_v6.mp4` (1280x720, 30 fps, 252.17 s, with the Suno master)
+  - `renders/c4/c4_anchor_sheet_v6.jpg`
+- **Flicker check** (`renders/qc/flicker_v6/`):
+  - Per pixel and per frame, the pop rate is about 5x lower than v5 (`flicker_v5b`, which was 360p and sampled every second frame, so the comparison is rough).
+  - The crib arch no longer flags.
+  - The top runs are edge crawl on thin lines and small text: the N17 laptop text, the distant crib bars in the shop window, the window crack and the ceiling constellation lines. None of them is z-fighting.
+  - At 4K they will be smaller relative to the pixel. Still worth a look at C5: the N17 text.
+- **Archived** (superseded: 360p, no motion blur, crib-arch z-fight):
+  - `archive/renders/c4/c4_animatic_v5_superseded_360p-no-motion-blur-arch-zfight.mp4`
+  - `archive/renders/c4/c4_anchor_sheet_v5_superseded_360p-no-motion-blur-arch-zfight.jpg`
+  - `archive/renders/c4_anchors_v8_superseded_360p-no-motion-blur-arch-zfight/`
+  - `renders/c4/frames_v5/` stays in place (frame sequences are never archived).
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v6 --profile draft720`
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/anchors_v9 --profile draft720 --anchors`
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v6 1 renders/c4/c4_animatic_v6.mp4`
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v9 renders/c4/c4_anchor_sheet_v6.jpg 6`
+  - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v6 renders/qc/flicker_v6`
+- **Status:** C4 v6 is ready for human review (R1).
