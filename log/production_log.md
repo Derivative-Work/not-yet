@@ -618,3 +618,18 @@ All changes are in `scenes/blender/sets/nursery.py`.
      - The old legs passed through the screen.
 - **Review stills:** `renders/c4/review_v6a` (all anchors, first pass); `review_v6b`–`v6d` (1080p, after the paper, quilt and mitten corrections).
 - **Status:** the full re-render is running (frames_v7).
+
+## 2026-10-25T14:55 — C4 v7: full draft720 re-render with the nine placeholder fixes; v6 outputs archived
+
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v7 --profile draft720` (7,019 frames in 6,279 s, 0.89 s/frame)
+  - `... -- --out renders/c4/anchors_v10 --profile draft720 --anchors` (39 stills)
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v7 1 renders/c4/c4_animatic_v7.mp4` (1280x720, 30 fps, 252.17 s)
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v10 renders/c4/c4_anchor_sheet_v7.jpg 6`
+  - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v7 renders/qc/flicker_v7`
+- **Flicker QC:**
+  - 31,375 blobs in 7,854 runs, against 29,773 in 7,358 for v6.
+  - The top runs are the same spans as v6. Only the shop-window wide (frames 5167–5421) grew, from 1,619 to 2,134 blobs. That growth is edge crawl on the new easel crossbars and legs at a distance, alongside the existing crib-bar/blanket crawl (run_02.png), not z-fighting.
+- **Anchor sheet:** all nine fixes read in the anchors (hands N17, paper N15–N16, mittens N31–N32, easel N33–N34, quilt N38–N40), with no new artifacts.
+- **Archived (superseded, placeholder geometry):** `archive/renders/c4/c4_animatic_v6_superseded_placeholder-geometry.mp4`, `archive/renders/c4/c4_anchor_sheet_v6_superseded_placeholder-geometry.jpg`, `archive/renders/c4_anchors_v9_superseded_placeholder-geometry/`. frames_v6 is a frame sequence, so it is not archived.
+- **Status:** v7 sent to the human for review (R1).
