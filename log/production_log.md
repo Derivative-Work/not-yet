@@ -560,3 +560,24 @@ From the human's direction (`log/human_interventions.md`, 07:39): check the exis
   - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v9 renders/c4/c4_anchor_sheet_v6.jpg 6`
   - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v6 renders/qc/flicker_v6`
 - **Status:** C4 v6 is ready for human review (R1).
+
+## 2026-10-25T11:40 — Audit for the remaining placeholder geometry (after the human's C4 v6 note)
+The human: "a few more places of placeholder geometry like the laptop. See if you can find them all". I went over all 39 v6 anchor stills (`renders/c4/anchors_v9`) at full size and read the builder for every suspect in `scenes/blender/sets/nursery.py`. Nothing is changed yet.
+
+- **Placeholder geometry, in the order it shows on screen:**
+  1. **The maintainer's forearms and hands (N16–N17):** forearms are plain cylinders (`bar`) and hands are squashed spheres. In the N17 close-up over the laptop they read as rolling pins with blobs on the ends. There are no fingers, and nothing touches the keys.
+  2. **The paper avalanche (N15–N17):** 220 identical flat A4 slabs at random tilts, so they cut through each other and the desk top. Nothing is curled, stacked or folded, and there's no print on them.
+  3. **The "glowing" sheets are black slabs until N17 (a bug):** `mat_emission` with floor 0 and no surface shader, so before the glow starts they render pitch black. One shows as a black block on the desk at N16.
+  4. **The ticket drift against the glass (N29–N37):** the same random-card scatter: 60 cards floating up to 12 cm off the floor at ±0.6 rad, not lying on it or on each other.
+  5. **The peanut jar (N15):** 14 spheres.
+  6. **The baby monitor camera on the dresser (N36–N37):** a ball on a pin on a disc. It reads as a joystick.
+  7. **The shop twin's mittens (N31–N32):** stretched spheres on the probe's thin wrists. They read as eggs on pins.
+  8. **The reveal quilt's folds (N38–N40):** two height-field strips with a 1.5 cm solidify and cut-off edges. There's no hem or rolled edge, so they read as shells sliced from a mound; the nest blanket's edge is the same.
+  9. **The shop easel's legs (N33–N34):** the leg ends show as pointed stakes above the ledge and at the top.
+- **Looked at and judged deliberate:**
+  - the N33/N34 screen card "[ real page, composited at C5 ]" (a C5 composite, as planned);
+  - the felt-toy style of the mobile pieces, the maintainer's body, and the stylised town silhouettes;
+  - the mobile's ticket stacks (N13);
+  - the vendored music box and probe (Sandbox Rhapsody, not remodelled).
+- **Proposed:** fix 1–9 in one pass, then re-render only the spans they reach (N15–N17, N29–N40).
+- **Status:** waiting for the human's go-ahead on the list (R1).
