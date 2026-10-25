@@ -140,3 +140,13 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** On reviewing C4 v6, the human said a few places were still placeholder geometry, like the laptop had been, and asked the agent to find them all. The agent listed nine (production log, 11:40). The human approved fixing them all.
 - **Note from the human:** "This looks great on the whole but there's a few more places of placeholder geometry like the laptop. See if you can find them all" / "List looks good, fix it"
 - **Rule:** R1 (approving the proposed changes).
+
+## 2026-10-25T15:05 — C4 v7 review: keys, ticket drift, moat, quilt cloth — R1
+
+- **What:** On reviewing C4 v7, the human rejected four parts:
+  - the laptop is missing keys;
+  - the ticket pile looks as if it should fall but doesn't, so it should be animated, especially as more tickets arrive;
+  - the moat looks like a placeholder;
+  - the quilt folds still look wrapped around the probe after they are pushed off, so they should get a cloth simulation.
+- **Note from the human:** "The laptop is missing keys. The pile of tickets looks like it's supposed to fall but it isn't -- animate it, especially when more arrive. The moat looks like a placeholder. The blanket looks like it's still around the probe even when it's off -- apply a cloth simulation"
+- **Rule:** R1 (rejecting parts of a render, with reasons).
