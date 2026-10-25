@@ -35,10 +35,12 @@ dependencies = [
 
 [tool.uv]
 package = false
-environments = ["sys_platform == 'linux'"]  # renders run on Linux boxes only
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]  # renders run on x86_64 Linux boxes only
 # basic-pitch pins TensorFlow, which has no wheels for Python 3.12; this project runs its ONNX model (onnxruntime-gpu)
-# instead, so TensorFlow and its TF-only helpers are overridden away.
+# instead, so TensorFlow and its TF-only helpers are overridden away. faster-whisper pulls the CPU onnxruntime, which
+# shares onnxruntime-gpu's module and hides its CUDA provider, so it goes too (onnxruntime-gpu serves both).
 override-dependencies = [
+    "onnxruntime ; sys_platform == 'never'",
     "tensorflow ; sys_platform == 'never'",
     "tensorflow-macos ; sys_platform == 'never'",
     "tflite-runtime ; sys_platform == 'never'",
@@ -50,13 +52,14 @@ dev = [
     "matplotlib>=3.11.2",
 ]
 
-# CPU PyTorch on the GTX 970 draft box (sm_52 is not in current CUDA builds); switch to cu128 on the RTX 5090 box.
+# CUDA 12.8 PyTorch for the RTX 5090 box (sm_120 needs cu128 or later). The GTX 970 draft box used the CPU index
+# (sm_52 is not in current CUDA builds).
 [tool.uv.sources]
-torch = { index = "pytorch-cpu" }
-torchaudio = { index = "pytorch-cpu" }
+torch = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
 beat-this = { git = "https://github.com/CPJKU/beat_this.git", rev = "b95c8ab0c58c2d9fcfd40508ae8dffbc05ac4f5c" }
 
 [[tool.uv.index]]
-name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true

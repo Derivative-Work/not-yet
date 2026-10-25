@@ -346,11 +346,16 @@ def invalid_drivers():
 
 # ---------------------------------------------------------------- render setup
 
-def setup_render(scene, width, height, samples):
+def setup_render(scene, width, height, samples, mb_steps=1):
     scene.render.engine = "BLENDER_EEVEE"
     scene.render.resolution_x, scene.render.resolution_y = width, height
     scene.render.resolution_percentage = 100
     scene.render.fps = LOOK["fps"]
+    # Motion blur (spec, 'Frame rate and format'): centred shutter from look.json. Each step re-evaluates the scene
+    # inside the shutter, so arcs blur along the curve rather than a straight vector.
+    scene.render.use_motion_blur = True
+    scene.render.motion_blur_shutter = LOOK["motion_blur_shutter"]
+    scene.eevee.motion_blur_steps = mb_steps
     ee = scene.eevee
     ee.taa_render_samples = samples
     ee.use_raytracing = True

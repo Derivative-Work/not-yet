@@ -450,3 +450,40 @@ From the human's go-ahead (`log/human_interventions.md`, 15:20).
   - planar reflections in the glass.
 - **Outputs:** `renders/c4/c4_animatic_v5.mp4` (252 s), `renders/c4/c4_anchor_sheet_v5.jpg`.
 - **Status:** **C4 v5 is ready for review.**
+
+## 2026-10-25T08:05 — On the RTX 5090 box: environment updated, motion blur wired, draft720 retuned
+
+From the human's direction (`log/human_interventions.md`, 07:39).
+
+- **Import check:** all 504 files in `MANIFEST.sha256` verify on this box (`sha256sum -c`).
+- **Box:**
+  - RTX 5090 (32 GB), driver 595.99.02, CUDA 13.2, Ubuntu 26.04.1.
+  - Eevee renders on the 5090 through OpenGL (`gpu.platform`: "NVIDIA GeForce RTX 5090/PCIe/SSE2").
+- **Blender:** 5.2.2 → **5.2.3 LTS**. The snap moved from `latest/stable` to the `5.2lts/stable` track, so a 5.3 release can't change the look mid-production.
+- **Python venv:**
+  - The imported `.venv` pointed at the draft box's interpreter (`/home/derivative-work/...`) and couldn't run. It was rebuilt with `uv sync --python 3.12`.
+  - A first attempt to set the old venv aside in the scratchpad ran out of /tmp quota partway, so the dead venv was deleted. Venvs are regenerable and never archived.
+  - `pyproject.toml` changes:
+    - torch/torchaudio from the CPU index to **cu128** (torch 2.8.0+cu128, sm_120 in its arch list). The version stays at 2.8.* so analysis re-runs match.
+    - `tool.uv.environments` narrowed to x86_64 Linux. The lock had tried aarch64, which has no cu128 wheels.
+    - The CPU `onnxruntime` that faster-whisper pulls is overridden away. It shares `onnxruntime-gpu`'s module and hid the CUDA provider.
+  - Checked: torch runs on cuda; onnxruntime lists TensorRT, CUDA and CPU providers; ctranslate2 sees 1 CUDA device.
+- **Node:** Puppeteer 24.43.1's Chrome 148 is cached. It launches as the scripts launch it (`headless: 'shell'`, `--no-sandbox`); AppArmor restricts user namespaces here too, as on the draft box.
+- **ffmpeg:** 8.0.1, with libass and NVENC. The review cuts stay on libx264.
+- **Motion blur was never on.** `config/look.json` carried `motion_blur_shutter: 0.5`, but `sr_kit.setup_render` never set `use_motion_blur`, so every C1–C4 frame rendered without it. `setup_render` now turns it on with the spec's shutter, and takes a `mb_steps` argument (Eevee re-evaluates the scene that many times inside the shutter).
+- **The C4 animatic frames were 640×360, not 720p:** `animatic.py` defaults to 640×360, and the v1–v5 runs passed no `--size`.
+- **`animatic.py`:**
+  - New `--profile NAME`: size, samples and motion-blur steps from `config/render_profiles.json`. `--size` and `--samples` still override.
+  - The scene build moved into `build()`, so the QC scripts build exactly what renders. The CLI is unchanged otherwise.
+- **draft720 retuned on the 5090:**
+  - Settings: 32 samples, 2 motion-blur steps (were 8 samples, no blur).
+  - `scripts/qc_mbtest.py` rendered 74.5, 80.8 and 155.9 s at 1280×720 under (8,1), (16,1), (32,1), (32,2), (64,1) and (64,4); stills in `renders/qc/mbtest/`.
+  - 8 samples leaves crawling grain in soft shadows (the floor under the crib rail at 80.8 s). 32 clears most of it. 64×4 is only slightly smoother.
+  - Steps change the blur where the camera arcs fastest (155.9 s).
+  - Cost: 0.34–0.6 s/frame over two continuous test spans, so about an hour for the 7,019 frames.
+  - `final` gets 4 steps.
+- **Commands:**
+  - `sudo snap refresh blender --channel=5.2lts/stable`
+  - `uv sync --python 3.12`
+  - `blender -b --factory-startup --python scripts/qc_mbtest.py -- renders/qc/mbtest 74.5 80.8 155.9`
+- **Status:** environment ready. The artifact check of the existing frames comes next, before any re-render.

@@ -128,3 +128,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** Asked whether any geometry was still a placeholder, the agent listed four pieces: the maintainer and his chair, the laptop, the shop screen's missing easel, and the twin's blanket mound. The human approved fixing all four before the move to the 5090 box.
 - **Note from the human:** "before I move you over to the 5090 box: is there any gemoetry that's still placeholders?" / "yes, fix all four before the move"
 - **Rule:** R1 (approving the proposed changes).
+
+## 2026-10-25T07:39 — Moved to the RTX 5090 box; iterate there at 720p, full frame rate — EXCEPTION (the move: R3)
+
+- **What:** The human moved the project from the GTX 970 draft box to the RTX 5090 box. They asked to keep iterating at 720p there, but at the full frame rate (30 fps with motion blur, as the style spec set at C1). Before the next re-render, the agent is to update package versions to use the 5090, and check the existing frames for z-fighting and similar artifacts.
+- **Note from the human:** "I have imported this project from the draft machine. For now, let's keep working at 720p but upgrade to the full framerate (30fps with motion blur). Before doing a new re-render, update package versions etc to properly take advantage of the 5090 and check the existing frames for z-fighting and similar artifacts"
+- **Rule:** R3 for the machine move (hardware the agent can't reach). The render tier is EXCEPTION: the brief had iteration on the 970 box and the 5090 for the final. The human moved iteration to the 5090 at 720p and full frame rate.
