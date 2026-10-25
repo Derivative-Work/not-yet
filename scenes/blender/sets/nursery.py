@@ -483,10 +483,11 @@ def plinth():
                                  ((s - 0.04, 0, PL_H / 2 - 0.04), (0.08, 2 * s, PL_H + 0.08)))):
         box(f"plinth.side{k}", stone, p, sz, bev=0.005)
     steel = mat_steel("plinth_band")
-    for k, (p, sz) in enumerate((((0, -s, PL_H - 0.02), (2 * s + 0.02, 0.012, 0.04)),
-                                 ((0, s, PL_H - 0.02), (2 * s + 0.02, 0.012, 0.04)),
-                                 ((-s, 0, PL_H - 0.02), (0.012, 2 * s + 0.02, 0.04)),
-                                 ((s, 0, PL_H - 0.02), (0.012, 2 * s + 0.02, 0.04)))):
+    zb = PL_H - 0.025  # its top 5 mm under the stone's: level with it, the two z-fought (QC 2026-10-25)
+    for k, (p, sz) in enumerate((((0, -s, zb), (2 * s + 0.02, 0.012, 0.04)),
+                                 ((0, s, zb), (2 * s + 0.02, 0.012, 0.04)),
+                                 ((-s, 0, zb), (0.012, 2 * s + 0.02, 0.04)),
+                                 ((s, 0, zb), (0.012, 2 * s + 0.02, 0.04)))):
         box(f"plinth.band{k}", steel, p, sz)
     slit = box("plinth.slit", K.mat_emission("tungsten_slit", "tungsten", LOOK["lights"]["tungsten_slit"]),
                (0.3, -s - 0.004, 0.035), (1.6, 0.004, 0.012))
@@ -684,8 +685,10 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
                 verts=10)
     for sx in (-1, 1):  # ends: solid headboard/footboard panels with an arched top
         box(f"{name}.end{sx}", paint, (sx * L / 2, 0, 0.62), (0.03, W, 0.62), root, bev=0.008)
-        # A low arched top: a disc the width of the end, flattened to rise 10 cm (local X is world Z here).
-        cyl(f"{name}.arch{sx}", paint, (sx * L / 2, 0, 0.93), W / 2, 0.03, root, rot=(0, math.pi / 2, 0),
+        # A low arched top: a disc the width of the end, flattened to rise 10 cm (local X is world Z here). 2.4 cm
+        # thick inside the board's 3 cm, so its caps sit 3 mm inside the board's faces: at the same thickness they
+        # lay in them and z-fought (QC 2026-10-25, the shop crib at N31).
+        cyl(f"{name}.arch{sx}", paint, (sx * L / 2, 0, 0.93), W / 2, 0.024, root, rot=(0, math.pi / 2, 0),
             verts=64).scale = (0.3, 1, 1)
     box(f"{name}.mattress", K.mat_plastic(f"{name}.mattress", "felt_cream", 0.8), (0, 0, 0.38), (L - 0.06, W - 0.06, 0.12),
         root, bev=0.04)
@@ -1588,8 +1591,10 @@ def basement():
               [((-W, -W, zc - 0.02), (W, hy0, zc + 0.02)), ((-W, hy1, zc - 0.02), (W, W, zc + 0.02)),
                ((-W, hy0, zc - 0.02), (hx0, hy1, zc + 0.02)), ((hx1, hy0, zc - 0.02), (W, hy1, zc + 0.02))])
     # The collar: closes the ring between the basement's walls and the plinth's sides at the hall floor's level.
-    for k, (p, sz) in enumerate((((0, 2.6, -0.03), (5.6, 0.42, 0.06)), ((0, -2.6, -0.03), (5.6, 0.42, 0.06)),
-                                 ((2.6, 0, -0.03), (0.42, 5.6, 0.06)), ((-2.6, 0, -0.03), (0.42, 5.6, 0.06)))):
+    # Its top 4 mm under the hall floor's and its ends 1 cm inside the plinth's sides: flush, they z-fought (QC
+    # 2026-10-25).
+    for k, (p, sz) in enumerate((((0, 2.6, -0.032), (5.58, 0.42, 0.056)), ((0, -2.6, -0.032), (5.58, 0.42, 0.056)),
+                                 ((2.6, 0, -0.032), (0.42, 5.58, 0.056)), ((-2.6, 0, -0.032), (0.42, 5.58, 0.056)))):
         box(f"base.collar{k}", wall, p, sz)
     # The desk, its lamp, the laptop.
     wood = mat_paint("base.desk", "wood", 0.6)
@@ -1667,8 +1672,9 @@ def basement():
     K.text("base.tip_label", "DONATIONS", 0.018, K.mat_ink("base.tip_ink", "shadow"), loc=(-0.2, 1.454, dz + 0.08),
            rot=(math.pi / 2, 0, 0))
     coin = K.mat_metal("base.coin", "brass", 0.2)
-    for k in range(3):
-        cyl(f"base.coin{k}", coin, (-0.2 + 0.012 * (k - 1), 1.5, dz + 0.013 + 0.003 * k), 0.012, 0.002, verts=16)
+    for k in range(3):  # stacked on the desk top (dz + 0.02), half a millimetre apart (QC 2026-10-25: two were
+        # buried in the desk and the third's face z-fought with it)
+        cyl(f"base.coin{k}", coin, (-0.2 + 0.012 * (k - 1), 1.5, dz + 0.0215 + 0.0025 * k), 0.012, 0.002, verts=16)
     # The maintainer, from behind, hunched over the laptop in a hoodie: a felt doll like the nursery's toys (soft
     # rounded parts), on a wooden chair. "breath" lifts the torso, shoulders, head and upper arms a little; the
     # forearms and hands rest on the keyboard and stay put (the elbow joints hide the seam).

@@ -487,3 +487,51 @@ From the human's direction (`log/human_interventions.md`, 07:39).
   - `uv sync --python 3.12`
   - `blender -b --factory-startup --python scripts/qc_mbtest.py -- renders/qc/mbtest 74.5 80.8 155.9`
 - **Status:** environment ready. The artifact check of the existing frames comes next, before any re-render.
+
+## 2026-10-25T10:20 — Artifact check of the C4 v5 frames: one visible z-fight (the crib's arched ends), three latent; fixed
+
+From the human's direction (`log/human_interventions.md`, 07:39): check the existing frames for z-fighting and similar artifacts before re-rendering.
+
+- **New QC tools:**
+  - `scripts/qc_flicker.py`: motion-compensated temporal pops. a and c are warped onto b with DIS optical flow, with a forward-backward check, so camera motion cancels.
+    - A first pass without flow compensation flagged the camera's fast moves (155.9 s, 66.6 s, 199.5 s) and was discarded as a method. Its output is kept in `renders/qc/flicker_v5/`.
+  - `scripts/qc_flicker_frames.py`: panels of the worst frames.
+  - `scripts/qc_geometry.py`: coplanar overlapping triangles of different objects at every anchor, with depth-buffer precision at the camera's distance (clip_start 0.02 m).
+  - `scripts/qc_raypeel.py` (+ `qc_raypeel_lib.py`, `qc_raypeel_crops.py`): rays peel through every surface to catch near-coincident curved surfaces.
+  - `scripts/qc_flicker_cause.py`: renders a frame pair under shadow and ray-tracing variations, to isolate a flicker's cause.
+- **What the frames showed (`renders/c4/frames_v5`, 640×360, 8 samples, every 2nd frame, no motion blur):**
+  - **Edge crawl** on the thin mullions, glass edges, the door rim, the crib bars and the N17 page's small text. Sub-pixel aliasing at 360p and 8 samples, the stepping the style spec said to watch at C4.
+  - **Sampling grain** in soft shadows (the floor under the crib rail at 80.8 s, the shop floor).
+  - Both drop about 5–6× per pixel at draft720 (two test spans, 58–64 s and 174–178 s).
+  - Stars, LEDs and the blanket's breath pop by design.
+- **Z-fighting found:**
+  - **The crib's arched ends (visible):** each arch disc was 3 cm thick at the same x as its 3 cm end board, so its smooth-shaded caps lay in the board's faces. A dark crescent jumped around on the end board every frame. It was plain on the shop crib at N31 (176–178 s) and present on the hero crib (N02–N40, down to 1.2 m).
+    - The cause was traced: it survives shadow jitter, 2× shadow resolution, no ray tracing and no shadows (`renders/qc/cause_shop_arch/`). It fixes only with the geometry.
+    - Fix: the arch is 2.4 cm thick, its caps 3 mm inside the board's faces.
+    - Before/after: `renders/qc/shop_arch_before_after.png`.
+  - **The plinth's steel band:** its top was level with the stone sides' tops (N02–N11). It now sits 5 mm under them. 3 mm was still marginal at N02's 16 m.
+  - **The donation jar's coins (N15):** placed for a thinner desk top, two coins were buried in the desk and the third's face lay in its top. All three now stack on the desk, half a millimetre apart, so the jar shows the three coins the brief asks for.
+  - **The basement collar:** its top was level with the hall floor and its ends flush with the plinth sides; seen only from inside the plinth during the cutaways. Its top is now 4 mm under the floor, its ends 1 cm inside the sides.
+- **Flagged and left as they are:**
+  - same-material flush joints, which can't show (plinth panels, frame pieces, the room's steel, paper folds, the maintainer's felt parts, collar corners);
+  - slivers under 1 cm² (haze box, star projector);
+  - faces hidden under other geometry (the rug under the crib posts);
+  - the mail chute against the ceiling opening (same colour and roughness);
+  - the door's chrome bead crossing its ring (an intersection seam; its dotted highlight is chrome aliasing);
+  - the music box comb's tips against their teeth (a 0.05 mm overlap, in the vendored kit, untouched);
+  - the probe's shell and lens (the Sandbox Rhapsody rig, untouched).
+- **Checked after the fixes:**
+  - `qc_geometry.py --shots N02 N15 N31 N38`: no fixed pair still flags, apart from the band at 3 mm, since widened to 5 mm.
+  - The shop span re-rendered clean (`renders/qc/frames_draft720_fix1_b`).
+  - Review stills at draft720: `renders/qc/review_fix1/`.
+- **Housekeeping:**
+  - The first geometry scan crashed writing its JSON (a numpy bool); fixed and re-run (`renders/qc/geometry_v5.log` is the crashed run, `geometry_v5b.log` the good one).
+  - The two draft720 test spans were renamed to `frames_draft720_test_a/b`, so the manifest treats them as frame sequences.
+- **Commands:**
+  - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v5 renders/qc/flicker_v5b`
+  - `blender -b --factory-startup --python scripts/qc_geometry.py -- renders/qc/geometry_v5.json`
+  - `blender -b --factory-startup --python scripts/qc_raypeel.py -- renders/qc/raypeel_v5.json --every 2`
+  - `blender -b --factory-startup --python scripts/qc_raypeel_crops.py -- renders/qc/raypeel_v5.json renders/qc/raypeel_v5_crops --top 30`
+  - `blender -b --factory-startup --python scripts/qc_flicker_cause.py -- renders/qc/cause_shop_arch 5329 715 268 795 328`
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/qc/frames_draft720_test_a --profile draft720 --from 58 --to 64` (and `_b` 174–178)
+- **Status:** ready for the full re-render at draft720.
