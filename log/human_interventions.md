@@ -150,3 +150,15 @@ Every human action: timestamp, what, why, and which production rule allows it. R
   - the quilt folds still look wrapped around the probe after they are pushed off, so they should get a cloth simulation.
 - **Note from the human:** "The laptop is missing keys. The pile of tickets looks like it's supposed to fall but it isn't -- animate it, especially when more arrive. The moat looks like a placeholder. The blanket looks like it's still around the probe even when it's off -- apply a cloth simulation"
 - **Rule:** R1 (rejecting parts of a render, with reasons).
+
+## 2026-10-25T17:20 — The moat: a slight glow — R1
+
+- **What:** While the C4 v7 fixes were in progress, the human asked for a slight glow on the moat so it reads better.
+- **Note from the human:** "hm also add a slight glow to the moat so it's more visible"
+- **Rule:** R1 (a correction to a render, with a reason).
+
+## 2026-10-25T17:40 — Real AI-found CVEs on the drift's tickets — R1
+
+- **What:** While the C4 v7 fixes were in progress, the human asked for more disclosed CVEs found by AI, to print on the tickets. Until now the tickets were generic printed lines, and the only real IDs were on the laptop.
+- **Note from the human:** "find more disclosed AI-discovered CVEs to put on the tickets"
+- **Rule:** R1 (a correction to a render, with a reason).

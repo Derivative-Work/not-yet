@@ -633,3 +633,44 @@ All changes are in `scenes/blender/sets/nursery.py`.
 - **Anchor sheet:** all nine fixes read in the anchors (hands N17, paper N15–N16, mittens N31–N32, easel N33–N34, quilt N38–N40), with no new artifacts.
 - **Archived (superseded, placeholder geometry):** `archive/renders/c4/c4_animatic_v6_superseded_placeholder-geometry.mp4`, `archive/renders/c4/c4_anchor_sheet_v6_superseded_placeholder-geometry.jpg`, `archive/renders/c4_anchors_v9_superseded_placeholder-geometry/`. frames_v6 is a frame sequence, so it is not archived.
 - **Status:** v7 sent to the human for review (R1).
+
+## 2026-10-25T18:10 — C4 v7 review fixes: laptop keys, falling drift, moat, quilt cloth, moat glow, AI-found CVEs on the tickets
+
+The human's notes are logged in `log/human_interventions.md` (15:05, 17:20, 17:40). Code: `scenes/blender/sets/nursery.py`, `scenes/blender/animate.py`, `scenes/blender/animatic.py`, new `config/ticket_cves.json`.
+
+1. **Laptop keys:**
+   - Every key had been buried 7 mm inside the deck, because the deck height was set 1 cm low. The fingertips also sat 6 mm in the deck.
+   - The deck top is corrected, and the keyboard rebuilt as a full laptop layout: a half-height function row, then five rows of 15 units with modifiers, a space bar and arrows. Keys are lighter than the deck, with light mono legends. A speaker grille sits behind them.
+   - The hands rose 1 cm, and the fingertips now clear the key tops by 1 mm, with the home row where they were.
+2. **Falling drift (N14–N37):**
+   - Before, the pile was 60 static tickets scaled up from N29.
+   - Now 240 tickets fall in gusts from 4.2 m above the plinth. Each one flutters down for 4.5–6 s, swaying, rocking and slowly spinning, and lands curled (shape key "air") before it lies down on the pile.
+   - Arrivals: a fifth by N29 and the rest by N37, faster later.
+   - Each ticket's resting place is draped on the heap in landing order, so later tickets lie on earlier ones.
+   - About a third touch down on a perch upslope, toward the glass, and stay there until the next gust lands within 60 cm. Then they slide down into place.
+3. **Moat:**
+   - The flat disc with two glowing rims is gone.
+   - The hall floor now has a ring cut for a channel: stone walls, a bed 62 cm down, and water 11.5 cm below the floor that stirs slightly (a 4D-noise bump driven by the frame).
+   - Pale coping blocks line both edges, 60 cm long with 4 mm joints and overhanging the water. Under each overhang is a strip of cold light.
+   - A lid of hall floor covers the cut and dissolves on "moat" (123.43 s), over 1.5 s.
+4. **Moat glow (human, 17:20):** the water also mirrors a procedural sky band, and glows faintly of its own (emission 0.35 plus the reflection). The light strips went from 3 to 5.
+5. **Quilt cloth (N38–N40):**
+   - The folds turn to cloth when they are two-thirds open (N38 + 0.15 s).
+   - A strip along each hinge stays pinned, fading out over 15% of the fold. The rest falls onto the blanket and against the crib's sides. The front fold lies out toward the room; the back one slumps against the slats.
+   - The rest shape is the fold unrolled flat, so the cloth doesn't keep the mound's shape.
+   - The bake runs in `animatic.build` and takes about 100 s. The simulation stops 2 s after it starts and holds its last frame.
+   - Tuning (test stills in the session scratchpad):
+     - The cloth first blew into shards. The cause was not the cloth: even-offset Solidify spiked on its creases, and the angle-limited bevel splintered. Now plain Solidify and one level of subdivision.
+     - The "flat" key that squashed the folds as they turned shrank the fabric, which then buckled into fine ripples. It was removed.
+     - A 5 mm grid (smaller than the collision distance) jittered. The grid is now 1 cm.
+     - Lying on the blanket slab, the cloth also felt the blanket's underside and jittered by centimetres. Colliders are now single-sided, with damping 0.8. Even so, it never came fully to rest on the breathing blanket, hence the 2 s stop.
+     - Only the hinge row skips collisions. With the whole pinned strip excluded, the probe's fingers poked through.
+     - The new "plane" rest key came in at value 1, which flattened the closed mound before the reveal. It is now 0.
+   - The crib's glint bead hides once it is out, at N38 + 0.35 s. It had shown as a black dot once the fold fell away.
+6. **AI-found CVEs on the tickets (human, 17:40):**
+   - `config/ticket_cves.json` lists 47 disclosed CVEs whose records or vendor advisories credit an AI. Each was checked against cveawg.mitre.org on 2026-10-25:
+     - 28 Firefox (MFSA 2026-13, Firefox 148, and the Firefox 149 records), 9 wolfSSL, NGINX, FreeBSD (CVE-2026-4747, Mythos Preview, Glasswing), OpenSSL and Bouncy Castle, all credited to Claude or Anthropic researchers using Claude;
+     - 5 WebKit (Apple's Safari 26.1 note) and SQLite CVE-2025-6965, credited to Google's Big Sleep.
+   - The list comes from VulnCheck's tracker (2026-04-15). None is made up.
+   - Each ticket carries the ID, a short label and "found by …" as mesh lettering that bends with the paper, over printed body type that now stops lower down.
+- **Status:** committed; the full v8 render is next.

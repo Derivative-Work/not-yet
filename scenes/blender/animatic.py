@@ -31,8 +31,9 @@ import sr_kit as K  # noqa: E402
 PROFILES = json.loads((HERE.parents[1] / "config" / "render_profiles.json").read_text())
 
 
-def build(size, samples, mb_steps=1):
-    """The whole animatic scene, ready to render; returns (scene, f_end). Also imported by scripts/qc_geometry.py."""
+def build(size, samples, mb_steps=1, bake=True):
+    """The whole animatic scene, ready to render; returns (scene, f_end). Also imported by scripts/qc_geometry.py.
+    bake=False leaves the simulations unbaked (for tuning them)."""
     t_start = time.time()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = K.setup_render(bpy.context.scene, size[0], size[1], samples, mb_steps)
@@ -66,6 +67,12 @@ def build(size, samples, mb_steps=1):
     K.rebind_drivers()
     K.refresh()
     scene.frame_start, scene.frame_end = 0, f_end
+    # Bake the simulations (the quilt's cloth, from N38), so any frame renders right, in any order.
+    if bake:
+        t = time.time()
+        with bpy.context.temp_override(scene=scene):
+            bpy.ops.ptcache.bake_all(bake=True)
+        print(f"baked the cloth in {time.time() - t:.0f} s", flush=True)
     print(f"built in {time.time() - t_start:.0f} s; {len(bpy.data.objects)} objects; stars born "
           f"{sum(b < 1e5 for b in births)}; frames 0..{f_end}", flush=True)
     bad = K.invalid_drivers()

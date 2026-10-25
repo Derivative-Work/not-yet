@@ -18,7 +18,9 @@ What drives what (brief, "Running devices", shot list and texture pass; config/i
   moon          the moonlight clock: the back window's patch creeps from the window's base (N02) to the crib (N38)
   growth chart  marks appear by N05, more by N22, the last near the top by N37
   hall window   the new hairline crack grows on "never" (N10), on the front window and the back one, and stays
-  ticket        falls from the mobile through the floor to the basement desk (N14); the drift piles from N29 to N37
+  ticket        falls from the mobile through the floor to the basement desk (N14); from then on tickets flutter down
+                in gusts onto the drift against the glass, a small drift by N29, a snowbank by N37; some slide
+                down it when the next gust lands
   basement      lamp on; the maintainer breathes; a few sheets glow (N17); the flap clatters on each beat of N18
                 and folded tickets push through the slot on every other beat, dropping to the desk;
                 the floor gaps glow from N20
@@ -26,7 +28,7 @@ What drives what (brief, "Running devices", shot list and texture pass; config/i
   town          the crack runs down the road (N25); porch lights, house windows and streetlights go out house by
                 house, lamp by lamp, most return (N26); the far
                 hills' windows light amber (N27)
-  moat          appears at N22
+  moat          appears at N22: the floor over its channel dissolves on "moat"
   velvet rope   in front of the door from N29
   shop          tag COMING SOON until N36, then AVAILABLE; the screen lights for the real pages (N33, N34)
   probe         under the quilt's two folds until N38, when its arms push them open; its glint widens as the iris
@@ -244,7 +246,76 @@ def ticket(S):
     for i, w in enumerate((2 * math.pi / 3, 0.0, 2.2)):  # x ends a whole turn: lying flat
         path_keys(fall, "rotation_euler", [(t0, 0.0), (t3, w * 3)], index=i)
     visible(fall, t0, SHOT["N19"])
-    keys(S["ticket_pile"], "drift", [(0.0, 0.0), (SHOT["N14"], 0.0), (SHOT["N29"], 0.35), (SHOT["N37"], 1.0)])
+    drift(S["ticket_pile"])
+
+
+def drift(pile):
+    """The drift against the glass (brief: "from N14 on, a few tickets keep drifting through the hall. A small drift
+    has formed against the base of the glass by N29 and is a snowbank by N37"; human, C4 v7 review: it should fall,
+    especially as more arrive). Tickets come in gusts, a fifth of them by N29 and faster after, each fluttering down
+    from above the room: it sways and rocks, spins slowly, and lands curled (shape key "air") before it lies down
+    on the pile. Most then slide straight into place; about a third touch down on their perch upslope and stay
+    there until the next gust lands near them and knocks them down."""
+    rnd = random.Random(json.loads((K.ROOT / "config" / "seeds.json").read_text())["main"] + 6)
+    tickets = sorted((o for o in pile.children if "rest" in o), key=lambda o: int(o.name[len("ticket.pile"):]))
+    n, gusts = len(tickets), int(pile["gusts"])
+    t0, t29, t37 = SHOT["N14"] + 4.0, SHOT["N29"], SHOT["N37"] - 1.5
+    before = [0] * gusts  # tickets in earlier gusts
+    for o in tickets:
+        for g in range(o["gust"] + 1, gusts):
+            before[g] += 1
+
+    def when(u):  # share of the drift landed -> time: a fifth by N29, then the rest, faster
+        return t0 + (t29 - t0) * u / 0.2 if u < 0.2 else t29 + (t37 - t29) * (u - 0.2) / 0.8
+
+    spacing = [when((before[g + 1] if g + 1 < gusts else n) / n) - when(before[g] / n) for g in range(gusts)]
+    gust_t = [when(before[g] / n) + rnd.uniform(-0.3, 0.3) * spacing[g] for g in range(gusts)]
+    gust_x = {}
+    land, last = {}, 0.0
+    for o in tickets:  # touch-down times follow the order they were laid in
+        g = o["gust"]
+        t = max(gust_t[g] + rnd.uniform(0.0, 1.4), last + 0.05)
+        land[o.name], last = t, t
+        gust_x.setdefault(g, []).append(o["rest"][0])
+    gust_x = {g: sum(xs) / len(xs) for g, xs in gust_x.items()}
+    for o in tickets:
+        g, ta = o["gust"], land[o.name]
+        x, y, ang = o["rest"]
+        dx, dy, lift = o["perch"]
+        # Perched until the next gust that lands within 60 cm, if it comes within 25 s; else it slides right away.
+        ts = ta + rnd.uniform(0.05, 0.25)
+        if rnd.random() < 0.35 and dy + abs(dx) > 0.03:
+            nxt = [h for h in range(g + 1, gusts) if abs(gust_x.get(h, 9) - x) < 0.6 and 1.0 < gust_t[h] - ta < 25.0]
+            if nxt:
+                ts = max(ts, gust_t[nxt[0]] + 0.5 + rnd.uniform(0.0, 0.3))
+        dur = rnd.uniform(4.5, 6.0)  # paper falls at about 0.8 m/s from 4.2 m over the plinth
+        z0 = 4.2
+        A_, P, ph = rnd.uniform(0.12, 0.25), rnd.uniform(1.2, 2.0), rnd.uniform(0, math.tau)
+        rock, spin = rnd.uniform(0.35, 0.7), rnd.uniform(-3.0, 3.0)
+        pts = {c: [] for c in ("x", "y", "z", "rx", "ry", "rz")}
+        steps = int(dur / 0.2)
+        for i in range(steps + 1):
+            f = i / steps
+            tau = f * dur
+            env = 1.0 - (max(0.0, f - 0.7) / 0.3) ** 2 if f > 0.7 else 1.0  # sway dies out in the last 30%
+            w = math.tau * tau / P
+            t = ta - dur + tau
+            pts["x"].append((t, x + dx + A_ * math.sin(w + ph) * env))
+            # Away from the glass while it sways, gliding in as it settles.
+            pts["y"].append((t, y + dy + (0.05 * math.sin(0.7 * w + ph) - 0.16) * env))
+            pts["z"].append((t, lift + (z0 - lift) * (1 - f) + 0.03 * math.sin(2 * w) * env))
+            pts["rx"].append((t, rock * math.sin(w + ph + math.pi / 2) * env))
+            pts["ry"].append((t, 0.6 * rock * math.sin(0.8 * w + ph) * env))
+            pts["rz"].append((t, ang + spin * (1 - min(1.0, f / 0.85)) ** 2))
+        slide = ts + rnd.uniform(0.35, 0.7)
+        for i, (c, end) in enumerate((("x", x), ("y", y), ("z", 0.0))):
+            # then it rests on the perch until ts and slides home
+            path_keys(o, "location", [(-1.0, pts[c][0][1], "CONSTANT")] + pts[c] +
+                      [(ts, pts[c][-1][1]), (slide, end)], index=i)
+        for i, c in enumerate(("rx", "ry", "rz")):
+            path_keys(o, "rotation_euler", [(-1.0, pts[c][0][1], "CONSTANT")] + pts[c], index=i)
+        path_keys(o.data.shape_keys, 'key_blocks["air"].value', [(0.0, 1.0, "CONSTANT"), (ta - 0.15, 1.0), (ta + 0.25, 0.0)])
+        visible(o, ta - dur)
 
 
 def basement(S):
@@ -310,7 +381,11 @@ def neighbor_and_town(S):
 
 
 def moat_rope_shop(S):
-    visible(S["moat"], word("L20", "moat"))
+    # The lid of hall floor over the moat's cut dissolves on "moat" (human, C4 v7 review: the moat read as a placeholder).
+    t = word("L20", "moat")
+    visible(S["moat"], t - 0.3)
+    keys(S["moat"], "appear", [(0.0, 0.0, "CONSTANT"), (t - 0.3, 0.0), (t + 1.2, 1.0)])
+    visible(S["moat"]["lid"], None, t + 1.3)
     visible(S["rope"], SHOT["N29"] - 2.0)
     visible(S["twin_tag_soon"], None, SHOT["N36"], recursive=False)
     visible(S["twin_tag_available"], SHOT["N36"], recursive=False)
@@ -332,6 +407,16 @@ def probe(S):
     keys(p, "led", [(0.0, 0.0, "CONSTANT"), (t - 0.5, 0.3), (t + 1.0, 1.0)])
     keys(p, "sing", [(0.0, 0.0, "CONSTANT"), (t + 0.4, 0.0), (t + 2.0, 0.55)])
     keys(cr, "glint", [(0.0, 0.6, "CONSTANT"), (t - 0.6, 0.7), (t + 0.3, 0.0)])
+    # Out, the glint's bead is a black dot, no longer hidden under the fold's lip once the fold falls away.
+    visible(bpy.data.objects[f"{cr.name}.glint"], None, t + 0.35)
+    # Two thirds of the way over (open about 0.4), the folds turn to cloth and fall onto the blanket (human, C4 v7
+    # review: opened, they kept the mound's shape round the probe).
+    folds = S["crib"]["folds"]
+    skip = set(folds) | {o for o in cr.children_recursive if "glint" in o.name}
+    colliders = [o for o in cr.children_recursive if o.type == "MESH" and o not in skip]
+    # They have fallen and settled 2 s later; the simulation stops there and holds its last frame (resting on the
+    # breathing blanket, the cloth never quite comes to rest: it kept a centimetre's shimmer).
+    nursery.quilt_cloth(folds, colliders, A.frame(t + 0.15), A.frame(t + 2.15))
 
 
 def all_(S):

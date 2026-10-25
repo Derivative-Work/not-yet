@@ -1,0 +1,287 @@
+{
+ "_doc": "Disclosed CVEs found with AI, printed on the drift's tickets (human, 2026-10-25: \"find more disclosed AI-discovered CVEs to put on the tickets\"). Every ID is a published CVE record whose credits (or the vendor's advisory) name the AI: Claude / Anthropic researchers using Claude (Mozilla MFSA 2026-13 and the Firefox 149 records, wolfSSL, F5 NGINX, FreeBSD, OpenSSL, Bouncy Castle; list from VulnCheck, 2026-04-15) or Google's Big Sleep (Apple's Safari 26.1 note; SQLite). Checked against cveawg.mitre.org on 2026-10-25. None made up.",
+ "cves": [
+  {
+   "id": "CVE-2025-43429",
+   "label": "WebKit · buffer overflow",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://support.apple.com/en-us/125640"
+  },
+  {
+   "id": "CVE-2025-43430",
+   "label": "WebKit · crash",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://support.apple.com/en-us/125640"
+  },
+  {
+   "id": "CVE-2025-43431",
+   "label": "WebKit · memory corruption",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://support.apple.com/en-us/125640"
+  },
+  {
+   "id": "CVE-2025-43433",
+   "label": "WebKit · memory corruption",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://support.apple.com/en-us/125640"
+  },
+  {
+   "id": "CVE-2025-43434",
+   "label": "WebKit · use-after-free",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://support.apple.com/en-us/125640"
+  },
+  {
+   "id": "CVE-2025-6965",
+   "label": "SQLite · memory corruption",
+   "found_by": "Big Sleep (Google)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2025-6965"
+  },
+  {
+   "id": "CVE-2026-2763",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2764",
+   "label": "Firefox · JIT miscompile",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2765",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-27654",
+   "label": "NGINX · WebDAV buffer overflow",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-27654"
+  },
+  {
+   "id": "CVE-2026-2766",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2769",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2770",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2771",
+   "label": "Firefox · undefined behaviour",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2772",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2773",
+   "label": "Firefox · bounds error",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2774",
+   "label": "Firefox · integer overflow",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2775",
+   "label": "Firefox · mitigation bypass",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2785",
+   "label": "Firefox · invalid pointer",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2786",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2787",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2788",
+   "label": "Firefox · bounds error",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2789",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2791",
+   "label": "Firefox · mitigation bypass",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2796",
+   "label": "Firefox · JIT miscompile",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2797",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2799",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2804",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-2805",
+   "label": "Firefox · invalid pointer",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.mozilla.org/en-US/security/advisories/mfsa2026-13/"
+  },
+  {
+   "id": "CVE-2026-28386",
+   "label": "OpenSSL · AES-CFB out-of-bounds read",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-28386"
+  },
+  {
+   "id": "CVE-2026-4702",
+   "label": "Firefox · JIT miscompile",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4702"
+  },
+  {
+   "id": "CVE-2026-4704",
+   "label": "Firefox · denial of service",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4704"
+  },
+  {
+   "id": "CVE-2026-4705",
+   "label": "Firefox · undefined behaviour",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4705"
+  },
+  {
+   "id": "CVE-2026-4718",
+   "label": "Firefox · undefined behaviour",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4718"
+  },
+  {
+   "id": "CVE-2026-4723",
+   "label": "Firefox · use-after-free",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4723"
+  },
+  {
+   "id": "CVE-2026-4724",
+   "label": "Firefox · undefined behaviour",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4724"
+  },
+  {
+   "id": "CVE-2026-4747",
+   "label": "FreeBSD · NFS RPCSEC_GSS overflow",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-4747"
+  },
+  {
+   "id": "CVE-2026-5194",
+   "label": "wolfSSL · ECDSA digest check",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5194"
+  },
+  {
+   "id": "CVE-2026-5446",
+   "label": "wolfSSL · ARIA-GCM nonce reuse",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5446"
+  },
+  {
+   "id": "CVE-2026-5447",
+   "label": "wolfSSL · heap overflow",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5447"
+  },
+  {
+   "id": "CVE-2026-5466",
+   "label": "wolfSSL · ECCSI verify",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5466"
+  },
+  {
+   "id": "CVE-2026-5477",
+   "label": "wolfCrypt · CMAC overflow",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5477"
+  },
+  {
+   "id": "CVE-2026-5479",
+   "label": "wolfSSL · ChaCha20 tag check",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5479"
+  },
+  {
+   "id": "CVE-2026-5500",
+   "label": "wolfSSL · GCM tag length",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5500"
+  },
+  {
+   "id": "CVE-2026-5501",
+   "label": "wolfSSL · chain verify",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5501"
+  },
+  {
+   "id": "CVE-2026-5503",
+   "label": "wolfSSL · ECH SNI",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5503"
+  },
+  {
+   "id": "CVE-2026-5588",
+   "label": "Bouncy Castle · risky crypto",
+   "found_by": "Claude (Anthropic)",
+   "source": "https://www.cve.org/CVERecord?id=CVE-2026-5588"
+  }
+ ]
+}

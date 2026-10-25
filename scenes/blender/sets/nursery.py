@@ -38,6 +38,8 @@ TOP = PL_H + ROOM_H
 HILL = 8.0          # the street's hill: low enough that sky silhouettes the back window's cross mullion
 MOON_AT = (-18.5, 94.0, 23.3)  # in the back window's upper-left pane from inside the room (the bridge, N23-N27)
 WINDOW_X = -1.0     # the back window's centre
+MOAT_R = (4.05, 4.17, 4.73, 4.85)  # the moat: the floor's cut, the channel's inner and outer walls, the cut's edge
+MOAT_SEG = 256      # steps around it (a multiple of 8: the plinth's square hole has its corners on them)
 
 
 # ---------------------------------------------------------------- materials (this video's surfaces)
@@ -61,9 +63,9 @@ def mat_felt(name, role):
     return m
 
 
-def mat_print(name, glow=None, strength=1.5, rows=24):
+def mat_print(name, glow=None, strength=1.5, rows=24, v1=0.88):
     """Printed paper, matte: rows of grey type of random length inside a margin (u across the sheet, v down it; the
-    lengths vary per object). With `glow` (an object with a "glow" property 0-1) the sheet also emits cream light
+    lengths vary per object; the type stops at v1, leaving the top for a heading). With `glow` (an object with a "glow" property 0-1) the sheet also emits cream light
     scaled by it: a sheet that lights up, still paper while it's dark (a bare emitter rendered black)."""
     m, b = K._principled(name)
     b.inputs["Roughness"].default_value = 0.95
@@ -96,7 +98,7 @@ def mat_print(name, glow=None, strength=1.5, rows=24):
                   noise.outputs["Fac"], 0.32), 3.0), 0.0), 1.0), 0.78, 0.1)
     mask = line
     for g in (op("GREATER_THAN", u, 0.1), op("LESS_THAN", u, length), op("GREATER_THAN", v, 0.08),
-              op("LESS_THAN", v, 0.88)):
+              op("LESS_THAN", v, v1)):
         mask = op("MULTIPLY", mask, g)
     mix = N("ShaderNodeMix")
     mix.data_type = "RGBA"
@@ -397,6 +399,63 @@ def paper_sheet(name, mat, w, h, rnd, curl=1.0, nx=12, ny=16):
     return K.smooth(o), [p[:3] for p in pts]
 
 
+_TEXT_CACHE = {}
+
+
+def text_geometry(body, size, font="JetBrainsMono-SemiBold-flat.ttf"):
+    """Lettering as flat mesh data, left-aligned at x 0 and vertically centred on y 0: (verts [(x, y)], faces), for
+    printing onto a mesh that deforms (the drift's tickets): kit text objects can't bend with the paper."""
+    key = (body, round(size, 5), font)
+    if key not in _TEXT_CACHE:
+        o = K.text("_tmp_text", body, size, K.mat_matte("_tmp_text", "pencil"), rot=(0, 0, 0), font=font,
+                   align="LEFT")
+        o.data.offset = size * 0.04  # the ink weight (K.mat_ink)
+        dg = bpy.context.evaluated_depsgraph_get()
+        me = bpy.data.meshes.new_from_object(o.evaluated_get(dg))
+        _TEXT_CACHE[key] = ([(v.co.x, v.co.y) for v in me.vertices], [tuple(p.vertices) for p in me.polygons])
+        bpy.data.meshes.remove(me)
+        bpy.data.curves.remove(o.data)
+    return _TEXT_CACHE[key]
+
+
+def print_on_sheet(obj, lines, w, h, nx, ny):
+    """Add lettering to a paper_sheet's mesh (material slot 1, appended after the grid's vertices): `lines` is
+    [(body, size, x, y)] in sheet coordinates, each shrunk to fit the sheet's width less margins. Returns the
+    lettering's vertices as (index, s, t), the grid cell coordinates that sheet_lettering_z() lifts them by."""
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    out = []
+    for body, size, x, y in lines:
+        size = min(size, (w - 0.022) / (0.6 * len(body)))
+        vs, fs = text_geometry(body, size)
+        base = len(bm.verts)
+        new = [bm.verts.new((x + vx, y + vy, 0.0)) for vx, vy in vs]
+        bm.verts.ensure_lookup_table()
+        for f in fs:
+            try:
+                bm.faces.new([new[i] for i in f]).material_index = 1
+            except ValueError:  # a degenerate glyph face
+                pass
+        for k, v in enumerate(new):
+            out.append((base + k, (v.co.x / (w / 2) + 1) / 2 * nx, (v.co.y / (h / 2) + 1) / 2 * ny))
+    bm.to_mesh(obj.data)
+    bm.free()
+    return out
+
+
+def sheet_lettering_z(zs, letters, nx, ny, lift=0.0008):
+    """Heights for the lettering from the grid's heights `zs` (row-major, (nx + 1) per row): bilinear in its cell,
+    just above the paper, so it bends with the sheet as it drapes or curls."""
+    out = []
+    for _, si, ti in letters:
+        i, j = min(max(int(si), 0), nx - 1), min(max(int(ti), 0), ny - 1)
+        fx, fy = si - i, ti - j
+        z = lambda a, b: zs[(j + b) * (nx + 1) + i + a]  # noqa: E731
+        out.append((1 - fx) * (1 - fy) * z(0, 0) + fx * (1 - fy) * z(1, 0) + (1 - fx) * fy * z(0, 1)
+                   + fx * fy * z(1, 1) + lift)
+    return out
+
+
 class Heap:
     """A height map (2 cm cells) that sheets are stacked on, so each lies on the ones under it instead of passing
     through them: `base(x, y)` is the ground (a floor, a desk top, a mound), `ok(x, y)` says a point may be covered."""
@@ -539,6 +598,17 @@ def wall_with_opening(name, mat, axis_y, x0, x1, z0, z1, H=9.0, span=(-11.0, 11.
     box(f"{name}_high", mat, ((x0 + x1) / 2, axis_y, (z1 + H) / 2), (x1 - x0, 0.3, H - z1))
 
 
+def ring_strip(bm, inner, outer, n):
+    """A closed strip of quads between two loops, each given as a function of the angle (0..2 pi, n steps); the
+    corners of a square loop fall on the steps (n a multiple of 8). Counter-clockwise loops face up (+Z)."""
+    a = [math.tau * k / n for k in range(n)]
+    vi = [bm.verts.new(inner(t)) for t in a]
+    vo = [bm.verts.new(outer(t)) for t in a]
+    for k in range(n):
+        m = (k + 1) % n
+        bm.faces.new((vi[k], vo[k], vo[m], vi[m]))
+
+
 def hall():
     """Dark polished floor, tall dark walls and ceiling. The back wall (+Y) holds a big four-pane window onto the
     street; the front wall (-Y), behind the camera's start, holds a smaller one with a cracked pane taped over (N09)
@@ -546,10 +616,22 @@ def hall():
     out = {}
     # The hall floor (80 m) with a hole the plinth's size: the cutaway passes through the plinth (hollow, see
     # plinth()), never through the hall floor, so nothing under the hall can show (human, C4 review: N18-N19).
+    # Since the C4 v7 review it also has a ring cut out for the moat's channel (MOAT_R[0]..MOAT_R[3]), covered by
+    # the moat's lid until the moat appears (moat()).
     s_ = 2.8
     bm = bmesh.new()
-    for x0, x1, y0, y1 in ((-40, 40, -40, -s_), (-40, 40, s_, 40), (-40, -s_, -s_, s_), (s_, 40, -s_, s_)):
-        bm.faces.new([bm.verts.new(v) for v in ((x0, y0, 0), (x1, y0, 0), (x1, y1, 0), (x0, y1, 0))])
+
+    def square(a, h):  # where the ray from the centre at angle a meets the square of half-size h
+        c, s = math.cos(a), math.sin(a)
+        t = h / max(abs(c), abs(s))
+        return (t * c, t * s, 0.0)
+
+    def circle(a, r):
+        return (r * math.cos(a), r * math.sin(a), 0.0)
+
+    for inner, outer in ((lambda a: square(a, s_), lambda a: circle(a, MOAT_R[0])),
+                         (lambda a: circle(a, MOAT_R[3]), lambda a: square(a, 40.0))):
+        ring_strip(bm, inner, outer, MOAT_SEG)
     me = bpy.data.meshes.new("floor")
     bm.to_mesh(me)
     bm.free()
@@ -807,7 +889,7 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
     passing through the felt (human, C4 review). cover = (x, y, r): the blanket is a mound over such a sphere, so
     the shop twin's chassis stays covered while its arms come out from under it. quilt = (x, y, r), with a nest: two
     folds of quilt lie closed over the nest, a mound hiding the sphere; "open" (0..1) turns them back, the front one
-    toward the room (-Y) and the back one away, flattening as they go (the reveal, N38: the probe opens them with its
+    toward the room (-Y) and the back one away, falling as cloth past upright (quilt_cloth) (the reveal, N38: the probe opens them with its
     arms; human, C4 v2 review). They pivot outside the sphere, so no fold passes through it."""
     out = {}
     root = K.empty(name, loc, parent)
@@ -950,7 +1032,8 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
             K.drive(hinge, "rotation_euler", 0, root, "open", f"{-side * 2.9} * x")
             K.drive(hinge, "location", 2, root, "breath", f"{zh:.4f} + {root['nest_breath']:.4f} * x")
             fb = bmesh.new()
-            nx_, ny_ = 84, 32  # fine enough for the hem and the quilting
+            nx_, ny_ = 42, 16  # 1 cm cells: the hem and quilting hold (and the subdivision), and the cloth
+            # stays stable (at 5 mm, smaller than its collision distance, it shredded and jittered)
             fv, hems = {}, {}
             for i in range(nx_ + 1):
                 for j in range(ny_ + 1):
@@ -979,15 +1062,30 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
             K.smooth(fo)
             # The thickness is a modifier after the shape keys, so the fold keeps it as it lies down (baked into the
             # mesh, it flattened to 2 mm with the rest: a paper-thin edge in N39); its rim is the binding.
+            # Not even-offset, and rounded by a subdivision, not a bevel: on the cloth's creases (quilt_cloth) even
+            # offset threw spikes and the angle-limited bevel splintered (C4 v7 review fix).
             sol = fo.modifiers.new("thick", "SOLIDIFY")
-            sol.thickness, sol.offset, sol.use_even_offset, sol.material_offset_rim = 0.015, -1.0, True, 1
-            K.bevel(fo, 0.005, 3)  # the rim rounds over
-            # As it turns back it lies down: its height above the pivot shrinks to 15%, the hem kept.
+            sol.thickness, sol.offset, sol.material_offset_rim = 0.015, -1.0, 1
+            sol.use_even_offset, sol.use_quality_normals = False, True
+            sd = fo.modifiers.new("round", "SUBSURF")  # the rim rounds over
+            sd.levels = sd.render_levels = 1
+            # It lies down as cloth once it's past upright (quilt_cloth; human, C4 v7 review). Until C4 v7 a "flat"
+            # key squashed it to 15% as it turned; that shrank the fabric under the cloth, which buckled.
             fo.shape_key_add(name="rest")
-            fk = fo.shape_key_add(name="flat")
-            for v, (hem, _) in zip(fk.data, hems.values()):
-                v.co.z = 0.15 * (v.co.z - hem) + hem
-            K.drive(fk, "value", None, root, "open", "x")
+            # The fold laid out flat, for the cloth's rest shape (quilt_cloth): each column unrolled along its arc
+            # from the hinge, so the fabric keeps its size.
+            pk = fo.shape_key_add(name="plane", from_mix=False)
+            pk.value = 0.0  # only the cloth's rest shape: never shown (it came in at 1)
+            for i in range(nx_ + 1):
+                arc, prev = 0.0, None
+                for j in range(ny_ + 1):
+                    k = i * (ny_ + 1) + j
+                    co = fm.vertices[k].co
+                    if prev is not None:
+                        arc += (co - prev).length
+                    prev = co.copy()
+                    pk.data[k].co = (co.x, -side * arc, 0.0)
+            out.setdefault("folds", []).append(fo)
         glint_at = (cx, cy - HY - 0.012, quilt_z(cx, cy - HY) - 0.012)  # under the front fold's lip
     if glint:
         # The green standby LED, seen through a fold of the blanket at the head end: a tiny emitter and a faint light.
@@ -1000,6 +1098,50 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
         K.drive(gl.data, "energy", None, root, "glint", "0.25 * x")
     out["root"] = root
     return out
+
+
+def quilt_cloth(folds, colliders, f0, f1):
+    """The quilt's folds as cloth from frame f0 to f1 (human, C4 v7 review: opened, they still stood round the probe
+    in the shape of the mound). Before f0 they turn on the hinge (the push); from f0 a strip along
+    each hinge stays pinned to that motion, fading out over 15% of the fold, and the rest falls free and drapes over
+    the blanket, the probe and the crib's sides (`colliders`). Simulated before the mesh's thickness (Solidify) and
+    bevel, so the fold keeps both. Bake it before rendering (scenes/blender/animatic.py)."""
+    for fo in folds:
+        half = max(abs(v.co.y) for v in fo.data.vertices)
+        vg, hg = fo.vertex_groups.new(name="pin"), fo.vertex_groups.new(name="hinge")
+        for v in fo.data.vertices:
+            w = max(0.0, 1.0 - abs(v.co.y) / (0.15 * half)) ** 1.5
+            if w > 0:
+                vg.add([v.index], w, "REPLACE")
+            if w > 0.9:  # the row along the hinge itself, which lies on the blanket
+                hg.add([v.index], 1.0, "REPLACE")
+        cl = fo.modifiers.new("cloth", "CLOTH")
+        fo.modifiers.move(len(fo.modifiers) - 1, 0)
+        st = cl.settings
+        st.quality = 15
+        st.mass = 0.25  # kg per vertex (Blender default 0.3): heavy enough to fall flat, not crumple
+        st.tension_stiffness = st.compression_stiffness = 15.0
+        st.shear_stiffness = 5.0
+        st.bending_stiffness = 0.3  # its rest shape is flat: it slumps and lies down, without fine wrinkles
+        st.air_damping = 1.5
+        st.vertex_group_mass = "pin"
+        st.rest_shape_key = fo.data.shape_keys.key_blocks["plane"]  # it wants to lie flat, not keep the mound
+        st.pin_stiffness = 2.0
+        cs = cl.collision_settings
+        cs.use_collision, cs.use_self_collision = True, False
+        cs.distance_min, cs.collision_quality = 0.005, 5
+        cs.vertex_group_object_collisions = "hinge"  # pinned on the blanket: collision and pin fought, and the
+        # fold never came to rest (with the whole pinned strip excluded, the probe's fingers poked through it)
+        cl.point_cache.frame_start, cl.point_cache.frame_end = f0, f1
+    for c in colliders:
+        if "collision" not in c.modifiers:
+            c.modifiers.new("collision", "COLLISION")
+            c.collision.thickness_outer = 0.01  # thin ones let the fold sink through
+            c.collision.cloth_friction = 10.0
+            c.collision.damping = 0.8
+            # Single-sided: the blanket is a slab, and the cloth lying on it also felt its underside and never
+            # came to rest (it jittered by centimetres a frame).
+            c.collision.use_normal = True
 
 
 PROBE_SCALE = 3.0  # the crib probe: Sandbox Rhapsody's chassis at 3x (20 cm across), a baby's size in the crib
@@ -1710,27 +1852,152 @@ def town_crack(street_out, seed):
 
 
 def moat():
-    """N22 ("…and the moat, while we're at it, defended"): a thin ring of still water around the plinth, which
-    appears there (hidden until then; the animation keys its visibility)."""
-    bpy.ops.mesh.primitive_circle_add(vertices=128, radius=4.8, fill_type="NOTHING", location=(0, 0, 0.004))
-    o = bpy.context.active_object
-    o.name = "moat"
-    bpy.ops.object.mode_set(mode="EDIT")
-    bpy.ops.mesh.select_all(action="SELECT")
-    bpy.ops.mesh.extrude_region_shrink_fatten(TRANSFORM_OT_shrink_fatten={"value": 0.7})
-    bpy.ops.mesh.edge_face_add()
-    bpy.ops.object.mode_set(mode="OBJECT")
-    # Still water reads as reflection: Sandbox Rhapsody's glass shader (a Fresnel reflection of the procedural studio
-    # environment) over a dark tint, and a faint cold rim at both edges so the ring shows against the dark floor.
-    o.data.materials.append(K.mat_glass("moat", role="house", tint=0.25, reflect=0.3))
-    for k, r in enumerate((4.1, 4.8)):
-        bpy.ops.mesh.primitive_torus_add(major_radius=r, minor_radius=0.008, major_segments=128, minor_segments=6,
-                                         location=(0, 0, 0.006))
-        e = bpy.context.active_object
-        e.name = f"moat.edge{k}"
-        e.data.materials.append(K.mat_emission(f"moat.edge{k}", "house", 1.2))
-        e.parent = o
-    return o
+    """N22 ("…and the moat, while we're at it, defended"): a ring of still water around the plinth (human, C4 v7
+    review: the flat disc with two glowing rims read as a placeholder). A channel sunk into the hall floor: stone
+    walls, a dark bed, water a hand below the floor whose surface barely stirs, a kerb of coping blocks on both
+    edges overhanging it, and under each overhang a strip of cold light along the water. Until it appears, a lid of
+    hall floor covers the cut; on "moat" the lid dissolves ("appear" 0..1 on the root) and the moat is just there.
+    Returns the root (the lid is "moat.lid", not under it, so it can be shown while the moat is hidden)."""
+    r0, r1, r2, r3 = MOAT_R  # the cut's inner edge, the inner wall, the outer wall, the cut's outer edge
+    root = K.empty("moat")
+    K.prop(root, "appear", 0.0)
+    n = MOAT_SEG
+
+    def at(a, r, z):
+        return (r * math.cos(a), r * math.sin(a), z)
+
+    def mesh(name, mat, build):
+        bm = bmesh.new()
+        build(bm)
+        me = bpy.data.meshes.new(name)
+        bm.to_mesh(me)
+        bm.free()
+        o = K.link(bpy.data.objects.new(name, me))
+        o.data.materials.append(mat)
+        o.parent = root
+        return o
+
+    # The channel: walls from under the coping down to the bed, faces toward the water.
+    ZB, ZW = -0.62, -0.115  # the bed; the water's surface
+    wet = mat_stone("moat.wall", "plinth", 0.35)
+    mesh("moat.channel", wet, lambda bm: (
+        ring_strip(bm, lambda a: at(a, r1, ZB), lambda a: at(a, r1, -0.07), n),   # inner wall, facing out
+        ring_strip(bm, lambda a: at(a, r2, -0.07), lambda a: at(a, r2, ZB), n),   # outer wall, facing in
+        ring_strip(bm, lambda a: at(a, r1, ZB), lambda a: at(a, r2, ZB), n)))     # the bed
+    ch = bpy.data.objects["moat.channel"]
+    for f in ch.data.polygons:  # the walls' winding: every face toward the channel's middle or up
+        c = f.center
+        rr = math.hypot(c.x, c.y)
+        want = Vector((c.x, c.y, 0)).normalized() * (1 if rr < (r1 + r2) / 2 else -1) if c.z > ZB + 0.01 \
+            else Vector((0, 0, 1))
+        if f.normal.dot(want) < 0:
+            f.flip()
+    K.smooth(ch)
+    # The water: dark and glossy, a slow swell of fine ripples in its normal (the time is the frame).
+    m, b = K._principled("moat.water")
+    b.inputs["Base Color"].default_value = (0.004, 0.006, 0.011, 1.0)
+    b.inputs["Roughness"].default_value = 0.035
+    b.inputs["IOR"].default_value = 1.33
+    nt = m.node_tree
+    tc, noise, bump = nt.nodes.new("ShaderNodeTexCoord"), nt.nodes.new("ShaderNodeTexNoise"), \
+        nt.nodes.new("ShaderNodeBump")
+    noise.noise_dimensions = "4D"
+    noise.inputs["Scale"].default_value = 2.2
+    noise.inputs["Detail"].default_value = 4.0
+    nt.links.new(tc.outputs["Object"], noise.inputs["Vector"])
+    fc = noise.inputs["W"].driver_add("default_value")
+    fc.driver.expression = f"frame / {LOOK['fps'] * 12.0}"  # one unit of W in 12 s: a slow stir
+    bump.inputs["Strength"].default_value = 0.12
+    bump.inputs["Distance"].default_value = 0.004
+    nt.links.new(noise.outputs["Fac"], bump.inputs["Height"])
+    nt.links.new(bump.outputs["Normal"], b.inputs["Normal"])
+    # Eevee reflects only what's on screen, which from above is mostly dark hall: like the kit's glass, the water
+    # also mirrors a soft procedural sky (the horizon band and the cold rim glow), Fresnel-weighted and seen along
+    # the rippled normal, so the ring always reads as water.
+    geo, rv = nt.nodes.new("ShaderNodeNewGeometry"), nt.nodes.new("ShaderNodeVectorMath")
+    neg = nt.nodes.new("ShaderNodeVectorMath")
+    neg.operation, rv.operation = "SCALE", "REFLECT"
+    neg.inputs["Scale"].default_value = -1.0
+    nt.links.new(geo.outputs["Incoming"], neg.inputs[0])
+    nt.links.new(neg.outputs[0], rv.inputs[0])
+    nt.links.new(bump.outputs["Normal"], rv.inputs[1])
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(rv.outputs[0], sep.inputs[0])
+    band = nt.nodes.new("ShaderNodeMapRange")  # a glow low over the horizon, fading up the sky
+    band.interpolation_type = "SMOOTHSTEP"
+    band.inputs["From Min"].default_value, band.inputs["From Max"].default_value = 0.6, 0.0
+    nt.links.new(sep.outputs["Z"], band.inputs["Value"])
+    fr = nt.nodes.new("ShaderNodeFresnel")
+    fr.inputs["IOR"].default_value = 1.33
+    gain = nt.nodes.new("ShaderNodeMath")
+    gain.operation = "MULTIPLY"
+    nt.links.new(band.outputs[0], gain.inputs[0])
+    nt.links.new(fr.outputs[0], gain.inputs[1])
+    g2 = nt.nodes.new("ShaderNodeMath")
+    g2.operation = "MULTIPLY"
+    g2.inputs[1].default_value = 3.0
+    nt.links.new(gain.outputs[0], g2.inputs[0])
+    # And a slight glow of its own, so the ring reads in the dark hall (human, C4 v7 review: "add a slight glow to
+    # the moat so it's more visible").
+    glow = nt.nodes.new("ShaderNodeMath")
+    glow.operation = "ADD"
+    glow.inputs[1].default_value = 0.35
+    nt.links.new(g2.outputs[0], glow.inputs[0])
+    b.inputs["Emission Color"].default_value = K.col("rim")
+    nt.links.new(glow.outputs[0], b.inputs["Emission Strength"])
+    mesh("moat.water", m, lambda bm: ring_strip(bm, lambda a: at(a, r1 - 0.004, ZW), lambda a: at(a, r2 + 0.004, ZW),
+                                                 n))
+    # The coping: blocks of pale stone about 60 cm long on both edges, 4 mm under the floor (the lid's level) and
+    # 2.5 cm over the water's edge, with 4 mm joints; their outer edges run 3 mm under the floor's cut.
+    cope = mat_stone("moat.coping", "steel", 0.7)
+    for k, (ra, rb) in enumerate(((r0 - 0.003, r1 + 0.025), (r2 - 0.025, r3 + 0.003))):
+        rm = (ra + rb) / 2
+        nb = int(math.tau * rm / 0.6)
+
+        def blocks(bm, ra=ra, rb=rb, nb=nb, rm=rm):
+            for j in range(nb):
+                a0, a1 = math.tau * j / nb + 0.002 / rm, math.tau * (j + 1) / nb - 0.002 / rm
+                ring = []
+                for q in range(9):
+                    a = a0 + (a1 - a0) * q / 8
+                    ring.append([bm.verts.new(at(a, r, z)) for r, z in ((ra, -0.004), (rb, -0.004), (rb, -0.075),
+                                                                        (ra, -0.075))])
+                for q in range(8):
+                    for e in range(4):
+                        bm.faces.new((ring[q][e], ring[q + 1][e], ring[q + 1][(e + 1) % 4], ring[q][(e + 1) % 4]))
+                bm.faces.new(ring[0][::-1])
+                bm.faces.new(ring[8])
+            bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        cp = mesh(f"moat.coping{k}", cope, blocks)
+        K.bevel(cp, 0.004, 2)
+    # Under each overhang, a strip of cold light along the water (the old rims, now hidden in the kerb's shadow):
+    # it lights the wall's top and shows in the water as a line.
+    for k, r in enumerate((r1 + 0.008, r2 - 0.008)):
+        e = K.mesh_obj(f"moat.light{k}", bpy.ops.mesh.primitive_torus_add, K.mat_emission(f"moat.light{k}", "house",
+                       5.0), root, major_radius=r, minor_radius=0.004, major_segments=n, minor_segments=6,
+                       location=(0, 0, -0.085))
+        e.visible_shadow = False
+    # The lid: hall floor over the cut until the moat appears, then it dissolves (dithered, so it can't z-fight
+    # the coping 4 mm under it while both show).
+    lm, lb = K._principled("moat.lid")
+    lb.inputs["Base Color"].default_value = K.col("floor")
+    lb.inputs["Roughness"].default_value = LOOK["materials"]["floor_roughness"]
+    lnt = lm.node_tree
+    tr, mix = lnt.nodes.new("ShaderNodeBsdfTransparent"), lnt.nodes.new("ShaderNodeMixShader")
+    out = lnt.nodes["Material Output"]
+    lnt.links.new(lb.outputs[0], mix.inputs[1])
+    lnt.links.new(tr.outputs[0], mix.inputs[2])
+    lnt.links.new(mix.outputs[0], out.inputs[0])
+    K.drive(mix.inputs[0], "default_value", None, root, "appear", "x")
+    bm = bmesh.new()
+    ring_strip(bm, lambda a: at(a, r0, 0.0), lambda a: at(a, r3, 0.0), n)
+    me = bpy.data.meshes.new("moat.lid")
+    bm.to_mesh(me)
+    bm.free()
+    lid = K.link(bpy.data.objects.new("moat.lid", me))
+    lid.data.materials.append(lm)
+    root["lid"] = lid
+    return root
 
 
 def velvet_rope():
@@ -1800,15 +2067,44 @@ def basement():
     # The laptop: a base with a keyboard well, keys and a trackpad, a hinge, and a lid whose display is the lit page
     # below (the lid itself is dark plastic; the page carries the screen's light).
     shell = K.mat_plastic("base.laptop", "lab_dark", 0.4)
-    bz = dz + 0.0275  # the base's top face
+    bz = dz + 0.0375  # the base's top face (C4 v7 review: it was 1 cm low, and every key lay buried in the deck)
     box("base.laptop_base", shell, (0.35, 1.15, dz + 0.03), (0.34, 0.24, 0.015), bev=0.004)
-    keys_ext = []
-    for row in range(4):
-        for col in range(12):
-            x0, y0 = 0.35 - 0.141 + col * 0.0236, 1.215 - row * 0.0225
-            keys_ext.append(((x0, y0 - 0.0185, bz), (x0 + 0.02, y0, bz + 0.003)))
-    keys_ext.append(((0.35 - 0.075, 1.215 - 4 * 0.0225 - 0.0185, bz), (0.35 + 0.075, 1.215 - 4 * 0.0225, bz + 0.003)))
-    boxes_obj("base.laptop_keys", K.mat_plastic("base.keys", "shadow", 0.5), keys_ext)
+    # A full laptop keyboard (human, C7 review: "missing keys"; the first pass had 4 rows of 12): a half-height
+    # function row, then five rows of 15 units (1 u = 18.5 mm), keys lighter than the deck with light legends. The
+    # home row stays where the maintainer's fingers rest (y 1.161), the space bar under his thumbs.
+    u, gap, y_top, kz = 0.0185, 0.0032, 1.2165, bz + 0.0003
+    rows = [(0.5, [("esc", 1.5)] + [(f"F{i}", 1) for i in range(1, 13)] + [("", 1.5)]),
+            (1, [(c, 1) for c in "`1234567890-="] + [("del", 2)]),
+            (1, [("tab", 1.5)] + [(c, 1) for c in "QWERTYUIOP[]"] + [("\\", 1.5)]),
+            (1, [("caps", 1.75)] + [(c, 1) for c in "ASDFGHJKL;'"] + [("return", 2.25)]),
+            (1, [("shift", 2.25)] + [(c, 1) for c in "ZXCVBNM,./"] + [("shift", 2.75)]),
+            (1, [("fn", 1), ("ctrl", 1), ("opt", 1), ("cmd", 1.25), ("", 5.5), ("cmd", 1.25), ("opt", 1),
+                 ("<", 1), ("^v", 1), (">", 1)])]
+    keys_ext, legends = [], []
+    yk = y_top
+    for h, row in rows:
+        x = 0.35 - 7.5 * u
+        for label, w in row:
+            x0, x1, y0, y1 = x + gap / 2, x + w * u - gap / 2, yk - h * u + gap / 2, yk - gap / 2
+            if label == "^v":  # the up and down arrows share a key's height
+                ym = (y0 + y1) / 2
+                keys_ext += [((x0, y0, kz), (x1, ym - gap / 4, kz + 0.003)), ((x0, ym + gap / 4, kz), (x1, y1, kz + 0.003))]
+                legends += [("^", (x0 + x1) / 2, (ym + y1) / 2, 0.6), ("v", (x0 + x1) / 2, (y0 + ym) / 2, 0.6)]
+            else:
+                keys_ext.append(((x0, y0, kz), (x1, y1, kz + 0.003)))
+                if label:
+                    legends.append((label, (x0 + x1) / 2, (y0 + y1) / 2, 1.0 if len(label) == 1 else 0.62))
+            x += w * u
+        yk -= h * u
+    kb = boxes_obj("base.laptop_keys", K.mat_plastic("base.keys", "pencil", 0.55), keys_ext)
+    K.bevel(kb, 0.0007, 2)
+    leg = K.mat_matte("base.key_legend", "felt_grey")
+    for k, (label, lx, ly, s) in enumerate(legends):
+        K.text(f"base.key_legend{k}", label, 0.0052 * s, leg, loc=(lx, ly, kz + 0.0032), rot=(0, 0, 0),
+               font="JetBrainsMono-SemiBold-flat.ttf")
+    # The speaker grilles either side, between the keys and the hinge.
+    box("base.laptop_grille", K.mat_plastic("base.grille", "shadow", 0.6), (0.35, 1.236, bz + 0.0003),
+        (0.27, 0.01, 0.0004))
     box("base.laptop_pad", K.mat_plastic("base.pad", "plinth", 0.3), (0.35, 1.062, bz + 0.0005), (0.1, 0.05, 0.001))
     cyl("base.laptop_hinge", shell, (0.35, 1.262, dz + 0.042), 0.008, 0.3, rot=(0, math.pi / 2, 0), verts=16)
     scr = box("base.laptop_screen", shell, (0.35, 1.28, dz + 0.15), (0.33, 0.01, 0.22), bev=0.003)
@@ -1914,27 +2210,29 @@ def basement():
     # Root local = torso local + (0, 0.02, 0.5).
     # The sleeves taper to a ribbed cuff; the hands lie on the keys, a palm, four fingers curled onto the home row
     # and a thumb on the space bar (human, C4 v6 audit: plain rods with a squashed ball for a hand read as rolling
-    # pins in N17's close-up). Key tops are at root z 0.7805; fingertips clear them by a millimetre.
+    # pins in N17's close-up). Key tops are at root z 0.7908; fingertips clear them by a millimetre (hz: the hands rose
+    # 1 cm with the keys in the C4 v7 review, when the keys turned out to be buried in the deck).
     for sx in (-1, 1):
         sh, el = (sx * 0.17, 0.1, 0.47), (sx * 0.22, 0.22, 0.33)
         sphere(f"maintainer.shoulder{sx}", cloth, sh, 0.05, torso, 16)
         capsule(f"maintainer.arm{sx}", cloth, sh, el, 0.05, 0.045, torso)
         el_r = (el[0], el[1] + 0.02, el[2] + 0.5)
-        wr = Vector((sx * 0.1, 0.54, 0.825))
+        hz = 0.0103
+        wr = Vector((sx * 0.1, 0.54, 0.825 + hz))
         sphere(f"maintainer.elbow{sx}", cloth, el_r, 0.045, m_root, 16)
         capsule(f"maintainer.forearm{sx}", cloth, el_r, wr, 0.044, 0.035, m_root)
         d = (wr - Vector(el_r)).normalized()
         torus(f"maintainer.cuff{sx}", cloth, wr - 0.01 * d, 0.031, 0.009, m_root,
               rot=d.to_track_quat("Z", "Y").to_euler())
-        pc = Vector((sx * 0.085, 0.586, 0.803))
+        pc = Vector((sx * 0.085, 0.586, 0.803 + hz))
         capsule(f"maintainer.wrist{sx}", skin, wr - 0.02 * d, pc + Vector((0, -0.02, 0)), 0.021, 0.024, m_root)
         soft_box(f"maintainer.palm{sx}", skin, pc, (0.068, 0.072, 0.026), m_root, rot=(-0.15, 0, 0))
         for i, (dx, reach, r) in enumerate(((-0.024, 0.026, 0.0075), (-0.008, 0.031, 0.0083), (0.008, 0.033, 0.0083),
                                             (0.024, 0.029, 0.008))):
             x = pc.x + sx * dx  # i 0 the little finger, outermost
-            capsule(f"maintainer.finger{sx}_{i}", skin, (x, 0.618, 0.799), (x, 0.618 + reach, 0.789), r, r * 0.92,
+            capsule(f"maintainer.finger{sx}_{i}", skin, (x, 0.618, 0.799 + hz), (x, 0.618 + reach, 0.789 + hz), r, r * 0.92,
                     m_root, segs=12)
-        capsule(f"maintainer.thumb{sx}", skin, (pc.x - sx * 0.03, 0.562, 0.798), (pc.x - sx * 0.044, 0.586, 0.7895),
+        capsule(f"maintainer.thumb{sx}", skin, (pc.x - sx * 0.03, 0.562, 0.798 + hz), (pc.x - sx * 0.044, 0.586, 0.7895 + hz),
                 0.0095, 0.0085, m_root, segs=12)
         # Legs under the desk: thigh forward along the seat, shin down, a shoe.
         kn = (sx * 0.1, 0.34, 0.53)
@@ -2055,8 +2353,8 @@ def basement():
 
 def tickets():
     """Printed tickets: the stacks the mobile's pieces carry away (N13), the one that falls through the floor (N14,
-    "fall" 0 at the mobile .. 1 on the basement desk), and the drift that piles against the glass (N29-N37,
-    "drift" 0 .. 1 scales the pile)."""
+    "fall" 0 at the mobile .. 1 on the basement desk), and the drift that piles against the glass (N29-N37): tickets
+    that fall through the hall in gusts and settle on it (animate.ticket)."""
     out = {}
     paper = K.mat_matte("ticket.paper", "paper")
     fall = K.empty("ticket.fall")
@@ -2064,25 +2362,74 @@ def tickets():
     t.visible_shadow = False
     out["fall"] = fall
     pile = K.empty("ticket.pile", (0, -ROOM - 0.12, PL_H))
-    K.prop(pile, "drift", 0.0)
     # Printed tickets lying on the plinth and on each other, deepest against the glass (human, C4 v6 audit: cards
     # floating at random tilts up to 12 cm off the floor). Pile-local: the glass is at y 0.12.
+    # They arrive (human, C4 v7 review: the pile looked as if it should fall and didn't): in gusts, each ticket's
+    # place in the heap is where it comes to rest, laid in the order they land, so later ones lie on earlier ones.
+    # Each also gets a perch upslope (toward the glass, a little higher), where it may touch down and stay until it
+    # slides down into place: right away, or when the next gust lands near it (animate.ticket keys all of it).
+    # Per ticket: "gust", "rest" (x, y, angle), "perch" (dx, dy, lift), "zmean" (its drape's mean height).
     rnd = random.Random(SEEDS["main"] + 5)
-    printed = mat_print("ticket.print", rows=10)
-    drift = Heap(-2.0, 2.0, -0.5, 0.11, lambda x, y: 0.0, lambda x, y: abs(x) < 1.98 and y < 0.105)
-    for k in range(60):
-        t, verts = paper_sheet(f"ticket.pile{k}", printed, 0.11, 0.15, rnd, curl=0.5, nx=6, ny=8)
-        t.parent = pile
-        for _ in range(60):
-            x = rnd.uniform(-1.9, 1.9)
-            if abs(x) < 1.0 and rnd.random() < 0.7:
-                x = math.copysign(1.0 + rnd.random() * 0.9, x)
-            if drift.lay(t, verts, x, -0.28 * rnd.random() ** 2, rnd.uniform(0, math.tau)):
-                break
-        else:
-            bpy.data.objects.remove(t)
-    for i in range(3):
-        K.drive(pile, "scale", i, pile, "drift", "max(0.001, x)")
+    # Each carries a disclosed CVE found with AI (human, 2026-10-25), from config/ticket_cves.json: the ID, what
+    # and where, and the finder, over the printed body text.
+    printed = mat_print("ticket.print", rows=10, v1=0.6)
+    ink = K.mat_ink("ticket.ink", "pencil")
+    cves = json.loads((K.ROOT / "config" / "ticket_cves.json").read_text())["cves"]
+    order = list(range(len(cves)))
+    random.Random(SEEDS["main"] + 7).shuffle(order)
+    ok = lambda x, y: abs(x) < 1.98 and y < 0.105  # noqa: E731
+    drift = Heap(-2.0, 2.0, -0.5, 0.11, lambda x, y: 0.0, ok)
+    N, k, g = 240, 0, 0
+    while k < N:
+        size = 1 if k < 0.2 * N and rnd.random() < 0.6 else rnd.randint(2, 7)  # early on a few at a time
+        cx = rnd.uniform(-1.7, 1.7)
+        for _ in range(min(size, N - k)):
+            t, verts = paper_sheet(f"ticket.pile{k}", printed, 0.11, 0.15, rnd, curl=0.6, nx=6, ny=8)
+            t.parent = pile
+            c = cves[order[k % len(cves)]]
+            t.data.materials.append(ink)
+            letters = print_on_sheet(t, [(c["id"], 0.0105, -0.044, 0.051), (c["label"], 0.0062, -0.044, 0.036),
+                                         (f"found by {c['found_by']}", 0.0052, -0.044, 0.026)], 0.11, 0.15, 6, 8)
+            t["cve"] = c["id"]
+            for _ in range(60):
+                x = max(-1.9, min(1.9, rnd.gauss(cx, 0.22)))
+                y, ang = -0.3 * rnd.random() ** 2, rnd.uniform(0, math.tau)
+                h0 = [row[:] for row in drift.h]
+                if drift.lay(t, verts, x, y, ang):
+                    break
+            else:
+                bpy.data.objects.remove(t)
+                k += 1
+                continue
+            zs = [v.co.z for v in t.data.vertices][:len(verts)]
+            for (vi, _, _), z in zip(letters, sheet_lettering_z(zs, letters, 6, 8)):
+                t.data.vertices[vi].co.z = z
+            # The perch: up to 12 cm toward the glass and up to 5 cm along it, never past the glass or the plinth's
+            # ends, lifted clear of the heap there as it was before this ticket (h0).
+            ca, sa = math.cos(ang), math.sin(ang)
+            pw = [(x + ca * vx - sa * vy, y + sa * vx + ca * vy) for vx, vy, _ in verts]
+            dy = max(0.0, min(rnd.uniform(0.04, 0.12), 0.104 - max(py for _, py in pw)))
+            dx = rnd.uniform(-0.05, 0.05)
+            if not all(ok(px + dx, py + dy) for px, py in pw):
+                dx = 0.0
+            lift = 0.0
+            for (px, py), zz in zip(pw, zs):
+                c = drift.cell(px + dx, py + dy)
+                if c:
+                    lift = max(lift, h0[c[0]][c[1]] + 0.0015 - zz)
+            t["gust"], t["rest"], t["perch"], t["zmean"] = g, (x, y, ang), (dx, dy, lift), sum(zs) / len(zs)
+            # Its shape in the air: the sheet's own curl, at its drape's mean height (shape key "air", animate.ticket)
+            t.shape_key_add(name="rest")
+            air = t.shape_key_add(name="air", from_mix=False)
+            air.value = 0.0  # keyed in animate.drift
+            az = [t["zmean"] + cl for _, _, cl in verts]
+            for v, z in zip(air.data, az):
+                v.co.z = z
+            for (vi, _, _), z in zip(letters, sheet_lettering_z(az, letters, 6, 8)):
+                air.data[vi].co.z = z
+            k += 1
+        g += 1
+    pile["gusts"] = g
     out["pile"] = pile
     return out
 
