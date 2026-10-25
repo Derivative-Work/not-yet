@@ -134,3 +134,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human moved the project from the GTX 970 draft box to the RTX 5090 box. They asked to keep iterating at 720p there, but at the full frame rate (30 fps with motion blur, as the style spec set at C1). Before the next re-render, the agent is to update package versions to use the 5090, and check the existing frames for z-fighting and similar artifacts.
 - **Note from the human:** "I have imported this project from the draft machine. For now, let's keep working at 720p but upgrade to the full framerate (30fps with motion blur). Before doing a new re-render, update package versions etc to properly take advantage of the 5090 and check the existing frames for z-fighting and similar artifacts"
 - **Rule:** R3 for the machine move (hardware the agent can't reach). The render tier is EXCEPTION: the brief had iteration on the 970 box and the 5090 for the final. The human moved iteration to the 5090 at 720p and full frame rate.
+
+## 2026-10-25T11:50 — Placeholder audit of C4 v6: fix all nine — R1
+
+- **What:** On reviewing C4 v6, the human said a few places were still placeholder geometry, like the laptop had been, and asked the agent to find them all. The agent listed nine (production log, 11:40). The human approved fixing them all.
+- **Note from the human:** "This looks great on the whole but there's a few more places of placeholder geometry like the laptop. See if you can find them all" / "List looks good, fix it"
+- **Rule:** R1 (approving the proposed changes).

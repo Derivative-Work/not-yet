@@ -61,6 +61,55 @@ def mat_felt(name, role):
     return m
 
 
+def mat_print(name, glow=None, strength=1.5, rows=24):
+    """Printed paper, matte: rows of grey type of random length inside a margin (u across the sheet, v down it; the
+    lengths vary per object). With `glow` (an object with a "glow" property 0-1) the sheet also emits cream light
+    scaled by it: a sheet that lights up, still paper while it's dark (a bare emitter rendered black)."""
+    m, b = K._principled(name)
+    b.inputs["Roughness"].default_value = 0.95
+    b.inputs["Specular IOR Level"].default_value = 0.0
+    nt = m.node_tree
+    N = nt.nodes.new
+
+    def op(kind, *args):
+        n = N("ShaderNodeMath")
+        n.operation = kind
+        for i, x in enumerate(args):
+            if isinstance(x, (int, float)):
+                n.inputs[i].default_value = x
+            else:
+                nt.links.new(x, n.inputs[i])
+        return n.outputs[0]
+
+    tc, sep = N("ShaderNodeTexCoord"), N("ShaderNodeSeparateXYZ")
+    nt.links.new(tc.outputs["UV"], sep.inputs[0])
+    u, v = sep.outputs["X"], sep.outputs["Y"]
+    row = op("MULTIPLY", v, rows)
+    idx = op("FLOOR", row)
+    line = op("GREATER_THAN", op("SUBTRACT", row, idx), 0.5)
+    oi, cmb, noise = N("ShaderNodeObjectInfo"), N("ShaderNodeCombineXYZ"), N("ShaderNodeTexNoise")
+    nt.links.new(idx, cmb.inputs["X"])
+    nt.links.new(op("MULTIPLY", oi.outputs["Random"], 50.0), cmb.inputs["Y"])
+    nt.links.new(cmb.outputs[0], noise.inputs["Vector"])
+    noise.inputs["Scale"].default_value = 0.9
+    length = op("MULTIPLY_ADD", op("MINIMUM", op("MAXIMUM", op("MULTIPLY", op("SUBTRACT",
+                  noise.outputs["Fac"], 0.32), 3.0), 0.0), 1.0), 0.78, 0.1)
+    mask = line
+    for g in (op("GREATER_THAN", u, 0.1), op("LESS_THAN", u, length), op("GREATER_THAN", v, 0.08),
+              op("LESS_THAN", v, 0.88)):
+        mask = op("MULTIPLY", mask, g)
+    mix = N("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.inputs["A"].default_value = K.col("paper")
+    mix.inputs["B"].default_value = K.col("pencil")
+    nt.links.new(op("MULTIPLY", mask, 0.5), mix.inputs["Factor"])
+    nt.links.new(mix.outputs["Result"], b.inputs["Base Color"])
+    if glow is not None:
+        b.inputs["Emission Color"].default_value = K.col("comfort")
+        K.drive(b.inputs["Emission Strength"], "default_value", None, glow, "glow", f"{strength} * x")
+    return m
+
+
 def mat_steel(name="steel"):
     return K.mat_metal(name, "steel", LOOK["materials"]["steel_roughness"])
 
@@ -292,6 +341,102 @@ def bar(name, mat, a, b, r, parent=None, verts=12):
     o = cyl(name, mat, (a + b) / 2, r, d.length, parent, verts=verts)
     o.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
     return o
+
+
+def capsule(name, mat, a, b, ra, rb=None, parent=None, segs=16):
+    """A rod with round ends from a to b, radius ra at a tapering to rb at b: fingers, thumbs, sleeves (a bar's flat
+    cut ends read as stakes and rolling pins)."""
+    rb = ra if rb is None else rb
+    a, b = Vector(a), Vector(b)
+    L = (b - a).length
+    bm = bmesh.new()
+    q = max(2, segs // 4)
+    rings = [(ra * math.sin(t), ra * math.cos(t)) for t in (-math.pi / 2 + math.pi / 2 * i / q for i in range(q + 1))]
+    rings += [(L + rb * math.sin(t), rb * math.cos(t)) for t in (math.pi / 2 * i / q for i in range(q + 1))]
+    vs = [[bm.verts.new((rr * math.cos(2 * math.pi * k / segs), rr * math.sin(2 * math.pi * k / segs), z))
+           for k in range(segs)] for z, rr in rings]
+    for i in range(len(vs) - 1):
+        for k in range(segs):
+            bm.faces.new((vs[i][k], vs[i][(k + 1) % segs], vs[i + 1][(k + 1) % segs], vs[i + 1][k]))
+    bmesh.ops.remove_doubles(bm, verts=bm.verts[:], dist=1e-7)  # the poles
+    bmesh.ops.dissolve_degenerate(bm, edges=bm.edges[:], dist=1e-7)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = K.link(bpy.data.objects.new(name, me))
+    o.data.materials.append(mat)
+    o.parent = parent
+    o.location = a
+    o.rotation_euler = (b - a).to_track_quat("Z", "Y").to_euler()
+    return K.smooth(o)
+
+
+def paper_sheet(name, mat, w, h, rnd, curl=1.0, nx=12, ny=16):
+    """A sheet of paper lying on its back: a grid with UVs (for mat_print), its long ends curling up a little and,
+    on some, a corner lifting. Returns the object and, per vertex, its local (x, y, lift) for stack()."""
+    ca, cb = curl * rnd.uniform(0.0, 0.03), curl * rnd.uniform(0.0, 0.012)
+    cc, sx, sy = (curl * rnd.uniform(0.01, 0.04), rnd.choice((-1, 1)), rnd.choice((-1, 1))) if rnd.random() < 0.3 \
+        else (0.0, 1, 1)
+    pts = []
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            s, t = 2 * i / nx - 1, 2 * j / ny - 1
+            lift = ca * max(0.0, abs(t) - 0.5) ** 2 * 4 + cb * max(0.0, abs(s) - 0.5) ** 2 * 4 \
+                + cc * max(0.0, sx * s + sy * t - 1.2) ** 2 * 1.25
+            pts.append((s * w / 2, t * h / 2, lift, i / nx, j / ny))
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([(x, y, z) for x, y, z, _, _ in pts], [],
+                   [(j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i)
+                    for j in range(ny) for i in range(nx)])
+    uvl = me.uv_layers.new(name="UVMap")
+    for lp in me.loops:
+        uvl.data[lp.index].uv = pts[lp.vertex_index][3:]
+    o = K.link(bpy.data.objects.new(name, me))
+    o.data.materials.append(mat)
+    return K.smooth(o), [p[:3] for p in pts]
+
+
+class Heap:
+    """A height map (2 cm cells) that sheets are stacked on, so each lies on the ones under it instead of passing
+    through them: `base(x, y)` is the ground (a floor, a desk top, a mound), `ok(x, y)` says a point may be covered."""
+
+    def __init__(self, x0, x1, y0, y1, base, ok, cell=0.02):
+        self.x0, self.y0, self.c, self.ok = x0, y0, cell, ok
+        self.nx, self.ny = int((x1 - x0) / cell) + 1, int((y1 - y0) / cell) + 1
+        self.h = [[base(x0 + (i + 0.5) * cell, y0 + (j + 0.5) * cell) for j in range(self.ny)] for i in range(self.nx)]
+
+    def cell(self, x, y):
+        i, j = int((x - self.x0) / self.c), int((y - self.y0) / self.c)
+        return (i, j) if 0 <= i < self.nx and 0 <= j < self.ny else None
+
+    def lay(self, obj, verts, x, y, ang, gap=0.0006, passes=4):
+        """Turn the sheet to `ang` and drape it on the heap: each vertex rests on the heap under it (plus its curl),
+        then a few smoothing passes bend it gently, never below that. Returns False (and leaves the heap alone)
+        where any of it would cover a point that isn't ok. (A rigid sheet dropped on its highest point hovered over
+        the rest, and every one after it stacked higher: towers.)"""
+        ca, sa = math.cos(ang), math.sin(ang)
+        pw = [(x + ca * vx - sa * vy, y + sa * vx + ca * vy) for vx, vy, _ in verts]
+        cells = [self.cell(px, py) for px, py in pw]
+        if any(c is None or not self.ok(px, py) for c, (px, py) in zip(cells, pw)):
+            return False
+        W = sum(1 for v in verts if v[1] == verts[0][1])  # vertices per row
+        base = [self.h[i][j] + gap + lift for (i, j), (_, _, lift) in zip(cells, verts)]
+        z = base[:]
+        for _ in range(passes):
+            nb = []
+            for k in range(len(z)):
+                ring = [z[k]] + [z[m] for m in (k - 1 if k % W else -1, k + 1 if (k + 1) % W else -1, k - W, k + W)
+                                 if 0 <= m < len(z)]
+                nb.append(max(base[k], sum(ring) / len(ring)))
+            z = nb
+        for (i, j), zz in zip(cells, z):
+            self.h[i][j] = max(self.h[i][j], zz)
+        for v, zz in zip(obj.data.vertices, z):
+            v.co.z = zz
+        obj.location = (x, y, 0.0)
+        obj.rotation_euler = (0, 0, ang)
+        return True
 
 
 def light(name, kind, loc, power, role, size=0.1, target=None, spot=None, specular=1.0, parent=None):
@@ -753,6 +898,7 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
     bl.parent = root
     bl.data.materials.append(mat_felt(f"{name}.blanket", "felt_blue"))
     K.smooth(bl)
+    K.bevel(bl, 0.006, 3)  # a rounded rim instead of a cut edge (human, C4 v6 audit)
     # Breathing: a shape key that raises the hump 2 cm, driven by "breath". With a nest, the lift is even across the
     # nest (its centre's weight), so a probe lying in it rides the breath without the felt passing through it.
     def uv(co):
@@ -804,30 +950,43 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
             K.drive(hinge, "rotation_euler", 0, root, "open", f"{-side * 2.9} * x")
             K.drive(hinge, "location", 2, root, "breath", f"{zh:.4f} + {root['nest_breath']:.4f} * x")
             fb = bmesh.new()
-            nx_, ny_ = 40, 16
-            fv = {}
+            nx_, ny_ = 84, 32  # fine enough for the hem and the quilting
+            fv, hems = {}, {}
             for i in range(nx_ + 1):
                 for j in range(ny_ + 1):
                     x = x0 + (x1 - x0) * i / nx_
                     y = yh + (cy - yh) * j / ny_
-                    fv[i, j] = fb.verts.new((x - cx, y - yh, quilt_z(x, y) - zh))
+                    # Upward only, so the fold never comes nearer the probe: a rolled hem along every edge and
+                    # quilted puffs between diamond stitch lines (human, C4 v6 audit: the bare strips read as
+                    # shells sliced off a mound).
+                    e = min(x - x0, x1 - x, abs(y - yh), abs(cy - y))
+                    hem = 0.012 * math.exp(-(e / 0.016) ** 2)
+                    puff = 0.0045 * (math.sin(math.pi * (x + y) / 0.09) * math.sin(math.pi * (x - y) / 0.09)) ** 2
+                    fv[i, j] = fb.verts.new((x - cx, y - yh, quilt_z(x, y) - zh + hem + puff * (1 - hem / 0.012)))
+                    hems[fv[i, j]] = (hem, e)
             for i in range(nx_):
                 for j in range(ny_):
                     q = (fv[i, j], fv[i + 1, j], fv[i + 1, j + 1], fv[i, j + 1])
-                    fb.faces.new(q if side < 0 else q[::-1])
-            bmesh.ops.solidify(fb, geom=fb.faces[:], thickness=0.015)
+                    fc = fb.faces.new(q if side < 0 else q[::-1])
+                    fc.material_index = int(all(hems[v][1] < 0.02 for v in q))  # the binding along the edges
             fm = bpy.data.meshes.new(f"{name}.fold{side}")
             fb.to_mesh(fm)
             fb.free()
             fo = K.link(bpy.data.objects.new(f"{name}.fold{side}", fm))
             fo.parent = hinge
             fo.data.materials.append(bl.data.materials[0])
+            fo.data.materials.append(mat_felt(f"{name}.binding", "felt_cream"))
             K.smooth(fo)
-            # As it turns back it lies down: its height above the pivot shrinks to 15%.
+            # The thickness is a modifier after the shape keys, so the fold keeps it as it lies down (baked into the
+            # mesh, it flattened to 2 mm with the rest: a paper-thin edge in N39); its rim is the binding.
+            sol = fo.modifiers.new("thick", "SOLIDIFY")
+            sol.thickness, sol.offset, sol.use_even_offset, sol.material_offset_rim = 0.015, -1.0, True, 1
+            K.bevel(fo, 0.005, 3)  # the rim rounds over
+            # As it turns back it lies down: its height above the pivot shrinks to 15%, the hem kept.
             fo.shape_key_add(name="rest")
             fk = fo.shape_key_add(name="flat")
-            for v in fk.data:
-                v.co.z *= 0.15
+            for v, (hem, _) in zip(fk.data, hems.values()):
+                v.co.z = 0.15 * (v.co.z - hem) + hem
             K.drive(fk, "value", None, root, "open", "x")
         glint_at = (cx, cy - HY - 0.012, quilt_z(cx, cy - HY) - 0.012)  # under the front fold's lip
     if glint:
@@ -1150,16 +1309,28 @@ def dresser(name, loc, rot_z=0.0, parent=None):
     # A small warm key on the dresser top, so the box reads at N36.
     light(f"{name}.mb_key", "SPOT", (-0.45, -0.45, 1.35), 6.0, "comfort", 0.05, target=(-0.18, -0.02, 0.9),
           spot=(0.6, 0.4), specular=0.5, parent=root)
-    # The baby monitor camera: a small rounded unit on a stand, a lens, a green standby pip.
+    # The baby monitor camera (human, C4 v6 audit: a ball on a pin read as a joystick): a rounded body with a dark
+    # glossy face, the lens in a bezel ringed by night-vision LEDs, on a ball joint over a weighted round base; a
+    # green standby pip. The face looks along local -Y.
     mon = K.empty(f"{name}.monitor", (0.3, 0.02, 0.825), root)
     mon.rotation_euler = (0, 0, 2.3)
     white = K.mat_plastic(f"{name}.mon", "paper", 0.25)
-    cyl(f"{name}.mon_foot", white, (0, 0, 0.01), 0.04, 0.02, mon, verts=24)
-    cyl(f"{name}.mon_neck", white, (0, 0, 0.06), 0.008, 0.08, mon, verts=12)
-    sphere(f"{name}.mon_head", white, (0, 0, 0.12), 0.04, mon).scale = (1, 0.8, 0.85)
-    cyl(f"{name}.mon_lens", K.mat_plastic(f"{name}.mon_lens", "lens", 0.05), (0, -0.032, 0.122), 0.014, 0.01, mon,
-        rot=(math.pi / 2, 0, 0), verts=24)
-    sphere(f"{name}.mon_pip", K.mat_emission(f"{name}.mon_pip", "standby", 12.0), (0.022, -0.03, 0.15), 0.003, mon, 8)
+    dark = K.mat_plastic(f"{name}.mon_face", "shadow", 0.08)
+    base = cyl(f"{name}.mon_foot", white, (0, 0, 0.011), 0.045, 0.022, mon, verts=48)
+    K.bevel(base, 0.008, 3)
+    cyl(f"{name}.mon_neck", white, (0, 0, 0.045), 0.009, 0.05, mon, verts=16)
+    sphere(f"{name}.mon_joint", white, (0, 0, 0.073), 0.014, mon, 16)
+    soft_box(f"{name}.mon_head", white, (0, 0, 0.122), (0.074, 0.058, 0.086), mon, level=2)
+    soft_box(f"{name}.mon_face", dark, (0, -0.0215, 0.124), (0.062, 0.02, 0.072), mon, level=2)
+    cyl(f"{name}.mon_bezel", K.mat_metal(f"{name}.mon_bezel", "steel", 0.3), (0, -0.0315, 0.13), 0.017, 0.004, mon,
+        rot=(math.pi / 2, 0, 0), verts=32)
+    cyl(f"{name}.mon_lens", K.mat_plastic(f"{name}.mon_lens", "lens", 0.03), (0, -0.0335, 0.13), 0.011, 0.002, mon,
+        rot=(math.pi / 2, 0, 0), verts=32)
+    for k in range(6):
+        a = math.tau * k / 6
+        sphere(f"{name}.mon_ir{k}", K.mat_plastic(f"{name}.mon_ir", "lens", 0.1),
+               (0.0205 * math.cos(a), -0.0315, 0.13 + 0.0205 * math.sin(a)), 0.0022, mon, 8)
+    sphere(f"{name}.mon_pip", K.mat_emission(f"{name}.mon_pip", "standby", 12.0), (0.02, -0.0315, 0.1), 0.0022, mon, 8)
     return {"root": root, "musicbox": mb, "monitor": mon}
 
 
@@ -1416,15 +1587,27 @@ def shop_window():
         1.0, 0.55, 1)
     K.text("shop.tag_text", "COMING\nSOON", 0.035, K.mat_ink("tag_ink", "shadow"), loc=(0, 0, 0.001), rot=(0, 0, 0),
            font="Inter-Medium-flat.ttf", parent=tag)
-    # The display screen (dark until verse 4) on a small easel to the left: two front legs and a back leg in pale
-    # wood, a ledge under the screen.
+    # The display screen (dark until verse 4) on a small easel to the left, in pale wood: two front legs leaning
+    # back behind the screen to a crossbar above it, a back leg to that crossbar, a ledge with a lip that the screen
+    # stands on, a clamp holding its top to a second crossbar, a low rail. Round-ended (human, C4 v6 audit: the old
+    # legs passed through the screen and showed as stakes at the ledge and the top). Front leg x = 1.27 + 0.1037 (z - 0.6).
     scr = box("shop.screen", K.mat_plastic("shop.screen", "lens", 0.05), (1.3, -1.1, 1.55), (0.04, 0.9, 0.55), root,
               bev=0.01)
     easel = mat_paint("shop.easel", "wood", 0.55)
+
+    def leg_x(z):
+        return 1.27 + 0.14 * (z - 0.6) / 1.35
+
     for sy in (-1, 1):
-        bar(f"shop.easel_leg{sy}", easel, (1.2, -1.1 + sy * 0.36, 0.6), (1.345, -1.1 + sy * 0.25, 1.86), 0.013, root)
-    bar("shop.easel_back", easel, (1.66, -1.1, 0.6), (1.36, -1.1, 1.8), 0.012, root)
-    box("shop.easel_ledge", easel, (1.275, -1.1, 1.262), (0.09, 0.84, 0.025), root, bev=0.004)
+        capsule(f"shop.easel_leg{sy}", easel, (1.27, -1.1 + sy * 0.36, 0.613), (1.41, -1.1 + sy * 0.25, 1.95), 0.013,
+                parent=root, segs=12)
+    for k, (z, half) in enumerate(((1.9, 0.27), (1.8, 0.28), (0.95, 0.34))):
+        capsule(f"shop.easel_bar{k}", easel, (leg_x(z), -1.1 - half, z), (leg_x(z), -1.1 + half, z), 0.011, parent=root,
+                segs=12)
+    capsule("shop.easel_back", easel, (1.775, -1.1, 0.612), (leg_x(1.9) + 0.01, -1.1, 1.9), 0.012, parent=root, segs=12)
+    box("shop.easel_ledge", easel, (1.295, -1.1, 1.262), (0.12, 0.84, 0.025), root, bev=0.004)
+    box("shop.easel_lip", easel, (1.241, -1.1, 1.284), (0.012, 0.84, 0.03), root, bev=0.003)
+    box("shop.easel_clamp", easel, (1.351, -1.1, 1.8), (0.062, 0.08, 0.035), root, bev=0.004)
     out["screen"] = scr
     for k in range(3):  # fluorescent tubes in the ceiling
         tube = cyl(f"shop.tube{k}", K.mat_emission("shop.tube", "commerce", 6.0), (0.4 + k * 0.55, 0, 2.97), 0.02,
@@ -1663,11 +1846,33 @@ def basement():
     # The jar of peanuts and the donation jar with three coins.
     jar = K.mat_acrylic("base.jar", "glass", alpha=0.25)
     cyl("base.peanut_jar", jar, (-0.05, 1.45, dz + 0.08), 0.05, 0.14, verts=24)
+    cyl("base.peanut_lid", K.mat_plastic("base.peanut_lid", "felt_blue", 0.4), (-0.05, 1.45, dz + 0.159), 0.052, 0.018,
+        verts=32)
+    # Peanuts in the shell (human, C4 v6 audit: balls), half filling the jar: two lobes with a waist, lying at random,
+    # packed so none passes through another (centres at least a shell's width apart).
     rnd = random.Random(SEEDS["main"] + 3)
-    nut = mat_paint("base.nut", "felt_cream", 0.7)
-    for k in range(14):
-        sphere(f"base.nut{k}", nut, (-0.05 + rnd.uniform(-0.03, 0.03), 1.45 + rnd.uniform(-0.03, 0.03),
-                                     dz + 0.03 + rnd.uniform(0, 0.08)), 0.012, None, 8)
+    nut = mat_paint("base.nut", "wood", 0.85)
+    nut_me = bpy.data.meshes.new("base.nut")
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=16, v_segments=10, radius=1.0)
+    for v in bm.verts:  # 3 cm long, 1.3 cm thick, pinched at the middle
+        x = v.co.x
+        w = 0.0065 * (1 - 0.22 * math.exp(-(x / 0.3) ** 2))
+        v.co = Vector((0.015 * x, w * v.co.y, w * v.co.z))
+    bm.to_mesh(nut_me)
+    bm.free()
+    placed = []
+    while len(placed) < 34:
+        p = Vector((-0.05 + rnd.uniform(-0.034, 0.034), 1.45 + rnd.uniform(-0.034, 0.034),
+                    dz + 0.028 + 0.075 * rnd.random() ** 1.5))
+        if (p.xy - Vector((-0.05, 1.45))).length > 0.034 or any((p - q).length < 0.0135 for q in placed):
+            continue
+        placed.append(p)
+        o = K.link(bpy.data.objects.new(f"base.nut{len(placed)}", nut_me))
+        o.location, o.rotation_euler = p, (rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), rnd.uniform(0, math.tau))
+        if not o.data.materials:
+            o.data.materials.append(nut)
+        K.smooth(o)
     cyl("base.tip_jar", jar, (-0.2, 1.5, dz + 0.07), 0.045, 0.12, verts=24)
     K.text("base.tip_label", "DONATIONS", 0.018, K.mat_ink("base.tip_ink", "shadow"), loc=(-0.2, 1.454, dz + 0.08),
            rot=(math.pi / 2, 0, 0))
@@ -1707,16 +1912,30 @@ def basement():
         sphere(f"maintainer.ear{sx}", skin, (sx * 0.094, 0.21, 0.675), 0.022, torso, 12).scale = (0.5, 1.0, 1.25)
     # Arms: shoulder -> elbow on the torso (breathing); elbow -> wrist -> hand on the root (still, on the keys).
     # Root local = torso local + (0, 0.02, 0.5).
+    # The sleeves taper to a ribbed cuff; the hands lie on the keys, a palm, four fingers curled onto the home row
+    # and a thumb on the space bar (human, C4 v6 audit: plain rods with a squashed ball for a hand read as rolling
+    # pins in N17's close-up). Key tops are at root z 0.7805; fingertips clear them by a millimetre.
     for sx in (-1, 1):
         sh, el = (sx * 0.17, 0.1, 0.47), (sx * 0.22, 0.22, 0.33)
         sphere(f"maintainer.shoulder{sx}", cloth, sh, 0.05, torso, 16)
-        bar(f"maintainer.arm{sx}", cloth, sh, el, 0.046, torso, verts=16)
+        capsule(f"maintainer.arm{sx}", cloth, sh, el, 0.05, 0.045, torso)
         el_r = (el[0], el[1] + 0.02, el[2] + 0.5)
-        wr = (sx * 0.1, 0.54, 0.825)
+        wr = Vector((sx * 0.1, 0.54, 0.825))
         sphere(f"maintainer.elbow{sx}", cloth, el_r, 0.045, m_root, 16)
-        bar(f"maintainer.forearm{sx}", cloth, el_r, wr, 0.036, m_root, verts=16)
-        sphere(f"maintainer.cuff{sx}", cloth, wr, 0.037, m_root, 16).scale = (1.0, 0.6, 1.0)
-        sphere(f"maintainer.hand{sx}", skin, (sx * 0.085, 0.585, 0.796), 0.034, m_root, 16).scale = (1.0, 1.35, 0.45)
+        capsule(f"maintainer.forearm{sx}", cloth, el_r, wr, 0.044, 0.035, m_root)
+        d = (wr - Vector(el_r)).normalized()
+        torus(f"maintainer.cuff{sx}", cloth, wr - 0.01 * d, 0.031, 0.009, m_root,
+              rot=d.to_track_quat("Z", "Y").to_euler())
+        pc = Vector((sx * 0.085, 0.586, 0.803))
+        capsule(f"maintainer.wrist{sx}", skin, wr - 0.02 * d, pc + Vector((0, -0.02, 0)), 0.021, 0.024, m_root)
+        soft_box(f"maintainer.palm{sx}", skin, pc, (0.068, 0.072, 0.026), m_root, rot=(-0.15, 0, 0))
+        for i, (dx, reach, r) in enumerate(((-0.024, 0.026, 0.0075), (-0.008, 0.031, 0.0083), (0.008, 0.033, 0.0083),
+                                            (0.024, 0.029, 0.008))):
+            x = pc.x + sx * dx  # i 0 the little finger, outermost
+            capsule(f"maintainer.finger{sx}_{i}", skin, (x, 0.618, 0.799), (x, 0.618 + reach, 0.789), r, r * 0.92,
+                    m_root, segs=12)
+        capsule(f"maintainer.thumb{sx}", skin, (pc.x - sx * 0.03, 0.562, 0.798), (pc.x - sx * 0.044, 0.586, 0.7895),
+                0.0095, 0.0085, m_root, segs=12)
         # Legs under the desk: thigh forward along the seat, shin down, a shoe.
         kn = (sx * 0.1, 0.34, 0.53)
         bar(f"maintainer.thigh{sx}", jeans, (sx * 0.09, 0.07, 0.55), kn, 0.068, m_root, verts=16)
@@ -1725,22 +1944,64 @@ def basement():
         soft_box(f"maintainer.shoe{sx}", shoe, (sx * 0.11, 0.45, 0.04), (0.1, 0.24, 0.08), m_root)
     out["maintainer"] = m_root
     # The paper avalanche: drifts of printed tickets across the desk and floor, reaching the desk edge (N16).
-    grey = K.mat_matte("base.paper", "paper")
+    # Printed A4 sheets, curled a little, stacked: on the floor over a heap of paper banked into the back-left corner,
+    # and in two piles on the desk's ends. Each lies on the ones under it (Heap), so none passes through another, the
+    # desk, a jar or the maintainer (human, C4 v6 audit: flat slabs at random tilts, cutting through each other). The
+    # desk's middle stays clear: the laptop's screen (N17's feed), the ticket that lands at N15 and the slot's drops.
     rnd = random.Random(SEEDS["main"] + 4)
     out["sheets_glow"] = []
     glow = K.empty("base.glow")
     K.prop(glow, "glow", 0.0)
-    for k in range(220):
-        r = rnd.random() ** 0.6
-        a = rnd.uniform(0, math.tau)
-        x, y = -0.8 + 1.4 * r * math.cos(a), 1.6 - 1.2 * r * abs(math.sin(a))
-        z = Z0 + 0.01 + 0.35 * (1 - r) * rnd.random() if rnd.random() < 0.7 else dz + 0.03 + 0.12 * rnd.random()
-        if z > dz and -0.15 < x < 0.85 and 0.7 < y < 1.6:  # keep the laptop's screen clear (N17's feed)
-            z = Z0 + 0.01 + 0.35 * (1 - r) * rnd.random()
-        lit = k % 17 == 0
-        mat = K.mat_emission(f"base.sheet_glow{k}", "comfort", 1.5, glow, "glow", floor=0.0) if lit else grey
-        sh = box(f"base.sheet{k}", mat, (x, y, z), (0.21, 0.297, 0.001), rot=(rnd.uniform(-0.3, 0.3),
-                 rnd.uniform(-0.3, 0.3), rnd.uniform(0, math.tau)))
+    grey, lit_m = mat_print("base.paper"), mat_print("base.sheet_glow", glow, 1.5)
+
+    def mound(x, y):  # lumpy where it's high, flat to the floor at its foot
+        g = math.exp(-((x + 0.85) / 0.7) ** 2 - ((y - 1.85) / 0.5) ** 2)
+        return Z0 + g * (0.3 + 0.03 * math.sin(x * 19 + 3 * math.sin(y * 13)) * math.sin(y * 17 + x * 7))
+
+    hx = [(-2.35 + 2.85 * i / 57, 0.55 + 1.8 * j / 36) for j in range(37) for i in range(58)]
+    hm = bpy.data.meshes.new("base.heap")
+    hm.from_pydata([(x, y, mound(x, y) - 0.003) for x, y in hx], [],
+                   [(j * 58 + i, j * 58 + i + 1, (j + 1) * 58 + i + 1, (j + 1) * 58 + i) for j in range(36) for i in range(57)])
+    heap = K.link(bpy.data.objects.new("base.heap", hm))
+    heap.data.materials.append(grey)
+    K.smooth(heap)
+
+    def floor_ok(x, y):
+        return (-2.33 < x and y < 2.33 and not (0.03 < x < 0.74 and 0.12 < y < 1.17)  # chair, maintainer
+                and all(math.hypot(x - (0.5 + sx * 0.7), y - (1.3 + sy * 0.33)) > 0.045 for sx in (-1, 1)
+                        for sy in (-1, 1)))  # desk legs
+
+    def desk_top(x, y):  # past an edge, the sheet bends down over it
+        drop = max(0.0, -0.25 - x) + max(0.0, x - 1.25) + max(0.0, 0.925 - y) + max(0.0, y - 1.675)
+        return dz + 0.02 - 1.5 * drop
+
+    def desk_ok(x, y):
+        return (-0.55 < x < 1.45 and 0.85 < y < 1.85 and not (-0.15 < x < 0.85 and y < 1.62)
+                and math.hypot(x + 0.05, y - 1.45) > 0.065 and math.hypot(x + 0.2, y - 1.5) > 0.06
+                and math.hypot(x - 1.05, y - 1.5) > 0.085)  # the jars, the lamp's foot
+
+    floor = Heap(-2.4, 1.6, 0.0, 2.4, mound, floor_ok)
+    desk = Heap(-0.6, 1.5, 0.8, 1.9, desk_top, desk_ok)
+    for k in range(340):
+        lit = k % 26 == 0  # a few: 13
+        sh, verts = paper_sheet(f"base.sheet{k}", lit_m if lit else grey, 0.21, 0.297, rnd, curl=0.4)
+        for _ in range(60):
+            pick = rnd.random()
+            if pick < 0.18:
+                cx, cy = rnd.choice(((-0.3, 1.3), (1.05, 1.2)))
+                if desk.lay(sh, verts, cx + rnd.gauss(0, 0.05), cy + rnd.gauss(0, 0.07), rnd.uniform(0, math.tau)):
+                    break
+            elif pick < 0.6:  # over the heap, until it is covered
+                if floor.lay(sh, verts, -0.85 + rnd.gauss(0, 0.45), 1.85 + rnd.gauss(0, 0.3), rnd.uniform(0, math.tau)):
+                    break
+            else:
+                r, a = rnd.random() ** 0.6, rnd.uniform(0, math.tau)
+                if floor.lay(sh, verts, -0.8 + 1.4 * r * math.cos(a), 1.6 - 1.2 * r * abs(math.sin(a)),
+                             rnd.uniform(0, math.tau)):
+                    break
+        else:
+            bpy.data.objects.remove(sh)
+            continue
         if lit:
             out["sheets_glow"].append(sh)
     out["glow"] = glow
@@ -1804,13 +2065,22 @@ def tickets():
     out["fall"] = fall
     pile = K.empty("ticket.pile", (0, -ROOM - 0.12, PL_H))
     K.prop(pile, "drift", 0.0)
+    # Printed tickets lying on the plinth and on each other, deepest against the glass (human, C4 v6 audit: cards
+    # floating at random tilts up to 12 cm off the floor). Pile-local: the glass is at y 0.12.
     rnd = random.Random(SEEDS["main"] + 5)
+    printed = mat_print("ticket.print", rows=10)
+    drift = Heap(-2.0, 2.0, -0.5, 0.11, lambda x, y: 0.0, lambda x, y: abs(x) < 1.98 and y < 0.105)
     for k in range(60):
-        x = rnd.uniform(-1.9, 1.9)
-        if abs(x) < 1.0 and rnd.random() < 0.7:
-            x = math.copysign(1.0 + rnd.random() * 0.9, x)
-        box(f"ticket.pile{k}", paper, (x, -rnd.uniform(0, 0.25), rnd.uniform(0, 0.12)),
-            (0.11, 0.15, 0.001), pile, rot=(rnd.uniform(-0.6, 0.6), rnd.uniform(-0.6, 0.6), rnd.uniform(0, math.tau)))
+        t, verts = paper_sheet(f"ticket.pile{k}", printed, 0.11, 0.15, rnd, curl=0.5, nx=6, ny=8)
+        t.parent = pile
+        for _ in range(60):
+            x = rnd.uniform(-1.9, 1.9)
+            if abs(x) < 1.0 and rnd.random() < 0.7:
+                x = math.copysign(1.0 + rnd.random() * 0.9, x)
+            if drift.lay(t, verts, x, -0.28 * rnd.random() ** 2, rnd.uniform(0, math.tau)):
+                break
+        else:
+            bpy.data.objects.remove(t)
     for i in range(3):
         K.drive(pile, "scale", i, pile, "drift", "max(0.001, x)")
     out["pile"] = pile
@@ -1832,11 +2102,20 @@ def shop_twin(shop):
     tw.location = (PROBE_AT[0], PROBE_AT[1], nest_z(K.PROBE_R * PROBE_SCALE))
     tw.rotation_euler = (0, 0, math.pi / 2)  # lens and reach toward the crib's foot: in profile from the hall
     tw["arm_l"] = tw["arm_r"] = 1.0
+    # Each mitten: a flat hand with a round tip and the thumb up, standing on its edge like a reaching hand, a ribbed
+    # blue cuff at the wrist (human, C4 v6 audit: a stretched ball read as an egg on a pin; lying flat, the N32 camera,
+    # which looks along the elbow's X, saw only its edge). Elbow frame: the forearm runs down -Z, +Y points down at
+    # N32. The mitten stays inside the old ball's outline below the arm (0.26 r), which cleared the blanket.
     mitt = mat_felt("twin.mitten", "felt_cream")
+    cuff = mat_felt("twin.mitten_cuff", "felt_blue")
     r = K.PROBE_R
     for side in ("l", "r"):
         elbow = bpy.data.objects[f"twin.elbow_{side}"]
-        sphere(f"twin.mitten_{side}", mitt, (0, 0, -r * 0.88), r * 0.32, elbow, 16).scale = (1.0, 0.8, 1.5)
+        capsule(f"twin.mitten_{side}", mitt, (0, 0, -r * 0.78), (0, 0, -r * 1.14), r * 0.23, r * 0.24, elbow).scale = (
+            0.55, 1, 1)
+        capsule(f"twin.mitten_thumb_{side}", mitt, (0, -r * 0.12, -r * 0.72), (0, -r * 0.4, -r * 0.9), r * 0.11,
+                r * 0.1, elbow, segs=12)
+        torus(f"twin.mitten_cuff_{side}", cuff, (0, 0, -r * 0.6), r * 0.2, r * 0.055, elbow).scale = (0.62, 1, 1)
         for k in (-1, 1):
             bpy.data.objects[f"twin.finger_{side}{k}"].hide_render = True  # inside the mitten
     out["probe"] = tw

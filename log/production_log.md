@@ -581,3 +581,40 @@ The human: "a few more places of placeholder geometry like the laptop. See if yo
   - the vendored music box and probe (Sandbox Rhapsody, not remodelled).
 - **Proposed:** fix 1–9 in one pass, then re-render only the spans they reach (N15–N17, N29–N40).
 - **Status:** waiting for the human's go-ahead on the list (R1).
+
+## 2026-10-25T13:10 — The nine placeholder fixes from the audit (human go-ahead, R1, 11:50)
+All changes are in `scenes/blender/sets/nursery.py`.
+
+- **New helpers:**
+  - `capsule`: a round-ended rod that can taper.
+  - `mat_print`: printed paper, with rows of grey type; with a glow owner it also emits, and stays paper while dark.
+  - `paper_sheet`: a sheet with UVs and curled ends or a lifted corner.
+  - `Heap`: a 2 cm height map that sheets drape onto, each resting on the ones under it.
+- **The fixes:**
+  1. **Maintainer's arms and hands (N16–N17):**
+     - Tapered sleeves, a ribbed cuff and a wrist.
+     - A palm with four fingers curled onto the home row and a thumb toward the space bar; fingertips clear the key tops by about a millimetre.
+  2. **Paper avalanche (N15–N17):**
+     - 340 printed, curled sheets draped over a heap banked into the back-left corner and over the floor around it, and in two piles on the desk's ends that hang over its edges.
+     - The desk's middle stays clear: the screen, the N15 ticket's landing spot and the slot's drops.
+     - A first version dropped rigid sheets onto the heap's highest point. Each one hovered, so the piles grew into towers; draping fixed that.
+  3. **Glowing sheets:** paper with an emission scaled by "glow", not a bare emitter that rendered black before N17. There are 13 of them now (every 26th sheet).
+  4. **Ticket drift (N29–N37):** 60 printed tickets lying on the plinth and on each other, deepest against the glass.
+  5. **Peanut jar:** 34 peanuts in the shell (two lobes and a waist) packed without overlaps, and a lid.
+  6. **Baby monitor camera:**
+     - A rounded body with a dark glossy face, the lens in a bezel ringed by six IR LEDs, and the standby pip.
+     - It sits on a ball joint over a weighted round base.
+  7. **Shop twin's mittens (N31–N32):**
+     - Each mitten is a flat hand with a round tip and the thumb up, standing on its edge like a reaching hand, with a ribbed blue cuff.
+     - Lying flat, the N32 camera saw only the mitten's edge: that camera looks along the elbow's X axis (checked in Blender).
+     - The mittens stay inside the old ball's outline, which cleared the blanket.
+  8. **Quilt folds (N38–N40):**
+     - A rolled hem and quilted puffs, both raised upward only so the folds never move closer to the probe, and a cream binding on the rim.
+     - The thickness is now a Solidify modifier after the shape keys. Baked into the mesh, it flattened to 2 mm when the folds open, which was the paper-thin edge in N39.
+     - The blanket's rim is rounded with a bevel.
+  9. **Shop easel (N33–N34):**
+     - The front legs lean back behind the screen to a crossbar above it, and a back leg joins that crossbar.
+     - The screen stands on a ledge with a lip and is clamped at the top to a second crossbar. There's a low rail between the front legs, and the leg ends are rounded.
+     - The old legs passed through the screen.
+- **Review stills:** `renders/c4/review_v6a` (all anchors, first pass); `review_v6b`–`v6d` (1080p, after the paper, quilt and mitten corrections).
+- **Status:** the full re-render is running (frames_v7).
