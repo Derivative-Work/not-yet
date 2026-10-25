@@ -674,3 +674,23 @@ The human's notes are logged in `log/human_interventions.md` (15:05, 17:20, 17:4
    - The list comes from VulnCheck's tracker (2026-04-15). None is made up.
    - Each ticket carries the ID, a short label and "found by …" as mesh lettering that bends with the paper, over printed body type that now stops lower down.
 - **Status:** committed; the full v8 render is next.
+
+## 2026-10-25T20:05 — C4 v8: full draft720 re-render with the v7 review fixes; v7 outputs archived
+
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v8 --profile draft720` (7,019 frames in 6,061 s, 0.86 s/frame)
+  - `... -- --out renders/c4/anchors_v11 --profile draft720 --anchors` (39 stills)
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v8 1 renders/c4/c4_animatic_v8.mp4` (1280x720, 30 fps, 252.17 s)
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v11 renders/c4/c4_anchor_sheet_v8.jpg 6`
+  - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v8 renders/qc/flicker_v8`
+- **Flicker QC:**
+  - 31,817 blobs in 8,128 runs, against 31,375 in 7,854 for v7.
+  - The top eleven runs are the same spans, boxes and sizes as v7 (hands N17, shop-window wide, etc.).
+  - Runs new in v8 are all small (under 250 px). They fall in the falling drift (frames 4,880–4,970, single tickets entering frame) and in the quilt reveal (6,710–7,009, a few-pixel sliver of the mattress edge opening as the cloth slumps past the side rail). Both are motion, not z-fighting.
+- **Spot checks:**
+  - The moat lid is solid at 3,700 and the channel, coping and glow show by 3,720.
+  - The tickets lie scattered across the plinth at 4,800.
+  - The quilt folds fall away at 6,700, and they lie draped at N39–N40.
+  - The keyboard is full under the hands at N17.
+- **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v7_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v7_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v10_superseded_review-fixes/`. frames_v7 is a frame sequence, so it is not archived.
+- **Status:** v8 sent to the human for review (R1).
