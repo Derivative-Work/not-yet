@@ -172,3 +172,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
   - the quilt cloth flickers at the end, and each side should hang from a single point, not a bar.
 - **Note from the human:** "The tickets in the basement also look like they're about to fall - they either need to be moved so that they're on the desk or animated so that they do fall. The bank doesn't look quite right from all angles. Add some more detail to the music box, particularly the notes coming in on the scroll and the missing crank handle (but make sure that it's still recognizably the same one as from Sandbox). Also the cloth isn't quite right - it's flickering at the end and should only be held by one point for each side (not a bar)."
 - **Rule:** R1 (rejecting parts of a render, with reasons).
+
+## 2026-10-25T20:45 — The quilt's fall flickers — R1
+
+- **What:** While the C4 v8 fixes were in progress, the human added that the quilt flickers as it moves, as if blown downward.
+- **Note from the human:** "There is also flickering in the blanket's movement, almost like it's being blown downwards"
+- **Rule:** R1 (a correction to a render, with a reason).
