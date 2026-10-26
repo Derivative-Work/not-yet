@@ -794,3 +794,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
    - This changes the brief's N09 ("its crack taped over"): there is now no broken window until N10.
 - **The stopped v10 run** (its frames are a partial frame sequence, not used) is replaced by the full v10 render that follows. It renders into the same folder.
 - **Status:** committed; the full v10 render (with the post-filtered master) is next.
+
+## 2026-10-26 — C4 v10: full draft720 re-render with the v9 review fixes
+
+- **Render:** 7,019 frames in 5,970 s (0.85 s/frame), draft720 (1280×720, 30 fps, motion blur) → `renders/c4/frames_v10`. Anchors (39) → `renders/c4/anchors_v13`. Cut → `renders/c4/c4_animatic_v10.mp4` (252.17 s, 48 kHz audio from the post-filtered master). Sheet → `renders/c4/c4_anchor_sheet_v10.jpg`. Flicker QC → `renders/qc/flicker_v10`.
+- **Checks:**
+  - End flicker (frames after 6,600): 1,184 px, down from 10,822 in v9. Whole film 339,210 px (v9: 349,358). 30,754 blobs in 8,149 runs.
+  - The music box crank and drum visibly turn between 212 s and 214 s. The mobile turns through N24–N27.
+  - Windows whole at N09, taped and cracked from N10 on.
+  - The floor CVE sheets show at N14–N16.
+- **Archived (superseded by v10):** `archive/renders/c4/c4_animatic_v9_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v9_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v12_superseded_review-fixes/`. Frame sequences are not archived.
+- **Status:** sent to the human for review.
