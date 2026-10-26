@@ -3,7 +3,7 @@
 YouTube metadata for the main video and the windows cut, ready to paste at upload. Written by the agent (C6); the human uploads (R4).
 
 **Before uploading:**
-- **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 37, the count when its overlay was rendered (2026-10-26).
+- **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 39, the count when its overlay was rendered (2026-10-26).
 - **The main video's link.** Fill in `<MAIN VIDEO URL>` in the windows cut's footer once the main video is up. In YouTube Studio, also set the windows cut's **Related video** to the main video.
 
 **Release plan (human, 2026-10-26):** the main video on the morning of 2026-10-27, after the .NET out-of-band security updates (https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/); then the windows cut on the next scheduled Patch Tuesday, 2026-11-10. Both come after Sandbox Rhapsody (https://www.youtube.com/watch?v=zq79yQ3164w), which introduces the series' probe (brief). The licences (video and assets CC BY-NC-SA 4.0, code MIT) are confirmed by the human and in the repo (`LICENSE`, `LICENSE-media.md`).
@@ -33,7 +33,7 @@ AI-generated satire about real events.
 
 A lullaby sung to an AI model too capable at finding security flaws to release: one slow, continuous push through a glass nursery where that model sleeps, while the stars on the wall keep multiplying and a light comes on down the street. Keeping one model asleep doesn't keep the street dark.
 
-Every frame, note and word was made by AI: the song by Suno, the words by Claude, the animation and edit by Claude Code. A human only approved or rejected work, fixed sync and technical failures, and ran tools the agents couldn't reach. Each of those 37 interventions is logged, along with every prompt and production step:
+Every frame, note and word was made by AI: the song by Suno, the words by Claude, the animation and edit by Claude Code. A human only approved or rejected work, fixed sync and technical failures, and ran tools the agents couldn't reach. Each of those 39 interventions is logged, along with every prompt and production step:
 https://github.com/Derivative-Work/not-yet
 
 Conflict of interest: Claude is made by Anthropic, whose model is the one in the crib. The words were audited by Gemini, ChatGPT and GLM. Their audits scroll past at the end, verbatim.
