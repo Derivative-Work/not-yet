@@ -232,3 +232,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human created and named the production log's public repository (GitHub, which the agent has no access to) for the end card's last line.
 - **Note from the human:** "Repo is https://github.com/Derivative-Work/not-yet"
 - **Rule:** R4 (running an interface the agent has no access to).
+
+## 2026-10-26T18:45 — The windows short's crop rejected — R1
+
+- **What:** The human rejected the windows short's 9:16 crop: from 39 s to 52 s it followed the sticky note and the crib, so the taped window was never wholly in frame.
+- **Note from the human:** "assuming the windows short is coming from the crop you sent earlier, it's not going to read right because the full window is never in frame"
+- **Rule:** R1 (rejection, with a reason).

@@ -929,3 +929,12 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - then the 39 anchors and `renders/c5/c5_anchor_sheet.jpg`.
 - Every run uses the final profile (4K, 64 samples, 4 motion-blur steps, half-scale shadows) and shares one cloth bake in `renders/c5/cloth`.
 - Estimate: about 1 h for the windows span, about 9 h in all. Disk: 173 GB free, about 63 GB needed.
+
+## 2026-10-26T18:45 — Windows short re-cropped onto the window (human, R1)
+
+- **Why:** the human rejected the crop (see `log/human_interventions.md`). From 39 s to 52 s it sat on the sticky note and the crib (cx 0.36–0.48), and the taped pane was outside it.
+- **Measured on the C5 frames:** the window (moon pane and taped pane) spans about 0.49–0.79 of the frame width at 34.6 s, 0.55–0.85 at 38 s, 0.51–0.79 at 41 s and 0.44–0.73 at 44.4 s. That fits in the 9:16 crop (0.316 of the width).
+  - From about 45 s the camera is close enough that the window is wider (0.35–0.72 at 47 s). There the crop keeps the taped pane whole and loses only the moon pane's outer edge.
+- **`config/reframe.json` windows keys up to 52 s:** 34.6 s 0.64, 38.0 s 0.70, 41.0 s 0.65, 44.4 s 0.585, 47.0 s 0.56, 51.98 s 0.565. 55.6 s moves from 0.70 to 0.715 so the outside shot keeps the tape's right arm.
+  - Every frame from 34.6 s to 52 s now shows the moon, the taped and cracked pane and the town below. The sticky note is in frame at the start and again from about 46 s. The crib is in frame throughout.
+- Checked with 9:16 crops of the C5 frames at 34.6–55.6 s. The bridge short is unchanged.
