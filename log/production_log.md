@@ -1011,4 +1011,4 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 
 - `overlays/overlay.html`: the flickering word is drawn right-aligned in its slot (the width of its widest form), so "indows" stays put and only the first letter changes. Checked in stills at 0.13 s steps through the flicker.
 - The main overlay render was stopped part-way, and its temporary parts were removed. The windows cut and its overlay from before this note are in `archive/` (`*_superseded_flicker-left-aligned`).
-- Cues regenerated (38 interventions on the end card). Rebuilding the windows cut, then the main video.
+- Cues regenerated (39 interventions on the end card). Rebuilding the windows cut, then the main video.
