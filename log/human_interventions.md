@@ -276,3 +276,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human approved the end-screen plan (from 6:23, over the closing note: Sandbox Rhapsody bottom left, Subscribe bottom right). They asked for Anthropic's page (the N33 screen capture) to be kept out of the public repo. They created the GitHub repository and gave the agent push access (R4: GitHub). And they suggested an instrumental bounce under the cards, as for Sandbox Rhapsody, since the cards had no music.
 - **Note from the human:** "yes add the end screen, and the remove Anthropic's page from the public repo. I made the GitHub repo and gave you access so you can push what you have. do you currently have any audio for the end? if not it might be a good idea to make an instrumental bounce much like you did for sandbox"
 - **Rule:** R1 (approval, and a correction at a checkpoint) and R4 (an interface the agent can't reach: creating the GitHub repository and granting access).
+
+## 2026-10-26T19:50 — GitHub Release approved; the transcript published verbatim — R1
+
+- **What:** The human asked for the GitHub Release (as for Sandbox Rhapsody). Asked whether the session transcript should go in verbatim, given it contains their email address (from the context Claude Code adds) and the full text of the four articles they retrieved (Dark Reading, Digital Watch, CNN, OpenAI), they chose verbatim, over a redacted copy or leaving it out.
+- **Note from the human:** "yes make the release"; then, to the agent's question, "Verbatim".
+- **Rule:** R1 (approval, and a decision on what is published).

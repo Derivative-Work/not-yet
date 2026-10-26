@@ -1066,3 +1066,22 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Frames checked** at 0.3, 1.5, 52.7, 196, 233.5, 247.5, 249.5, 345, 376, 387 and 390.9 s: the fade-up and label, the flickering W, N34's check marks, "Goodnight" over the probe, the CRT line, fact 1, the audit log, the end card, the note, and its fade.
 - A 540p preview (scratch, not an asset) was sent to the human; the 4K file is too big to send.
 - `scripts/manifest.sh` run: the main video, the windows cut and the card bounce are hashed.
+
+## 2026-10-26T19:54 — Draft GitHub Release v1.0 (human, R1)
+
+- **Draft release:** `gh release create v1.0 --draft --target main` on the private repo. The tag is created when it's published. The notes (scratchpad `release_notes.md`) use absolute links.
+- **Files**, under clean names (symlinks into the repo, except the FLACs and the transcript archive):
+  - the main video: the YouTube upload file itself, 1.16 GB, under GitHub's 2 GiB limit, so no separate release copy;
+  - the windows cut;
+  - the two SRTs and the thumbnail;
+  - the Suno WAV, MP3 and stems zip, as downloaded;
+  - the master and the card bounce as 24-bit FLAC (ffmpeg, compression 8), checked to decode to the WAVs' samples exactly;
+  - `transcripts_claude_code.tar.gz`;
+  - `SHA256SUMS.txt`.
+- The main video and the Suno WAV checksums match `MANIFEST.sha256`.
+- **Transcript:** `scripts/export_transcripts.sh` (copied from Sandbox Rhapsody) → `transcripts/claude-code/`: session d9fddcef, 9,548 lines, 105 MB, plus its side directory. Archived with tar (sorted, fixed mtime, numeric owner) and `gzip -n -9`: 70 MB.
+  - Verbatim, by the human's choice: it contains their email address and the text of the four retrieved articles.
+  - It covers this machine only, from the move to the RTX 5090 during C4. The earlier sessions are on the draft machine. Messages after the export aren't in it.
+  - Manifest regenerated: 1,939 files.
+- **Upload:** the first batch stopped after four files on a retried duplicate (HTTP 422, "ReleaseAsset.name already exists" for the MP3). The rest go up one at a time (scratchpad `release_upload.sh`, which skips files already there).
+- **Left for the human:** publish the draft (which creates tag `v1.0` on `main`) and make the repo public. Then the release link goes in the README.
