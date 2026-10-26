@@ -872,3 +872,13 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - Re-opened AP (adn.com) to check the FBI attribution.
 - `overlays/cards.json` updated, `overlays/cues.json` regenerated (`overlay_cues.py --draft`): facts 248.56–328.82 s, end 382.32 s. Stills of cards 7 and 8 checked.
 - Pages saved to `reference/sources/2026-10-26/` (git-ignored, never published; `.gitignore` updated), with URL and hash in `reference/sources/2026-10-26.tsv`.
+
+## 2026-10-26T09:35 — C4 v11: full draft720 re-render with the v10 review fixes
+
+- **Render:** 7,019 frames in 5,987 s (0.85 s/frame), draft720 → `renders/c4/frames_v11`. Anchors (39) → `renders/c4/anchors_v14`. Cut → `renders/c4/c4_animatic_v11.mp4` (252.17 s). Sheet → `renders/c4/c4_anchor_sheet_v11.jpg`. Flicker QC → `renders/qc/flicker_v11`.
+- **Checked:**
+  - The taped, cracked pane is visible from the start (frames 1100–1520 before the N10 crack).
+  - The music box's crank moves through N36–N37. The backwards drum was verified numerically before the render.
+  - Flicker QC: 30,819 blobs in 8,202 runs (v10: 30,754 in 8,149). The large runs (frames 2,750–2,910 and 5,160–5,400) are the same as before.
+- **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v10_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v10_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v13_superseded_review-fixes/`. Frame sequences are not archived.
+- Sent to the human for review.
