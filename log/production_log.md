@@ -759,3 +759,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - I rendered frames 6,936–7,005 at draft720 into the scratchpad. In the temporal map of 6,939–7,000, pixels over 12 levels fell from 10,257 to 303, and only 8 remain in the head-end region (v9: 9,949). The crawling line is gone.
   - Cloth jitter over the last 40 frames: no vertex moves more than 5 mm a frame (v9: 2–3), max 11 mm and 5 mm. The quilt still falls open and lies open.
 - **Status:** committed; the full v10 render is next.
+
+## 2026-10-26T02:30 — Audio: the track through the music-deslop post-filter (human, v9 review)
+
+- **Command** (in `~/Code/music-deslop` @ 68441e2): `uv run python -m postfilter.infer --in "audio/track/Sleep, Little Secret.wav" --out "audio/master/Sleep, Little Secret (postfilter m6f).wav" --ckpt ../music-deslop-data/release/m6f_10k.safetensors --source suno` (release chain defaults, 35 s on the 5090)
+- **Check:**
+  - 48 kHz 24-bit, 11,825,280 samples, the same as the track, so it is sample-aligned and the timing map is unchanged.
+  - The change sits 37.8 dB below the music; peak 0.709 → 0.716.
+  - No fallback passages were reported.
+- **Wiring:** `config/audio.json` `master` points to the new file. `scripts/animatic_assemble.py` uses the master when one is set, else the track. The track itself is untouched.
+- **Large file:** added to the manifest.
+- **Status:** committed. It goes into the v10 cut.

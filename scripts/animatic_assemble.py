@@ -1,4 +1,4 @@
-"""Assemble the C4 animatic: rendered frames + the track with the pen scratch on top (config/audio.json) + burned-in
+"""Assemble the C4 animatic: rendered frames + the track (its post-filtered master when config/audio.json has one) with the pen scratch on top (config/audio.json) + burned-in
 review captions (ASS via libass): each lyric line with its words lighting as sung (karaoke timing from the aligned
 words), the shot ID top right, the N02 label, and placeholders for the 2D outro shots built at C5 (N41 CRT line,
 N42 fact card, N43 bookend, N44 end card). The picture fades up from black over N02's first 2 s, cuts to black at N40,
@@ -71,7 +71,7 @@ def main():
         vf = (f"fade=t=in:st=0:d=2,trim=end={fade_out},setpts=PTS-STARTPTS,tpad=stop_mode=add:stop_duration="
               f"{end - fade_out}:color=black,ass={sub}:fontsdir=assets/fonts")
         cmd = ["ffmpeg", "-v", "error", "-y", "-framerate", f"{FPS / step}", "-pattern_type", "glob",
-               "-i", str(frames / "f_*.png"), "-i", AUD["track"], "-i", sfx["file"],
+               "-i", str(frames / "f_*.png"), "-i", AUD["master"] or AUD["track"], "-i", sfx["file"],
                "-filter_complex",
                f"[0:v]{vf}[v];[2:a]aresample=48000,volume={sfx['gain_db']}dB,pan=stereo|c0=0.95*c0|c1=c0,"
                f"adelay={ms}|{ms}[s];[1:a][s]amix=inputs=2:duration=first:normalize=0,apad[a]",
