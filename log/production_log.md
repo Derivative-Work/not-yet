@@ -1006,3 +1006,9 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Bridge cut held** (human, R1): not assembled for C6. Its stopped overlay render's temporary parts were removed; its overlay and video from before the notes are in `archive/`. `METADATA.md` keeps its notes, marked held.
 - **Main video first:** the rebuild chain was stopped during the bridge overlay. The main video's overlay and assembly now run alone (scratchpad `c6_main.sh`).
 - **Windows cut rebuilt** with the notes: `deliverables/not_yet_short_windows.mp4` (overlay 1,157 frames in 52 s).
+
+## 2026-10-26T19:11 — The flickering W right-aligned (human, R1); windows cut and main video rebuilding
+
+- `overlays/overlay.html`: the flickering word is drawn right-aligned in its slot (the width of its widest form), so "indows" stays put and only the first letter changes. Checked in stills at 0.13 s steps through the flicker.
+- The main overlay render was stopped part-way, and its temporary parts were removed. The windows cut and its overlay from before this note are in `archive/` (`*_superseded_flicker-left-aligned`).
+- Cues regenerated (38 interventions on the end card). Rebuilding the windows cut, then the main video.

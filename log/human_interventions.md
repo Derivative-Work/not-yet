@@ -264,3 +264,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human confirmed the licences proposed in `METADATA.md` (video and assets CC BY-NC-SA 4.0, code MIT). They held the bridge cut for now: only the windows cut goes with the main video. They set the release plan: the main video on the morning of 2026-10-27, given Microsoft's .NET out-of-band security updates, then the windows cut on the next scheduled Patch Tuesday (2026-11-10).
 - **Note from the human:** "yes, those licenses are correct. just the windows short is fine for now. I now plan on releasing the main video *tomorrow morning* given https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/, then the Windows short on the next scheduled Patch Tuesday"
 - **Rule:** R1 (approval, and a decision on what is released when).
+
+## 2026-10-26T19:20 — C6 note: the flickering W right-aligned — R1
+
+- **What:** The human asked for "Windows"/"windows" to be right-aligned, so the changing width of W/w doesn't push the rest of the letters.
+- **Note from the human:** "hm align the "Windows"/"windows" to the right so that the changing-width "W"/"w" doesn't push the rest of the letters"
+- **Rule:** R1 (a correction at a checkpoint).

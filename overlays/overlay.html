@@ -92,7 +92,8 @@ function drawCaption(t) {
   const px = (V ? 74 : 72) * u * (c.thin ? 1.45 : 1.6);
   g.font = `400 ${Math.round(px)}px "Oooh Baby"`;
   g.textBaseline = "alphabetic";
-  // A flickering word is laid out at its widest form, so the line doesn't shift as it changes.
+  // A flickering word is laid out at its widest form and drawn right-aligned in it, so the line and the rest of the
+  // word stay put while the first letter changes (human, C6).
   const shown = w => w.flicker ? w.flicker[flick(t)] : w.w;
   const slot = w => w.flicker ? Math.max(...w.flicker.map(f => g.measureText(f).width)) : g.measureText(w.w).width;
   const lines = wrap(c.words.map(w => w.flicker ? { ...w, w: w.flicker.reduce((a, b) =>
@@ -109,8 +110,8 @@ function drawCaption(t) {
       const k = clamp((t - w.t) / Math.max(0.15, w.e - w.t));
       g.fillStyle = g.strokeStyle = `rgba(255,227,176,${a * (0.4 + 0.6 * k)})`;
       g.lineWidth = px * 0.03; g.lineJoin = "round";  // the face's hairline strokes, thickened a little to read small
-      const s = shown(w);
-      shadowed(() => { g.fillText(s, x, y); g.strokeText(s, x, y); });
+      const s = shown(w), sx = x + slot(w) - g.measureText(s).width;  // right-aligned: only the first letter moves
+      shadowed(() => { g.fillText(s, sx, y); g.strokeText(s, sx, y); });
       x += slot(w) + space;
     }
     ends.push([x, y]);
