@@ -814,3 +814,9 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
    - `drum_pins` takes a negative `turn_s` for a backwards drum and swaps its show window (136 degrees before the note, 224 after), so pins still appear and vanish at the same hidden point at the drum's back.
    - Checked: a pin for a note at N36 + 3 s climbs from (y -0.0135, z -0.0174) to the tooth tip at the note (-0.0182, -0.0123 from the axle; the tip angle is -124 degrees) and on upward.
 - **Status:** committed; the full v11 render follows.
+
+## 2026-10-26T06:45 — C4 approved (subject to v11); C5 preparation begins
+
+- C4 is approved apart from the v10-review fixes now rendering as v11 (human, R1). C5 preparation starts alongside: the shop display's real pages (N33, N34), the 2D overlay (captions, N41 CRT line, N42 fact card, N43 audit-log bookend, N44 end card), the SRT, the vertical reframes, the thumbnail and the final render and assembly scripts.
+- The live brief was re-read (rev 30); its changes since the rev 27 mirror are already in `docs/brief.md` (the windows vertical cut).
+- The fact-card source check (brief: re-open every source before rendering) is running as a separate research pass; it writes `docs/fact_check_2026-10-26.md`.

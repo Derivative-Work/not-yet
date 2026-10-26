@@ -201,3 +201,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** On reviewing C4 v10, the human reversed the v9-review window change (the taped, cracked window is back from the start, as the brief's N09 has it) and reported that the music box's drum turns the wrong way.
 - **Note from the human:** "Fair, I did like the taped window from the beginning; thanks for showing me but put it back please. Also the music box is rotating the wrong way"
 - **Rule:** R1 (rejecting parts of a render, with reasons).
+
+## 2026-10-26T06:45 — C4 approved, subject to v11; start C5 preparation — R1
+
+- **What:** The human approved everything in C4 except the two v10-review fixes, which the v11 animatic (rendering) is expected to resolve, and asked the agent to start on the end cards and everything else the final render needs.
+- **Note from the human:** "While that's rendering, start working on the end cards and everything else needed for the final render (i.e. treat everything else as approved, and I expect this animatic to resolve the remaining issues)"
+- **Rule:** R1 (approval of a checkpoint).
