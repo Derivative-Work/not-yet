@@ -270,3 +270,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human asked for "Windows"/"windows" to be right-aligned, so the changing width of W/w doesn't push the rest of the letters.
 - **Note from the human:** "hm align the "Windows"/"windows" to the right so that the changing-width "W"/"w" doesn't push the rest of the letters"
 - **Rule:** R1 (a correction at a checkpoint).
+
+## 2026-10-26T19:25 — End screen approved; Anthropic's page out of the public repo; repo access; an instrumental under the cards — R1, R4
+
+- **What:** The human approved the end-screen plan (from 6:23, over the closing note: Sandbox Rhapsody bottom left, Subscribe bottom right). They asked for Anthropic's page (the N33 screen capture) to be kept out of the public repo. They created the GitHub repository and gave the agent push access (R4: GitHub). And they suggested an instrumental bounce under the cards, as for Sandbox Rhapsody, since the cards had no music.
+- **Note from the human:** "yes add the end screen, and the remove Anthropic's page from the public repo. I made the GitHub repo and gave you access so you can push what you have. do you currently have any audio for the end? if not it might be a good idea to make an instrumental bounce much like you did for sandbox"
+- **Rule:** R1 (approval, and a correction at a checkpoint) and R4 (an interface the agent can't reach: creating the GitHub repository and granting access).

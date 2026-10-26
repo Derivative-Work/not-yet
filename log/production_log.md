@@ -1017,3 +1017,15 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 
 - `deliverables/not_yet_short_windows.mp4`: 38.6 s, BT.709 tagged. Checked in frames from 17.6 s: "indows" holds still while the first letter changes. A lower-bitrate preview was sent to the human; the upload file was too big to send.
 - The main video's overlay and assembly are running.
+
+## 2026-10-26T19:30 — C6: an instrumental under the cards (human, R1)
+
+- **Found:** the main video was silent from the song's end (246.36 s) to its end (391.07 s), 2 min 25 s under the fact cards, the audit log, the end card and the note. The human suggested a bounce as in Sandbox Rhapsody.
+- **Bounce** (`scripts/cards_audio.py`, after Sandbox Rhapsody's, with its limiter and post-filter call; `timing/cards_audio.json`):
+  - **Mix:** Bass, Guitar, Keyboard, Percussion and Strings. Both vocal stems are muted throughout (an instrumental).
+  - **Span:** from bar 87 (106.04 s, the bar before chorus 2) to the stems' end, so chorus 2's tune, verse 4, the final chorus and then the music box alone. 4 s pre-roll for the model, trimmed.
+  - **Limiter:** ceiling −1 dBFS. The stem sum peaks at −3.25 dBFS, so it catches nothing. Its "max reduction" figure (5.95 dB) is the smoothing window's edge effect at the file's ends: the first 2.5 ms (inside the trimmed pre-roll) and the last 2.5 ms (inside the fade).
+  - **Post-filter:** music-deslop M6f 10k at 68441e2, `--source suno --no-fallback --strength 1.0` (the master's chain).
+  - **Output:** `audio/post/cards_audio.wav`, 140.32 s, 48 kHz 24-bit, peak −3.1 dBFS, −23.9 LUFS. The master over the same span is −18.4 LUFS; the difference is the missing vocals, and the quieter bed suits reading.
+- **Placement** (`config/audio.json` `cards`, `assemble.py main`): from 248.16 s, the fact card. The song has died away (−68 dB at 246 s) and the CRT line opens in silence, then the instrumental comes in on its downbeat with the first card. It fades out by 388.5 s, under the human's note, and the video ends at 391.07 s. Checked the join in a test mix.
+- **Main video:** its overlay is still rendering; the assembly that follows picks up the bounce.

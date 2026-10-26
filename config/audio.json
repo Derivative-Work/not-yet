@@ -11,5 +11,10 @@
    "why": "N39: the waiver's pen, off screen, on top of the existing audio. Chosen by the human after the synthesised scratch didn't read as a pen (logged as an exception)"
   }
  ],
- "master_doc": "music-deslop postfilter M6f release chain (~/Code/music-deslop @ 68441e2, m6f_10k.safetensors, --source suno, defaults): 48 kHz 24-bit, sample-aligned with the track, change -37.8 dB below the music, no fallback passages. Run by the agent at the human's request (2026-10-26)."
+ "master_doc": "music-deslop postfilter M6f release chain (~/Code/music-deslop @ 68441e2, m6f_10k.safetensors, --source suno, defaults): 48 kHz 24-bit, sample-aligned with the track, change -37.8 dB below the music, no fallback passages. Run by the agent at the human's request (2026-10-26).",
+ "cards": {
+  "file": "audio/post/cards_audio.wav",
+  "at_s": 248.16,
+  "doc": "Under the cards (human, C6): an instrumental bounce from the stems (both vocal stems muted) from bar 87 (106.04 s, the bar before chorus 2) to the end, through the master's post-filter chain (scripts/cards_audio.py, timing/cards_audio.json). Starts at the fact card (outro.fact_card), after the song has ended and the CRT line has opened in silence; the music box dies away under the human's note."
+ }
 }

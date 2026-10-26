@@ -1,0 +1,32 @@
+{
+ "stems": [
+  "Sleep, Little Secret (Bass).wav",
+  "Sleep, Little Secret (Guitar).wav",
+  "Sleep, Little Secret (Keyboard).wav",
+  "Sleep, Little Secret (Percussion).wav",
+  "Sleep, Little Secret (Strings).wav"
+ ],
+ "muted": [
+  "Backing Vocals",
+  "Vocals"
+ ],
+ "limiter": {
+  "ceiling_db": -1.0,
+  "lookahead_s": 0.005,
+  "release_s": 0.08,
+  "in_peak_dbfs": -3.25,
+  "out_peak_dbfs": -3.25,
+  "max_reduction_db": 5.95,
+  "time_reducing_s": 0.0
+ },
+ "start_song_s": 106.04,
+ "preroll_s": 4.0,
+ "fade_out_s": 1.0,
+ "at_video_s": 248.16,
+ "duration_s": 140.32,
+ "peak_dbfs": -3.11,
+ "postfilter": "python -m postfilter.infer --in /home/antiai-aiclub/Projects/not-yet/audio/post/cards_bounce_raw.wav --out /home/antiai-aiclub/Projects/not-yet/audio/post/cards_bounce_deslop.wav --ckpt /home/antiai-aiclub/Code/music-deslop-data/release/m6f_10k.safetensors --source suno --no-fallback --strength 1.0",
+ "postfilter_repo": "/home/antiai-aiclub/Code/music-deslop",
+ "postfilter_commit": "68441e2c57381d09a180d20a57830f2ab8605db3",
+ "output": "audio/post/cards_audio.wav"
+}

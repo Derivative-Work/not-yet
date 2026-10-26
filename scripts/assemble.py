@@ -2,8 +2,8 @@
 tracks (overlays/render.mjs) and the audio (config/audio.json: the post-filtered master and the pen scratch).
 
 - main (3840x2160): the frames fade up from black over the first 2 s and cut to black at N40 (as the animatic); black
-  under the music box's tail and the cards; the overlay (captions, N41 to N44) over everything. Audio: the master with
-  the pen scratch on top, then silence under the cards.
+  under the music box's tail and the cards; the overlay (captions, N41 to N44, the human's note) over everything.
+  Audio: the master with the pen scratch on top, then the instrumental card bounce (config/audio.json "cards").
 - short:<id> (1080x1920): the short's span (overlays/cues.json "shorts"), a 9:16 window of the frame whose centre
   follows config/reframe.json, scaled; its overlay; the master over the span. The windows short fades picture and
   music out together over its last 2.5 s (brief); both fade up over 0.4 s.
@@ -79,8 +79,14 @@ def main_video(a):
     vf = (f"[0:v]scale=3840:2160:flags=lanczos,fade=t=in:st=0:d=2,trim=end={BLACK},setpts=PTS-STARTPTS,"
           f"tpad=stop_mode=add:stop_duration={end - BLACK}:color=black,format=rgba[bg];"
           f"[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,{YUV}[v];")
+    # Under the cards, the instrumental bounce (config/audio.json "cards"), mixed in at its video time.
+    cards = AUD["cards"]
+    ms = int(round(cards["at_s"] * 1000))
+    ag = audio_graph(2, 3, 0.0, end).replace("[a]", "[song]")
+    ag += (f";[4:a]aresample=48000,adelay={ms}|{ms},apad,atrim=end={end}[cards];"
+           f"[song][cards]amix=inputs=2:duration=first:normalize=0[a]")
     cmd = (["ffmpeg", "-v", "error", "-y"] + frames_input(a.frames) + ["-i", ov, "-i", AUD["master"], "-i",
-           AUD["sfx"][0]["file"], "-filter_complex", vf + audio_graph(2, 3, 0.0, end), "-map", "[v]", "-map", "[a]",
+           AUD["sfx"][0]["file"], "-i", cards["file"], "-filter_complex", vf + ag, "-map", "[v]", "-map", "[a]",
            "-t", f"{end}", "-r", str(FPS)] + enc("70M", "120M") + [out])
     run(cmd, out)
 
