@@ -920,3 +920,12 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - Chose 155.33 s (frame 4660, N28): the crib rail, the taped and cracked back window, the crack lit down the road, the neighbor's amber window, the moon and the mobile among the stars.
   - Rejected 208.0 s: the probe's LED shows in the crib (brief: never the probe).
   - `thumbnail_t` is 155.33. `assemble.py thumbnail` takes it from the C5 frames.
+
+## 2026-10-26T11:00 — C5 final render started
+
+- `scripts/render_final.sh` (background), writing to `renders/c5`:
+  - the windows span first (34.1–65.2 s) into `renders/c5/frames`;
+  - then the whole move with `--resume`;
+  - then the 39 anchors and `renders/c5/c5_anchor_sheet.jpg`.
+- Every run uses the final profile (4K, 64 samples, 4 motion-blur steps, half-scale shadows) and shares one cloth bake in `renders/c5/cloth`.
+- Estimate: about 1 h for the windows span, about 9 h in all. Disk: 173 GB free, about 63 GB needed.
