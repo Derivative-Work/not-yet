@@ -26,6 +26,7 @@ import random
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
+from mathutils.bvhtree import BVHTree
 
 import sr_kit as K
 
@@ -428,7 +429,6 @@ def print_on_sheet(obj, lines, w, h, nx, ny):
     for body, size, x, y in lines:
         size = min(size, (w - 0.022) / (0.6 * len(body)))
         vs, fs = text_geometry(body, size)
-        base = len(bm.verts)
         new = [bm.verts.new((x + vx, y + vy, 0.0)) for vx, vy in vs]
         bm.verts.ensure_lookup_table()
         for f in fs:
@@ -436,23 +436,49 @@ def print_on_sheet(obj, lines, w, h, nx, ny):
                 bm.faces.new([new[i] for i in f]).material_index = 1
             except ValueError:  # a degenerate glyph face
                 pass
-        for k, v in enumerate(new):
-            out.append((base + k, (v.co.x / (w / 2) + 1) / 2 * nx, (v.co.y / (h / 2) + 1) / 2 * ny))
+    # Cut the lettering along the grid's lines, so each piece lies within one cell of the paper: a glyph's long
+    # straight edges spanned cells, and where the draped sheet creased between their ends the paper rose through the
+    # letters (QC 2026-10-26: a wedge cut across a floor sheet's ID).
+    n0 = len(obj.data.vertices)
+    for k in range(1, nx):
+        lg = [f for f in bm.faces if f.material_index == 1]
+        bmesh.ops.bisect_plane(bm, geom=lg + list({e for f in lg for e in f.edges}) + list({v for f in lg for v in f.verts}),
+                               plane_co=(-w / 2 + k * w / nx, 0, 0), plane_no=(1, 0, 0))
+    for k in range(1, ny):
+        lg = [f for f in bm.faces if f.material_index == 1]
+        bmesh.ops.bisect_plane(bm, geom=lg + list({e for f in lg for e in f.edges}) + list({v for f in lg for v in f.verts}),
+                               plane_co=(0, -h / 2 + k * h / ny, 0), plane_no=(0, 1, 0))
+    # ... and along each cell's diagonal from its (i, j) corner to (i + 1, j + 1), where Blender splits the quad
+    # into its two triangles: within a triangle the paper is flat, so lettering on it can't dip under a crease.
+    dw, dh = w / nx, h / ny
+    for k in range(-ny + 1, nx):
+        lg = [f for f in bm.faces if f.material_index == 1]
+        bmesh.ops.bisect_plane(bm, geom=lg + list({e for f in lg for e in f.edges}) + list({v for f in lg for v in f.verts}),
+                               plane_co=(-w / 2 + k * dw, -h / 2, 0), plane_no=(dh, -dw, 0))
+    bm.verts.index_update()
+    for v in bm.verts:
+        if v.index >= n0:
+            out.append((v.index, (v.co.x / (w / 2) + 1) / 2 * nx, (v.co.y / (h / 2) + 1) / 2 * ny))
     bm.to_mesh(obj.data)
     bm.free()
     return out
 
 
 def sheet_lettering_z(zs, letters, nx, ny, lift=0.0008):
-    """Heights for the lettering from the grid's heights `zs` (row-major, (nx + 1) per row): bilinear in its cell,
-    just above the paper, so it bends with the sheet as it drapes or curls."""
+    """Heights for the lettering from the grid's heights `zs` (row-major, (nx + 1) per row): on the paper's own
+    surface, the two triangles each cell renders as (split from its (i, j) corner to (i + 1, j + 1)), just above it,
+    so it bends with the sheet as it drapes or curls. (Bilinear in the cell, a twisted cell's diagonal rose through
+    the letters: QC 2026-10-26.)"""
     out = []
     for _, si, ti in letters:
         i, j = min(max(int(si), 0), nx - 1), min(max(int(ti), 0), ny - 1)
-        fx, fy = si - i, ti - j
+        fx, fy = min(max(si - i, 0.0), 1.0), min(max(ti - j, 0.0), 1.0)
         z = lambda a, b: zs[(j + b) * (nx + 1) + i + a]  # noqa: E731
-        out.append((1 - fx) * (1 - fy) * z(0, 0) + fx * (1 - fy) * z(1, 0) + (1 - fx) * fy * z(0, 1)
-                   + fx * fy * z(1, 1) + lift)
+        if fx >= fy:
+            h = z(0, 0) + fx * (z(1, 0) - z(0, 0)) + fy * (z(1, 1) - z(1, 0))
+        else:
+            h = z(0, 0) + fy * (z(0, 1) - z(0, 0)) + fx * (z(1, 1) - z(0, 1))
+        out.append(h + lift)
     return out
 
 
@@ -1182,7 +1208,9 @@ def mobile(name, loc, parent=None):
     columns, a globe, a cloud and the tiny flag (Sandbox Rhapsody's prize; its swallowtail shape, recoloured, since
     amber here belongs to the neighbor's window). "turn" spins the cross; "lower_<piece>" drops a piece 25 cm."""
     root = K.empty(name, loc, parent)
-    K.prop(root, "turn", 0.0, hi=100.0)
+    # "turn" counts downbeats (animate.mobile): 203 bars, and an animated property is clamped to its range, so at
+    # hi=100 the mobile stood still from 122 s, through its close-ups (QC 2026-10-26).
+    K.prop(root, "turn", 0.0, hi=1000.0)
     hub = K.empty(f"{name}.hub", (0, 0, 0), root)
     K.drive(hub, "rotation_euler", 2, root, "turn", "6.2832 * x")
     rod = mat_paint(f"{name}.rod", "crib", 0.4)
@@ -2436,6 +2464,7 @@ def basement():
     floor = Heap(-2.4, 1.6, 0.0, 2.4, mound, floor_ok)
     desk = Heap(-0.6, 1.5, 0.8, 1.9, desk_top, desk_ok)
     tops = {}  # each desk stack's top sheet
+    on_desk = set()
     for k in range(340):
         lit = k % 26 == 0  # a few: 13
         sh, verts = paper_sheet(f"base.sheet{k}", lit_m if lit else grey, 0.21, 0.297, rnd, curl=0.4)
@@ -2448,6 +2477,7 @@ def basement():
                 if desk.lay(sh, [(vx, vy, 0.12 * lift) for vx, vy, lift in verts], cx + rnd.gauss(0, 0.012),
                             cy + rnd.gauss(0, 0.015), rnd.gauss(0, 0.08) + rnd.choice((0.0, math.pi))):
                     tops[cx] = sh
+                    on_desk.add(sh.name)
                     break
             elif pick < 0.6:  # over the heap, until it is covered
                 if floor.lay(sh, verts, -0.85 + rnd.gauss(0, 0.45), 1.85 + rnd.gauss(0, 0.3), rnd.uniform(0, math.tau)):
@@ -2471,9 +2501,10 @@ def basement():
     picks = random.Random(SEEDS["main"] + 8).sample(cves, len(tops))
     top_m, ink = mat_print("base.paper_top", rows=24, v1=0.6), K.mat_ink("base.ink", "pencil")
     NX, NY = 12, 16  # paper_sheet's grid
-    for (cx, sh), c in zip(sorted(tops.items()), picks):
+
+    def advisory(sh, c, upright):
         me = sh.data
-        if math.cos(sh.rotation_euler.z) < 0:
+        if upright and math.cos(sh.rotation_euler.z) < 0:
             zs = [v.co.z for v in me.vertices]
             for j in range(NY + 1):
                 for i in range(NX + 1):
@@ -2490,6 +2521,73 @@ def basement():
         for (vi, _, _), z in zip(letters, sheet_lettering_z(zs, letters, NX, NY)):
             me.vertices[vi].co.z = z
         sh["cve"] = c["id"]
+
+    for (cx, sh), c in zip(sorted(tops.items()), picks):
+        advisory(sh, c, True)
+    # The floor's sheets too (human, C4 v9 review), wherever a sheet's heading block lies uncovered: no sheet laid
+    # after it rests on that part (the heap there is no higher than the sheet). Unlit ones only, each with a
+    # different CVE from the desk's; they lie at any angle, as they fell.
+    floor_sheets = [o for o in bpy.data.objects if o.name.startswith("base.sheet") and o.type == "MESH"
+                    and o.name not in on_desk]
+    tri_v, tri_f, owner = [], [], []
+    for o in floor_sheets:
+        m = o.matrix_basis
+        b = len(tri_v)
+        tri_v += [m @ v.co for v in o.data.vertices]
+        for f in o.data.polygons:
+            vs = list(f.vertices)
+            tri_f += [(b + vs[0], b + vs[1], b + vs[2]), (b + vs[0], b + vs[2], b + vs[3])]
+            owner += [o.name, o.name]
+    bvh = BVHTree.FromPolygons(tri_v, tri_f)
+
+    def lift_clear(sh):
+        """A sheet whose heading half is on top of the heap (no sheet laid after it lies on its upper half), that half
+        lifted clear of the ones under it: between its vertices, their curled corners rose through it (the heap
+        samples 2 cm cells), cutting wedges through its lettering (QC 2026-10-26). Each vertex there rises over the
+        highest point under it within half a grid step. Returns False if the half isn't on top."""
+        m, k = sh.matrix_basis, int(sh.name[10:])
+        mi = m.inverted()
+        grid = [v for v in sh.data.vertices[:(NX + 1) * (NY + 1)] if v.co.y > -0.001]
+        need = []
+        for v in grid:
+            top = -1e9
+            for dx, dy in ((0, 0), (-0.009, 0), (0.009, 0), (0, -0.0093), (0, 0.0093)):
+                p = m @ Vector((v.co.x + dx, v.co.y + dy, 0.0))
+                q = Vector((p.x, p.y, Z0 + 1.0))
+                for _ in range(12):  # down through the heap: the first other sheet under this one
+                    hit = bvh.ray_cast(q, Vector((0, 0, -1)), 2.0)
+                    if hit[0] is None:
+                        break
+                    o = owner[hit[2]]
+                    if o == sh.name:
+                        q = hit[0] - Vector((0, 0, 0.0001))
+                        continue
+                    if int(o[10:]) > k and top == -1e9 and q.z > Z0 + 0.99:
+                        return False  # a later sheet over it
+                    top = max(top, (mi @ hit[0]).z)
+                    break
+            need.append(top)
+        for v, t in zip(grid, need):
+            v.co.z = max(v.co.z, t + 0.0012)
+        return True
+
+    def uncovered(sh):  # its heading wholly visible from above
+        m = sh.matrix_basis
+        for i in range(39):
+            for j in range(15):
+                p = m @ Vector((-0.095 + i * 0.005, 0.065 + j * 0.005, 0.0))
+                hit = bvh.ray_cast(Vector((p.x, p.y, Z0 + 1.0)), Vector((0, 0, -1)), 2.0)
+                if hit[0] is None or owner[hit[2]] != sh.name:
+                    return False
+        return True
+
+    on_floor = [o for o in floor_sheets if o not in out["sheets_glow"] and lift_clear(o)]
+    bvh = BVHTree.FromPolygons([o.matrix_basis @ v.co for o in floor_sheets for v in o.data.vertices], tri_f)
+    on_floor = [o for o in on_floor if uncovered(o)]
+    rest = [c for c in cves if c not in picks]
+    for sh, c in zip(on_floor, random.Random(SEEDS["main"] + 9).sample(rest, min(len(rest), len(on_floor)))):
+        advisory(sh, c, False)
+    out["floor_cves"] = len(on_floor)
     # The mail slot in the ceiling: a lit opening, a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
     # Folded tickets push through it, crease first, and drop to the desk (human, C4 review: the flat sheets of the
     # first version didn't read as coming through the slot).

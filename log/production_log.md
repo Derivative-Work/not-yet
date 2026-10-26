@@ -770,3 +770,27 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Wiring:** `config/audio.json` `master` points to the new file. `scripts/animatic_assemble.py` uses the master when one is set, else the track. The track itself is untouched.
 - **Large file:** added to the manifest.
 - **Status:** committed. It goes into the v10 cut.
+
+## 2026-10-26T04:10 — C4 v9 review fixes: the music box turns, CVEs on the floor's sheets, one broken window
+
+1. **The music box turns** (`scenes/blender/animate.py: music_box`):
+   - The kit declares `drum` as 0..1, one turn. Blender clamps an animated custom property to its range, so the drum turned once in the first 6 s and then stood still: pins, crank and governor with it.
+   - The range is now widened here (`id_properties_ui("drum").update(max=DUR / 6 + 1)`). The shared kit is unchanged.
+   - Check at N36: the axle turns 0.524 rad every 15 frames (one turn per 6 s), and the notes, crank and governor follow.
+   - **Same bug, found by an audit of every keyed custom property against its range:**
+     - The mobile's `turn` counts downbeats (203), but its range was 0..100, so the mobile stopped at 122 s, through its close-ups at N24–N27. The range is now 0..1000.
+     - The chair throw's `blanket_slip` (keys to 3.5, clamped at 1) is left as it is. The full 42 cm fall would go through the floor, and it happens after the pen scratch with the chair off screen.
+2. **CVEs on the basement floor's sheets** (`scenes/blender/sets/nursery.py: basement`):
+   - Floor sheets whose heading half no later sheet lies on are lifted clear of the sheets under them, then get an advisory like the desk's (`advisory()`, shared). Each has a different CVE from the desk's, at the angle the sheet fell. The heading is required to be wholly visible from above, checked by rays 5 mm apart.
+   - 17 floor sheets and 2 desk sheets now carry CVEs.
+   - **The lift was needed** because between a sheet's vertices, the curled corners of the sheets under it rose through it (the heap samples 2 cm cells). That cut paper wedges through the lettering, as in the test close-up of CVE-2025-43431, and was the wedge beside the desk's CVE-2025-43434 noted in v9.
+     - Lifting every sheet instead (a heap reach of one cell) compounded into towers of upturned sheets, so that approach was reverted.
+   - **Lettering** (`print_on_sheet`, `sheet_lettering_z`; the drift's tickets too):
+     - It is cut along the sheet's grid lines and cell diagonals, and set on the two triangles each cell renders as (bilinear heights let a twisted cell's diagonal rise 0.8 mm through it).
+     - Rays down onto every lettering face of the 19 sheets now find only lettering.
+3. **One broken window** (`animate.hall_window`):
+   - The tape and the old crack on the front and back hall windows are hidden until the cut to the window (N10 + 0.03 s, 52.00 s). The windows are whole before the line, taped and cracked from the cut on, and the new crack grows on "never" as before.
+   - Checked: they are hidden at frames 1,200 and 1,559 and shown at 1,560 and after. Test stills before and after the cut.
+   - This changes the brief's N09 ("its crack taped over"): there is now no broken window until N10.
+- **The stopped v10 run** (its frames are a partial frame sequence, not used) is replaced by the full v10 render that follows. It renders into the same folder.
+- **Status:** committed; the full v10 render (with the post-filtered master) is next.
