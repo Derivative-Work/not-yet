@@ -2,5 +2,5 @@
   "_doc": "Render tiers. Frame rate (30 fps) and motion-blur shutter (0.5) are set by the style spec at C1 (config/look.json); motion_blur_steps is how many times Eevee re-evaluates the scene inside the shutter. Iteration moved from the GTX 970 box to the RTX 5090 box on 2026-10-25 (human), still at 720p; draft720 samples and steps were picked there by scripts/qc_mbtest.py (8 samples left crawling grain in soft shadows).",
   "draft720": {"size": [1280, 720], "samples": 32, "motion_blur_steps": 2, "box": "RTX 5090"},
   "animatic": {"size": [640, 360], "samples": 8, "box": "GTX 970"},
-  "final": {"size": [3840, 2160], "samples": 64, "motion_blur_steps": 4, "shadow_pool_mb": 2048, "box": "RTX 5090"}
+  "final": {"size": [3840, 2160], "samples": 64, "motion_blur_steps": 4, "shadow_resolution_scale": 0.5, "box": "RTX 5090"}
 }

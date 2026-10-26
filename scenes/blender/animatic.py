@@ -173,8 +173,9 @@ if __name__ == "__main__":
     prof = PROFILES[args.profile] if args.profile else {"size": [640, 360], "samples": 8}
     scene, f_end = build(args.size or prof["size"], args.samples or prof["samples"], prof.get("motion_blur_steps", 1),
                          cloth_cache=args.cloth_cache)
-    if "shadow_pool_mb" in prof:  # at 4K the room's virtual shadow maps overflow the default 512 MB pool
-        scene.eevee.shadow_pool_size = str(prof["shadow_pool_mb"])
+    # Shadow maps follow screen resolution: at 4K the room asked for more shadow pages than Eevee updates in one go
+    # ("Shadow buffer full", 9,838 / 8,192, with the kit's 2 GB pool). Half scale at 4K is still finer than 720p's.
+    scene.eevee.shadow_resolution_scale = prof.get("shadow_resolution_scale", 1.0)
     black = animate.OUT["black"]
 
     out = Path(args.out)

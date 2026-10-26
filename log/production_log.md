@@ -897,3 +897,15 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - `scripts/render_final.sh` passes `--cloth-cache renders/c5/cloth` to every run.
 - **4K shadows:** the final profile hit "Shadow buffer full" (549 warnings over 7 frames at 36 s; none at draft720). `config/render_profiles.json` final gets `shadow_pool_mb: 2048`, applied by `animatic.py`.
 - **Final-profile speed** (first measurement, before these fixes): 3.4 s/frame at 36 s, 6.1 s/frame at 210 s (the music box). Re-timing with the fixes is running.
+
+## 2026-10-26T10:40 — 4K shadows, corrected; final-profile timing
+
+- **Correction to the 10:05 entry:** `shadow_pool_mb` changed nothing, since the kit already sets a 2 GB pool. The warning's limit (9,838 / 8,192) is the shadow pages Eevee updates at once, and it still fired 578 times at 36 s.
+  - Replaced with `shadow_resolution_scale: 0.5` for the final profile, applied by `animatic.py` (default 1.0). At 4K, half scale is still finer than the approved 720p.
+  - At 36 s: no warnings. The crop matches full scale, with the dresser's under-lip shadow slightly firmer.
+- **Final-profile timing** (4K, 64 samples, 4 motion-blur steps, with the smoothing and the shared cloth cache):
+  - 3.2 s/frame at 36 s (the room, half-scale shadows);
+  - 3.9 s/frame at 120 s;
+  - 6.1 s/frame at 210 s (the music box);
+  - 5.6 s/frame at 222 s (the crib).
+  - About 2 min to build each run. Estimate for 7,019 frames: about 9 h, with the windows span (about 950 frames) first at about 1 h.
