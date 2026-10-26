@@ -41,8 +41,10 @@ def enc(br, mr):
     return [a.format(br=br, mr=mr) for a in ENC]
 
 
-def audio_graph(i_master, i_sfx, t0, dur, fade_out=0.0):
-    """The master with the pen scratch mixed on top, from song t0 for dur seconds, padded with silence."""
+def audio_graph(i_master, i_sfx, t0, dur, fade_out=0.0, sound=None):
+    """The master with the pen scratch mixed on top, from song t0 for dur seconds, padded with silence; with sound,
+    only its first sound seconds (fading out over fade_out before then), silence after."""
+    sound = dur if sound is None else sound
     sfx = AUD["sfx"][0]
     ms = int(round((sfx["at_s"] - t0) * 1000))
     g = (f"[{i_master}:a]atrim=start={t0},asetpts=PTS-STARTPTS,aresample=48000[m];")
@@ -51,10 +53,10 @@ def audio_graph(i_master, i_sfx, t0, dur, fade_out=0.0):
               f"adelay={ms}|{ms}[s];[m][s]amix=inputs=2:duration=first:normalize=0[mx];")
     else:
         g += "[m]anull[mx];"
-    g += f"[mx]apad,atrim=end={dur}"
+    g += f"[mx]apad,atrim=end={sound}"
     if fade_out:
-        g += f",afade=t=out:st={dur - fade_out}:d={fade_out}"
-    return g + "[a]"
+        g += f",afade=t=out:st={sound - fade_out}:d={fade_out}"
+    return g + f",apad,atrim=end={dur}[a]"
 
 
 def piecewise(keys, t0):
@@ -87,19 +89,20 @@ def short_video(a, sid):
     sh = next(s for s in CUES["shorts"] if s["id"] == sid)
     f0 = round(sh["from"] * FPS)  # start on a frame: picture and audio from the same instant
     t0, dur = f0 / FPS, sh["to"] - f0 / FPS
+    content = sh.get("content_to", sh["to"]) - t0  # then black and silence under the human's note
     ov = a.overlay or f"renders/overlays/overlay_short_{sid}.mkv"
     out = a.out or f"deliverables/not_yet_short_{sid}.mp4"
     fade = 2.5 if sid == "windows" else 0.0
-    vis = max(0.0, min(dur, BLACK - t0))  # picture until N40's black, black after
+    vis = max(0.0, min(content, BLACK - t0))  # picture until N40's black or the content's end, black after
     cx = piecewise(REFRAME[sid], t0)
     vf = (f"[0:v]trim=end={vis},setpts=PTS-STARTPTS,scale=-2:2160:flags=lanczos,"
           f"crop=w=1215:h=2160:x='max(0,min(iw-1215,({cx})*iw-607.5))':y=0,scale=1080:1920:flags=lanczos,"
           f"tpad=stop_mode=add:stop_duration={dur - vis + 0.1}:color=black,fade=t=in:st=0:d=0.4")
     if fade:
-        vf += f",fade=t=out:st={dur - fade}:d={fade}"
+        vf += f",fade=t=out:st={content - fade}:d={fade}"
     vf += f",format=rgba[bg];[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,{YUV}[v];"
     cmd = (["ffmpeg", "-v", "error", "-y"] + frames_input(a.frames, f0) + ["-i", ov, "-i", AUD["master"],
-           "-i", AUD["sfx"][0]["file"], "-filter_complex", vf + audio_graph(2, 3, t0, dur, fade_out=fade),
+           "-i", AUD["sfx"][0]["file"], "-filter_complex", vf + audio_graph(2, 3, t0, dur, fade_out=fade, sound=content),
            "-map", "[v]", "-map", "[a]", "-t", f"{dur}", "-r", str(FPS)] + enc("30M", "50M") + [out])
     run(cmd, out)
 
