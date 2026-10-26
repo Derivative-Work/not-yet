@@ -90,7 +90,9 @@ async function video(browser) {
 
 // --no-sandbox as the project's other Puppeteer scripts: this Ubuntu blocks Chrome's user-namespace sandbox, and the
 // page only loads local project files.
-const browser = await puppeteer.launch({ headless: "shell", args: ["--no-sandbox", "--allow-file-access-from-files"] });
+// A 4K screenshot can take minutes while the GPU box is busy (the main overlay timed out at the 180 s default).
+const browser = await puppeteer.launch({ headless: "shell", protocolTimeout: 900000,
+  args: ["--no-sandbox", "--allow-file-access-from-files"] });
 try {
   if (args.includes("--at")) await stills(browser); else await video(browser);
 } finally {

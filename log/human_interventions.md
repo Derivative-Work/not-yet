@@ -244,3 +244,17 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** After the C5 progress report (all 7,019 frames and 39 anchors rendered and checked against v11; the 4K flicker check still running) and the re-cropped windows short, the human told the agent to make the upload-ready render and the upload metadata now, with the QC carrying on in the background.
 - **Note from the human:** "go ahead and make the upload-ready render and METADATA.md now (keep doing your QC in the background)"
 - **Rule:** R1 (approval of a checkpoint).
+
+## 2026-10-26T19:05 — C6 notes: a "baby" caption font, and a closing note from the human — R1
+
+- **What:** On the C6 assembly, the human asked for two changes:
+  - Set the captions in a typeface typically used for baby content, such as Oooh Baby (Google Fonts), instead of the style spec's Inter.
+  - Add a closing "note from the human" at the very end, as in Folks Like Us.
+- **Note from the human:** "Let's use a font typically used for "baby" content for the captions -- something like https://fonts.google.com/specimen/Oooh+Baby?query=baby&preview.script=Latn, and also add a "note from the human" at the very end (similar to Folks) along the lines of: [...]". Then, correcting the wording: "With AI assistance, security researchers are discovering more vulnerabilities than ever. / Are your systems up to date?"
+- **Rule:** R1 (a correction at a checkpoint). This is an exception, logged as such: the caption typeface is a creative choice made by the human, and the note's words are the human's own, shown as theirs.
+
+## 2026-10-26T19:10 — C6 note: the "w" in "windows" flickers — R1
+
+- **What:** On the line "…and windows are never quite mended.", the human asked for the "w" of "windows" to flicker between a capital and a lowercase letter.
+- **Note from the human:** "oh also on the "windows are never quite mended", make the "w" flicker between capital W and lowercase"
+- **Rule:** R1 (a correction at a checkpoint). This is an exception: a creative choice made by the human.

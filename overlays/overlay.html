@@ -10,6 +10,7 @@
 <style>
 @font-face { font-family: "Inter"; src: url("../assets/fonts/Inter[opsz,wght].ttf"); font-weight: 100 900; }
 @font-face { font-family: "JetBrains Mono"; src: url("../assets/fonts/JetBrainsMono[wght].ttf"); font-weight: 100 900; }
+@font-face { font-family: "Oooh Baby"; src: url("../assets/fonts/OoohBaby-Regular.ttf"); }
 @font-face { font-family: "Instrument Serif"; src: url("../assets/fonts/InstrumentSerif-Italic.ttf"); font-style: italic; }
 html, body { margin: 0; background: transparent; overflow: hidden; }
 canvas { display: block; position: absolute; left: 0; top: 0; }
@@ -50,9 +51,10 @@ async function setup(cues, w, h, shortId) {
   T0 = SH ? SH.from : 0;
   col.innerHTML = C.bookend.sections.map(s => `<h2>${s.title}</h2>` + marked.parse(s.md)).join("");
   await Promise.all(['500 72px "Inter"', '300 72px "Inter"', '400 72px "Inter"', '600 72px "Inter"',
-                     '500 60px "JetBrains Mono"', 'italic 72px "Instrument Serif"'].map(f => document.fonts.load(f)));
+                     '500 60px "JetBrains Mono"', 'italic 72px "Instrument Serif"', '400 72px "Oooh Baby"'].map(f => document.fonts.load(f)));
   await document.fonts.ready;
-  return document.fonts.check('500 72px "Inter"') && document.fonts.check('500 60px "JetBrains Mono"');
+  return document.fonts.check('500 72px "Inter"') && document.fonts.check('500 60px "JetBrains Mono"') &&
+    document.fonts.check('400 72px "Oooh Baby"');
 }
 
 function wrap(words, maxW) {
@@ -80,32 +82,47 @@ function shadowed(fn) {
   g.restore();
 }
 
-// Each word brightens from 40% to full as it is sung, no pop (style spec); the line fades in and out.
+// Each word brightens from 40% to full as it is sung, no pop (style spec); the line fades in and out. Set in Oooh Baby,
+// a handwriting face (human, C6), sized up for its small x-height; verse 4's thinner voice is a smaller size, since the
+// face has one weight.
 function drawCaption(t) {
   const c = C.captions.find(c => t >= c.on && t < c.off);
   if (!c) return false;
   const a = ramp(t, c.on, c.off, 0.25, 0.35);
-  const px = (V ? 74 : 72) * u;
-  g.font = `${c.thin ? 300 : 500} ${Math.round(px)}px "Inter"`;
+  const px = (V ? 74 : 72) * u * (c.thin ? 1.45 : 1.6);
+  g.font = `400 ${Math.round(px)}px "Oooh Baby"`;
   g.textBaseline = "alphabetic";
-  const lines = wrap(c.words, V ? W * 0.84 : W * 0.7);
+  // A flickering word is laid out at its widest form, so the line doesn't shift as it changes.
+  const shown = w => w.flicker ? w.flicker[flick(t)] : w.w;
+  const slot = w => w.flicker ? Math.max(...w.flicker.map(f => g.measureText(f).width)) : g.measureText(w.w).width;
+  const lines = wrap(c.words.map(w => w.flicker ? { ...w, w: w.flicker.reduce((a, b) =>
+    g.measureText(b).width > g.measureText(a).width ? b : a) } : w), V ? W * 0.84 : W * 0.7)
+    .map(ln => ln.map(x => c.words.find(w => w.t === x.t && w.e === x.e) || x));
   const lh = px * 1.3, base = V ? H * 0.74 : H - 120 * u;
   const space = g.measureText(" ").width;
   let ends = [];
   lines.forEach((ln, i) => {
     const y = base - (lines.length - 1 - i) * lh;
-    const wid = g.measureText(ln.map(w => w.w).join(" ")).width;
+    const wid = ln.reduce((sum, w) => sum + slot(w), 0) + space * (ln.length - 1);
     let x = (W - wid) / 2;
     for (const w of ln) {
       const k = clamp((t - w.t) / Math.max(0.15, w.e - w.t));
-      g.fillStyle = `rgba(255,227,176,${a * (0.4 + 0.6 * k)})`;
-      shadowed(() => g.fillText(w.w, x, y));
-      x += g.measureText(w.w).width + space;
+      g.fillStyle = g.strokeStyle = `rgba(255,227,176,${a * (0.4 + 0.6 * k)})`;
+      g.lineWidth = px * 0.03; g.lineJoin = "round";  // the face's hairline strokes, thickened a little to read small
+      const s = shown(w);
+      shadowed(() => { g.fillText(s, x, y); g.strokeText(s, x, y); });
+      x += slot(w) + space;
     }
     ends.push([x, y]);
   });
   if (c.id === C.checks.line) drawChecks(t, ends[ends.length - 1], px, a);
   return true;
+}
+
+// Which form a flickering word shows at time t: an uneven flicker, like a failing light, the same on every render.
+function flick(t) {
+  const k = Math.floor(t / 0.13), r = Math.sin(k * 12.9898) * 43758.5453;
+  return r - Math.floor(r) < 0.45 ? 1 : 0;
 }
 
 // N34: a tick in a different hand (paper, a quick pen stroke) after the line as each auditor's flag is marked.
@@ -234,13 +251,36 @@ function drawEnd(t) {
   return true;
 }
 
+// The human's closing note (human, C6), as in Folks Like Us: who it's from, small, over their words.
+function drawNote(t, on, off) {
+  if (t < on - 0.6 || t >= off + 0.6) return false;
+  black();
+  const a = ramp(t, on - 0.6, off + 0.6, 0.6, 0.6);
+  const hp = (V ? 46 : 44) * u, px = (V ? 66 : 64) * u, lh = px * 1.38;
+  g.font = `400 ${Math.round(px)}px "Inter"`;
+  const rows = C.note.lines.map(l => wrapText(l, V ? W * 0.82 : W * 0.6));
+  const n = rows.reduce((s, r) => s + r.length, 0) + (rows.length - 1) * 0.6;
+  let y = H / 2 - (n * lh + hp * 2.2) / 2 + hp;
+  textBlock([C.note.from], `500 ${Math.round(hp)}px "Inter"`, hp, y, 0, `rgba(141,151,166,${a})`);
+  y += hp * 2.2 + px * 0.2;
+  rows.forEach(r => {
+    textBlock(r, `400 ${Math.round(px)}px "Inter"`, px, y, lh, `rgba(241,244,238,${a})`);
+    y += (r.length + 0.6) * lh;
+  });
+  return true;
+}
+
 // Draw song time t (or a short's time from its start); false when the frame is empty.
 function draw(t) {
   t += T0;
   g.clearRect(0, 0, W, H);
   let any = false;
+  if (SH && t >= SH.content_to) {  // a short's own tail: black under the human's note
+    if (!drawNote(t, SH.note_on, SH.note_off)) black();
+    return true;
+  }
   if (t >= C.crt.on) {
-    any = drawCRT(t) || drawFact(t) || drawBook(t) || drawEnd(t);
+    any = drawCRT(t) || drawFact(t) || drawBook(t) || drawEnd(t) || drawNote(t, C.note.on, C.note.off);
     if (!any) { black(); any = true; }  // the gaps between cards stay black
     return any;
   }

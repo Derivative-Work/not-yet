@@ -977,3 +977,18 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - **Licence:** this repo has no licence files. The description uses Sandbox Rhapsody's terms (CC BY-NC-SA 4.0 and MIT), to be confirmed.
   - **Link order:** the windows cut may go out before the main video (Patch Tuesday, 2026-11-10).
   - **Bridge cut length:** 3:18.6 is over YouTube's 3:00 Shorts limit. Either upload it as an ordinary vertical video, or end it after fact card 8 (2:57.7).
+
+## 2026-10-26T19:01 — C6: the human's notes (caption face, closing note, the flickering W)
+
+- **Why:** three notes from the human on C6 (see `log/human_interventions.md`, 19:05 and 19:10). Logged as exceptions.
+- **Caption face: Oooh Baby** (Robert Leuschke, SIL OFL 1.1).
+  - Downloaded from Google Fonts' repository (`google/fonts`, `ofl/ooohbaby`) into an isolated folder. Vendored as `assets/fonts/OoohBaby-Regular.ttf` with `OoohBaby-OFL.txt`, both added to `SHA256SUMS`. It covers every character in the captions, including … and ’.
+  - It is a handwriting face with one weight and hairline strokes. So the captions are 1.6× the old size, verse 4's thinner voice is 1.45× (in place of the light weight), and each word gets a 0.03 em stroke in its own colour.
+  - Checked in stills over the C5 frames (main and vertical), including N34's check marks.
+- **Closing note:** `overlays/cards.json` `human_note`: "A note from the human / With AI assistance, security researchers are discovering more vulnerabilities than ever. / Are your systems up to date?", the human's words. It is drawn as in Folks Like Us: the "from" line small and grey, the note in Inter.
+  - **Main video:** 383.42–390.57 s (held 7.15 s, by `card_hold`), so the video now ends at 391.07 s.
+  - **Vertical cuts:** each ends on the note, after its own content, over black and silence (`content_to`, `note_on`/`note_off` in cues). Windows: 38.6 s (content 30.1 s, faded as before). Bridge: 3:27.1.
+- **The flickering W:** `overlay_cues.py` `FLICKER` gives L08's "windows" two forms. The overlay picks one every 0.13 s from a fixed hash, so the flicker is uneven but the same on every render, and lays the word out at its widest form so the line doesn't move. The SRT keeps the sung text.
+- **Also:** `overlays/render.mjs` protocol timeout raised to 15 min. A 4K screenshot timed out at the 180 s default while the GPU box was busy with the flicker check and 10 render jobs.
+- **Archived** (superseded by these notes): the two shorts (`archive/deliverables/*_superseded_inter-captions-no-note.mp4`) and their overlays (`archive/renders/overlays_superseded_inter-captions-no-note/`).
+- Intervention count on the end card: 36.

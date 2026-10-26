@@ -33,5 +33,10 @@
   "Animation and edit: Claude Code",
   "Human interventions: {interventions}",
   "Full production log: {repo_url}"
- ]
+ ],
+ "human_note": {
+  "_doc": "The human's closing note, in their words (human, C6, 2026-10-26), after the end card and at the end of each vertical cut, as in Folks Like Us.",
+  "from": "A note from the human",
+  "lines": ["With AI assistance, security researchers are discovering more vulnerabilities than ever.", "Are your systems up to date?"]
+ }
 }
