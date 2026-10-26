@@ -1037,3 +1037,8 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Locally:** the PNG is restored on disk and git-ignored (`assets/screens/*.png`). Its sidecar JSON (URL and capture time) stays in git, and `scripts/capture_page.mjs` recaptures it. `LICENSE-media.md` says so. It isn't in the manifest, which lists only published files.
 - **History check before the first push:** every path ever committed was listed, and every committed file was scanned for credentials and personal data. The only matches were public page captures (a Stripe publishable key and site scripts in the Suno page captures, a session ID inside a link in a search result in the drafting chat). No secrets.
 - **End screen** (`METADATA.md`, human-approved): from 6:23, over the note; Sandbox Rhapsody bottom left, Subscribe bottom right.
+
+## 2026-10-26T19:32 — First push to GitHub
+
+- `git remote add origin https://github.com/Derivative-Work/not-yet.git`, then `git push -u origin main`. That pushed the rewritten history: 72 commits, a 6.7 MiB pack, no file over 1 MB. The largest file is a Suno page capture.
+- The repository is still **private** (the human's setting). `assets/screens` on GitHub holds only the sidecar JSON.
