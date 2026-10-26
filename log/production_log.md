@@ -992,3 +992,9 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Also:** `overlays/render.mjs` protocol timeout raised to 15 min. A 4K screenshot timed out at the 180 s default while the GPU box was busy with the flicker check and 10 render jobs.
 - **Archived** (superseded by these notes): the two shorts (`archive/deliverables/*_superseded_inter-captions-no-note.mp4`) and their overlays (`archive/renders/overlays_superseded_inter-captions-no-note/`).
 - Intervention count on the end card: 36.
+
+## 2026-10-26T19:03 — C6: deliverables in git and the manifest; rebuild running
+
+- `deliverables/`: the SRTs and the thumbnail (`assemble.py thumbnail`, frame 4660, 1920×1080, 148 KB) are in git. The videos are git-ignored (`deliverables/*.mp4`) and `scripts/manifest.sh` now lists `deliverables`.
+- `METADATA.md` updated for the notes (27a77ca): the count is 37, the main video is 6:31.1 and ends on the note, the shorts are 38.6 s and 3:27.1, the bridge's option (b) now ends after card 7 (2:59.4), and the end-screen window starts at 6:11.
+- Rebuild running (scratchpad `c6_chain.sh`): overlays and assembly for the windows short, the bridge short, then the main video.

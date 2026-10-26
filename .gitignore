@@ -35,3 +35,6 @@ models/
 # Other publishers' pages saved as fact-check evidence (the human retrieved them, R4): kept locally, never published;
 # reference/sources/*.tsv (in git) lists each one's URL and hash.
 reference/sources/*/
+
+# The upload-ready videos (large; listed in MANIFEST.sha256). The SRTs and thumbnail are small and kept in git.
+deliverables/*.mp4
