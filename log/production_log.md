@@ -944,3 +944,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - The human approved going on to the upload-ready render and `METADATA.md` (see `log/human_interventions.md`). The 4K flicker check (`scripts/qc_flicker.py`, at 2,000 of 7,019 frames at 18:27) carries on in the background, and its result is logged when it ends.
 - **C5 checks so far:** 7,019 frames and 39 anchors, none empty. No shadow-buffer warnings. The blanket at N38–N40 matches between the anchor run and the frames run (no pixel more than 1 level apart). Frames and anchors are within 0.2–6 levels of v11/v14 on average, from the samples and the motion blur. The door is smooth. Thumbnail frame 4660 is as chosen.
   - Each run logs one "Failed to create GPU texture" error at startup, as the approved draft runs did. The main run logged two more next to frame 5577, which matches v11 and its neighbours.
+
+## 2026-10-26T18:48 — C6: windows short assembled; colour tags fixed
+
+- **Overlay:** `node overlays/render.mjs short:windows` → `renders/overlays/overlay_short_windows.mkv` (903 frames, 36 s).
+- **SRT:** `scripts/make_srt.py` → `deliverables/not_yet.srt` (38 captions), `not_yet_short_bridge.srt` (18), `not_yet_short_windows.srt` (4).
+- **Found** (agent, ffprobe): the first encode's transfer was tagged `iec61966-2-1` (sRGB, from the PNGs), not BT.709.
+  - `assemble.py` now sets primaries, transfer and matrix to BT.709 in the bitstream (`hevc_metadata`).
+  - Also tried an explicit `scale=out_color_matrix=bt709`. It made the image 1.6 levels darker in Y, while `format=yuv420p` alone already matches the BT.709 value from the source PNG (Y 52.57 vs 52.6 expected). Reverted.
+  - The two superseded encodes are in `archive/deliverables/` (`…_superseded_bt601-matrix-srgb-tag.mp4`, whose name records the first suspicion; its matrix was fine, only the tag was wrong; and `…_superseded_explicit-scale-darker.mp4`).
+- **Output:** `deliverables/not_yet_short_windows.mp4`: 30.1 s, 1080×1920, HEVC (BT.709 tagged) and AAC 320k, −17.5 LUFS integrated, −3.9 dBFS true peak.
+  - Checked in frames: the label, the four captions, the whole window from the first frame, the crack on "never", the outside shot, the push in, and the fade.

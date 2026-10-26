@@ -29,7 +29,12 @@ SHOT = {s["id"]: s["t"] for s in TM["shots"]}
 ENC = ["-c:v", "hevc_nvenc", "-preset", "p7", "-tune", "hq", "-rc", "vbr", "-b:v", "{br}", "-maxrate", "{mr}",
        "-bufsize", "{mr}", "-profile:v", "main", "-pix_fmt", "yuv420p", "-color_primaries", "bt709",
        "-color_trc", "bt709", "-colorspace", "bt709", "-tag:v", "hvc1", "-c:a", "aac", "-b:a", "320k",
-       "-movflags", "+faststart"]
+       "-movflags", "+faststart",
+       # The PNGs carry an sRGB tag that reached the stream's transfer (iec61966-2-1); set BT.709 in the bitstream.
+       "-bsf:v", "hevc_metadata=colour_primaries=1:transfer_characteristics=1:matrix_coefficients=1"]
+# RGB to YUV: format=yuv420p converts with the BT.709 matrix the output is tagged with (checked: Y within 0.1 of the
+# BT.709 value from the source PNG; an explicit scale=out_color_matrix=bt709 here came out 1.6 darker).
+YUV = "format=yuv420p"
 
 
 def enc(br, mr):
@@ -71,7 +76,7 @@ def main_video(a):
     out = a.out or "deliverables/not_yet_main.mp4"
     vf = (f"[0:v]scale=3840:2160:flags=lanczos,fade=t=in:st=0:d=2,trim=end={BLACK},setpts=PTS-STARTPTS,"
           f"tpad=stop_mode=add:stop_duration={end - BLACK}:color=black,format=rgba[bg];"
-          f"[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,format=yuv420p[v];")
+          f"[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,{YUV}[v];")
     cmd = (["ffmpeg", "-v", "error", "-y"] + frames_input(a.frames) + ["-i", ov, "-i", AUD["master"], "-i",
            AUD["sfx"][0]["file"], "-filter_complex", vf + audio_graph(2, 3, 0.0, end), "-map", "[v]", "-map", "[a]",
            "-t", f"{end}", "-r", str(FPS)] + enc("70M", "120M") + [out])
@@ -92,7 +97,7 @@ def short_video(a, sid):
           f"tpad=stop_mode=add:stop_duration={dur - vis + 0.1}:color=black,fade=t=in:st=0:d=0.4")
     if fade:
         vf += f",fade=t=out:st={dur - fade}:d={fade}"
-    vf += ",format=rgba[bg];[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,format=yuv420p[v];"
+    vf += f",format=rgba[bg];[1:v]format=rgba[ov];[bg][ov]overlay=eof_action=pass,{YUV}[v];"
     cmd = (["ffmpeg", "-v", "error", "-y"] + frames_input(a.frames, f0) + ["-i", ov, "-i", AUD["master"],
            "-i", AUD["sfx"][0]["file"], "-filter_complex", vf + audio_graph(2, 3, t0, dur, fade_out=fade),
            "-map", "[v]", "-map", "[a]", "-t", f"{dur}", "-r", str(FPS)] + enc("30M", "50M") + [out])
