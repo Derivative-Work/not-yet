@@ -1055,3 +1055,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - the licences;
   - the credits: words and audits with the conflict of interest, Suno, the music-deslop post-filter and its training data (as in Sandbox Rhapsody: same checkpoint), the probe rig, the pen scratch, the tools, the fonts.
 - Every path it links was checked to exist. `shots/` is empty in this project (no `pipeline.md`), so it isn't linked.
+
+## 2026-10-26T19:41 — C6: main video assembled
+
+- **Overlay:** `node overlays/render.mjs main --jobs 6` → `renders/overlays/overlay_main.mkv` (11,732 frames, 3840×2160, 1,378 s). The end card says 39 interventions.
+- **Assembly:** `scripts/assemble.py main` → `deliverables/not_yet_main.mp4`:
+  - 391.07 s (6:31.1), 3840×2160 at 30 fps, HEVC tagged BT.709, AAC 320k, 1.16 GB;
+  - −18.6 LUFS integrated, −2.9 dBFS true peak.
+- **Audio join, checked in the file** (mean level per 0.5 s): −29.9 dB at 240 s; the song dies away to −68 dB at 246 s; silence while the CRT line opens (−91 dB at 247 s); the instrumental enters at 248.2 s (−20.1 dB); it runs under the cards (−33.5 dB at 300 s) and the music box ends under the note (−28.8 dB at 386 s, −64 dB at 388 s, silent from 389 s).
+- **Frames checked** at 0.3, 1.5, 52.7, 196, 233.5, 247.5, 249.5, 345, 376, 387 and 390.9 s: the fade-up and label, the flickering W, N34's check marks, "Goodnight" over the probe, the CRT line, fact 1, the audit log, the end card, the note, and its fade.
+- A 540p preview (scratch, not an asset) was sent to the human; the 4K file is too big to send.
+- `scripts/manifest.sh` run: the main video, the windows cut and the card bounce are hashed.
