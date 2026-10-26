@@ -917,7 +917,9 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
         # lay in them and z-fought (QC 2026-10-25, the shop crib at N31).
         cyl(f"{name}.arch{sx}", paint, (sx * L / 2, 0, 0.93), W / 2, 0.024, root, rot=(0, math.pi / 2, 0),
             verts=64).scale = (0.3, 1, 1)
-    box(f"{name}.mattress", K.mat_plastic(f"{name}.mattress", "felt_cream", 0.8), (0, 0, 0.38), (L - 0.06, W - 0.06, 0.12),
+    # The mattress runs to the end boards (1 mm short of each): with a gap at the head, the blanket's end showed as
+    # a dark slot down to the floor, a line that crawled (human, C4 v8 review: "flickering at the end").
+    box(f"{name}.mattress", K.mat_plastic(f"{name}.mattress", "felt_cream", 0.8), (0, 0, 0.38), (L - 0.032, W - 0.06, 0.12),
         root, bev=0.04)
     # The blanket: a soft slab over the mattress, its middle raised over the hidden probe at the head end; breath
     # lifts it.
@@ -1102,41 +1104,46 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
 
 def quilt_cloth(folds, colliders, f0, f1):
     """The quilt's folds as cloth from frame f0 to f1 (human, C4 v7 review: opened, they still stood round the probe
-    in the shape of the mound). Before f0 they turn on the hinge (the push); from f0 a strip along
-    each hinge stays pinned to that motion, fading out over 15% of the fold, and the rest falls free and drapes over
-    the blanket, the probe and the crib's sides (`colliders`). Simulated before the mesh's thickness (Solidify) and
-    bevel, so the fold keeps both. Bake it before rendering (scenes/blender/animatic.py)."""
+    in the shape of the mound). Each fold is held at one point, the middle of its lip over the probe (human, C4 v8
+    review: "held by one point for each side (not a bar)"): that point follows the hinge's turn, so the probe's push
+    lifts the lip up and over, and the rest of the fold hangs from it and falls free onto the blanket, the probe and
+    the crib's sides (`colliders`). Simulated before the mesh's thickness (Solidify) and subdivision, so the fold
+    keeps both. Bake it before rendering (scenes/blender/animatic.py)."""
     for fo in folds:
         half = max(abs(v.co.y) for v in fo.data.vertices)
-        vg, hg = fo.vertex_groups.new(name="pin"), fo.vertex_groups.new(name="hinge")
+        vg = fo.vertex_groups.new(name="pin")
+        hold = []
         for v in fo.data.vertices:
-            w = max(0.0, 1.0 - abs(v.co.y) / (0.15 * half)) ** 1.5
+            d = math.hypot(v.co.x, abs(v.co.y) - half)  # from the lip's middle (local x 0: over the probe)
+            w = max(0.0, 1.0 - d / 0.025) ** 1.5
             if w > 0:
                 vg.add([v.index], w, "REPLACE")
-            if w > 0.9:  # the row along the hinge itself, which lies on the blanket
-                hg.add([v.index], 1.0, "REPLACE")
+                hold.append(v.index)
+        hg = fo.vertex_groups.new(name="hold")  # the held point skips collisions: pin and collision fought
+        hg.add(hold, 1.0, "REPLACE")
         cl = fo.modifiers.new("cloth", "CLOTH")
         fo.modifiers.move(len(fo.modifiers) - 1, 0)
         st = cl.settings
         st.quality = 15
-        st.mass = 0.25  # kg per vertex (Blender default 0.3): heavy enough to fall flat, not crumple
+        st.mass = 0.02  # kg per vertex: 15 g a fold. At 0.25 (180 kg a fold) the springs couldn't carry it: it
+        # collapsed into strands and never stopped slipping (human, C4 v8 review: it flickered as if blown downward)
         st.tension_stiffness = st.compression_stiffness = 15.0
         st.shear_stiffness = 5.0
-        st.bending_stiffness = 0.3  # its rest shape is flat: it slumps and lies down, without fine wrinkles
+        st.bending_stiffness = 10.0  # a padded quilt: it lies open in broad folds (at 0.3 it crumpled into strands)
         st.air_damping = 1.5
         st.vertex_group_mass = "pin"
         st.rest_shape_key = fo.data.shape_keys.key_blocks["plane"]  # it wants to lie flat, not keep the mound
-        st.pin_stiffness = 2.0
+        st.pin_stiffness = 30.0  # one point holds the whole fold
         cs = cl.collision_settings
         cs.use_collision, cs.use_self_collision = True, False
-        cs.distance_min, cs.collision_quality = 0.005, 5
-        cs.vertex_group_object_collisions = "hinge"  # pinned on the blanket: collision and pin fought, and the
-        # fold never came to rest (with the whole pinned strip excluded, the probe's fingers poked through it)
+        cs.distance_min, cs.collision_quality = 0.002, 5  # tight: with 5 mm (and 1 cm colliders) it hovered,
+        # slipping a centimetre or more a frame
+        cs.vertex_group_object_collisions = "hold"
         cl.point_cache.frame_start, cl.point_cache.frame_end = f0, f1
     for c in colliders:
         if "collision" not in c.modifiers:
             c.modifiers.new("collision", "COLLISION")
-            c.collision.thickness_outer = 0.01  # thin ones let the fold sink through
+            c.collision.thickness_outer = 0.003
             c.collision.cloth_friction = 10.0
             c.collision.damping = 0.8
             # Single-sided: the blanket is a slab, and the cloth lying on it also felt its underside and never
@@ -1196,15 +1203,39 @@ def mobile(name, loc, parent=None):
                 (0.05, 0.035, 0.0015), stk)
     felt_c, felt_b, felt_g = (mat_felt(f"{name}.felt_c", "felt_cream"), mat_felt(f"{name}.felt_b", "felt_blue"),
                               mat_felt(f"{name}.felt_g", "felt_grey"))
-    # A bank: stepped base, four columns, a pediment.
+    # A bank, built to read from every side as the mobile turns (human, C4 v8 review: "the bank doesn't look quite
+    # right from all angles"; its pediment was a three-sided cone, a pyramid from the side, and it was columns on a
+    # slab with nothing behind them): two steps, a walled hall with four columns before each face, an entablature,
+    # and a gable roof whose pediment carries a coin on both ends.
     b = pieces["bank"]
-    box(f"{name}.bank_base", felt_g, (0, 0, -0.035), (0.11, 0.05, 0.015), b, bev=0.004)
-    for i in range(4):
-        cyl(f"{name}.bank_col{i}", felt_c, (-0.039 + i * 0.026, 0, 0), 0.007, 0.06, b, verts=12)
-    box(f"{name}.bank_lintel", felt_g, (0, 0, 0.036), (0.11, 0.05, 0.012), b, bev=0.003)
-    ped = K.mesh_obj(f"{name}.bank_ped", bpy.ops.mesh.primitive_cone_add, felt_c, b, vertices=3, radius1=0.065,
-                     depth=0.05, location=(0, 0, 0.055), rotation=(math.pi / 2, 0, 0))
-    ped.scale = (1, 0.42, 1)
+    box(f"{name}.bank_step0", felt_g, (0, 0, -0.041), (0.12, 0.064, 0.01), b, bev=0.003)
+    box(f"{name}.bank_step1", felt_g, (0, 0, -0.032), (0.108, 0.054, 0.009), b, bev=0.003)
+    box(f"{name}.bank_hall", felt_g, (0, 0, -0.0005), (0.082, 0.024, 0.054), b, bev=0.002)
+    for sy in (-1, 1):
+        for i in range(4):
+            x = -0.039 + i * 0.026
+            cyl(f"{name}.bank_col{sy}{i}", felt_c, (x, sy * 0.019, -0.0005), 0.0055, 0.046, b, verts=12)
+            box(f"{name}.bank_cap{sy}{i}", felt_c, (x, sy * 0.019, 0.0245), (0.015, 0.014, 0.004), b, bev=0.001)
+            box(f"{name}.bank_foot{sy}{i}", felt_c, (x, sy * 0.019, -0.0255), (0.014, 0.013, 0.004), b, bev=0.001)
+    box(f"{name}.bank_lintel", felt_g, (0, 0, 0.0325), (0.108, 0.054, 0.012), b, bev=0.002)
+    bm = bmesh.new()  # the gable: a triangular prism along Y, its ridge 2.6 cm up
+    tri = [(-0.058, 0.0385), (0.058, 0.0385), (0.0, 0.0645)]
+    ends = [[bm.verts.new((x, sy * 0.03, z)) for x, z in tri] for sy in (-1, 1)]
+    bm.faces.new(ends[0])
+    bm.faces.new(ends[1][::-1])
+    for k in range(3):
+        bm.faces.new((ends[0][k], ends[1][k], ends[1][(k + 1) % 3], ends[0][(k + 1) % 3]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(f"{name}.bank_roof")
+    bm.to_mesh(me)
+    bm.free()
+    roof = K.link(bpy.data.objects.new(f"{name}.bank_roof", me))
+    roof.parent = b
+    roof.data.materials.append(felt_c)
+    K.bevel(roof, 0.0015, 2)
+    for sy in (-1, 1):  # a coin in each pediment
+        cyl(f"{name}.bank_coin{sy}", felt_g, (0, sy * 0.0305, 0.047), 0.0065, 0.002, b, rot=(math.pi / 2, 0, 0),
+            verts=20)
     # A globe: blue sphere, cream meridian ring and stand.
     g = pieces["globe"]
     sphere(f"{name}.globe", felt_b, (0, 0, 0), 0.045, g)
@@ -1430,6 +1461,58 @@ def dresser(name, loc, rot_z=0.0, parent=None):
                     elif nd.type == "BSDF_PRINCIPLED":
                         nd.inputs["Base Color"].default_value = K.col("felt_blue")
     bpy.data.objects[f"{name}.musicbox.glow"].data.color = K.col("comfort")[:3]
+    # More of the mechanism (human, C4 v8 review: "add some more detail to the music box ... the notes coming in on
+    # the scroll and the missing crank handle", still recognisably Sandbox Rhapsody's): the kit's 60 pins sat in a
+    # fixed scatter that matched no note, so they go, and drum_pins (from animate.music_box) studs the drum with a pin
+    # for every note, each arriving at its tooth as it plays. The drum gets flanged brass ends, a gear and its
+    # spindle; a fan governor spins behind it; screws hold the comb; the crank gets its arm and handle and turns.
+    mbn = f"{name}.musicbox"
+    for o in [o for o in bpy.data.objects if o.name.startswith(f"{mbn}.pin")]:
+        bpy.data.objects.remove(o)
+    brass = K.mat_metal(f"{mbn}.brass2", "brass", 0.2)
+    copper = bpy.data.materials[f"{mbn}.bear"]
+    axle = bpy.data.objects[f"{mbn}.axle"]
+    for sx in (-1, 1):  # flanges at the drum's ends
+        cyl(f"{mbn}.flange{sx}", brass, (sx * 0.0565, 0, 0), 0.0228, 0.003, axle, rot=(0, math.pi / 2, 0), verts=48)
+    cyl(f"{mbn}.spindle", copper, (0.0, 0, 0), 0.0025, 0.16, axle, rot=(0, math.pi / 2, 0), verts=12)
+    bm = bmesh.new()  # a spur gear on the drum's left end
+    n_t, r0, r1 = 30, 0.0215, 0.0245
+    ring = []
+    for k in range(4 * n_t):
+        a = math.tau * k / (4 * n_t)
+        r = r1 if k % 4 in (1, 2) else r0
+        ring.append(bm.verts.new((0.0, r * math.cos(a), r * math.sin(a))))
+    face = bm.faces.new(ring)
+    ext = bmesh.ops.extrude_face_region(bm, geom=[face])
+    bmesh.ops.translate(bm, verts=[v for v in ext["geom"] if isinstance(v, bmesh.types.BMVert)], vec=(0.004, 0, 0))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(f"{mbn}.gear")
+    bm.to_mesh(me)
+    bm.free()
+    gear = K.link(bpy.data.objects.new(f"{mbn}.gear", me))
+    gear.parent, gear.location = axle, (-0.0625, 0, 0)
+    gear.data.materials.append(brass)
+    # The governor: a pinion on the gear drives a worm up to a two-bladed air brake that whirls while it plays.
+    gov = K.empty(f"{mbn}.governor", (-0.0625, 0.046, 0.074), mb)
+    cyl(f"{mbn}.gov_post", copper, (0, 0, 0.022), 0.0018, 0.044, gov, verts=10)
+    cyl(f"{mbn}.gov_worm", brass, (0, 0, 0.014), 0.0035, 0.012, gov, verts=16)
+    fan = K.empty(f"{mbn}.gov_fan", (0, 0, 0.04), gov)
+    K.drive(fan, "rotation_euler", 2, mb, "drum", "6.2832 * 24 * x")
+    for sx in (-1, 1):
+        box(f"{mbn}.gov_blade{sx}", brass, (sx * 0.008, 0, 0), (0.012, 0.0006, 0.007), fan)
+    for k, x in enumerate((-0.09, 0.0, 0.09)):  # the comb's screws
+        sphere(f"{mbn}.screw{k}", K.mat_chrome(f"{mbn}.screw"), (x / 2, -0.055, 0.0858), 0.0028, mb, 12).scale = (
+            1, 1, 0.45)
+    # The crank: its shaft (the kit's) turns with the drum; an arm up from its end and a handle out from the arm,
+    # the kit's knob as the handle's grip.
+    crank = K.empty(f"{mbn}.crank_turn", (0.12, 0.018, 0.098), mb)
+    K.drive(crank, "rotation_euler", 0, mb, "drum", "6.2832 * x")
+    cmat = bpy.data.objects[f"{mbn}.crank"].data.materials[0]
+    cyl(f"{mbn}.crank_boss", cmat, (0.0015, 0, 0), 0.0055, 0.004, crank, rot=(0, math.pi / 2, 0), verts=24)
+    box(f"{mbn}.crank_arm", cmat, (0.0015, 0, 0.012), (0.004, 0.007, 0.026), crank, bev=0.0015)
+    cyl(f"{mbn}.crank_pin", cmat, (0.008, 0, 0.022), 0.0018, 0.012, crank, rot=(0, math.pi / 2, 0), verts=12)
+    knob = bpy.data.objects[f"{mbn}.knob"]
+    knob.parent, knob.location, knob.scale = crank, (0.017, 0, 0.022), (1.25, 0.85, 0.85)
     # N36: "the music box now has a coin slot; a coin drops in": a brass slot plate on the case's side (shown from
     # N36) and a coin that falls into it ("coin" 0 above .. 1 in).
     slot = K.empty(f"{name}.coinslot", (0.105, 0.0, 0.05), mb)
@@ -1474,6 +1557,73 @@ def dresser(name, loc, rot_z=0.0, parent=None):
                (0.0205 * math.cos(a), -0.0315, 0.13 + 0.0205 * math.sin(a)), 0.0022, mon, 8)
     sphere(f"{name}.mon_pip", K.mat_emission(f"{name}.mon_pip", "standby", 12.0), (0.02, -0.0315, 0.1), 0.0022, mon, 8)
     return {"root": root, "musicbox": mb, "monitor": mon}
+
+
+def drum_pins(mb, plucks, turn_s, fps):
+    """Studs the music box's drum (sr_kit.music_box `mb`) with a pin per note: `plucks` is [(tooth, t)], the drum
+    turns once every `turn_s` seconds. Each pin sits where it meets its tooth's tip at t, and shows for one turn of
+    the drum, from when it comes round the drum's back (out of sight) 224 degrees before its note to 136 degrees
+    after, so the drum always carries the next turn's notes, arriving over its top. One object of points (the angle
+    is in the point), a pin instanced on each while it shows (geometry nodes)."""
+    a_w = math.atan2(-0.0207, -0.014)  # where a pin meets the tips: in the axle's (y, z), the angle from +Z to +Y
+    before, after = 224 / 360 * turn_s, 136 / 360 * turn_s
+    me = bpy.data.meshes.new(f"{mb.name}.notes")
+    pts, t0, t1 = [], [], []
+    for k, t in plucks:
+        a = a_w + math.tau * t / turn_s
+        pts.append((-0.051 + k * 0.006, 0.022 * math.sin(a), 0.022 * math.cos(a)))
+        t0.append((t - before) * fps)
+        t1.append((t + after) * fps)
+    me.from_pydata(pts, [], [])
+    for nm, vals in (("t0", t0), ("t1", t1)):
+        at = me.attributes.new(nm, "FLOAT", "POINT")
+        at.data.foreach_set("value", vals)
+    o = K.link(bpy.data.objects.new(f"{mb.name}.notes", me))
+    o.parent = bpy.data.objects[f"{mb.name}.axle"]
+    ng = bpy.data.node_groups.new(f"{mb.name}.notes", "GeometryNodeTree")
+    ng.interface.new_socket("Geometry", in_out="INPUT", socket_type="NodeSocketGeometry")
+    ng.interface.new_socket("Geometry", in_out="OUTPUT", socket_type="NodeSocketGeometry")
+    N, L = ng.nodes, ng.links
+    gi, go = N.new("NodeGroupInput"), N.new("NodeGroupOutput")
+    now = N.new("GeometryNodeInputSceneTime")
+    sel = []
+    for nm, op in (("t0", "LESS_THAN"), ("t1", "GREATER_THAN")):
+        at = N.new("GeometryNodeInputNamedAttribute")
+        at.data_type, at.inputs["Name"].default_value = "FLOAT", nm
+        m = N.new("ShaderNodeMath")
+        m.operation = op
+        L.new(now.outputs["Frame"], m.inputs[0])
+        L.new(at.outputs["Attribute"], m.inputs[1])
+        sel.append(m)
+    either = N.new("ShaderNodeMath")
+    either.operation = "MAXIMUM"
+    L.new(sel[0].outputs[0], either.inputs[0])
+    L.new(sel[1].outputs[0], either.inputs[1])
+    gone = N.new("GeometryNodeDeleteGeometry")
+    gone.domain = "POINT"
+    L.new(gi.outputs[0], gone.inputs["Geometry"])
+    L.new(either.outputs[0], gone.inputs["Selection"])
+    pin = N.new("GeometryNodeMeshCylinder")
+    pin.inputs["Vertices"].default_value = 8
+    pin.inputs["Radius"].default_value = 0.0012
+    pin.inputs["Depth"].default_value = 0.006
+    mat = N.new("GeometryNodeSetMaterial")
+    mat.inputs["Material"].default_value = bpy.data.materials[f"{mb.name}.pin"]
+    L.new(pin.outputs["Mesh"], mat.inputs["Geometry"])
+    pos, sep, comb = N.new("GeometryNodeInputPosition"), N.new("ShaderNodeSeparateXYZ"), N.new("ShaderNodeCombineXYZ")
+    L.new(pos.outputs[0], sep.inputs[0])
+    L.new(sep.outputs["Y"], comb.inputs["Y"])
+    L.new(sep.outputs["Z"], comb.inputs["Z"])
+    align = N.new("FunctionNodeAlignRotationToVector")  # the pin points out of the drum
+    align.axis = "Z"
+    L.new(comb.outputs[0], align.inputs["Vector"])
+    inst = N.new("GeometryNodeInstanceOnPoints")
+    L.new(gone.outputs["Geometry"], inst.inputs["Points"])
+    L.new(mat.outputs["Geometry"], inst.inputs["Instance"])
+    L.new(align.outputs["Rotation"], inst.inputs["Rotation"])
+    L.new(inst.outputs["Instances"], go.inputs[0])
+    o.modifiers.new("notes", "NODES").node_group = ng
+    return o
 
 
 def growth_chart(name, loc, rot_z=0.0, parent=None):
@@ -2269,25 +2419,29 @@ def basement():
                 and all(math.hypot(x - (0.5 + sx * 0.7), y - (1.3 + sy * 0.33)) > 0.045 for sx in (-1, 1)
                         for sy in (-1, 1)))  # desk legs
 
-    def desk_top(x, y):  # past an edge, the sheet bends down over it
-        drop = max(0.0, -0.25 - x) + max(0.0, x - 1.25) + max(0.0, 0.925 - y) + max(0.0, y - 1.675)
-        return dz + 0.02 - 1.5 * drop
+    def desk_top(x, y):
+        return dz + 0.02
 
-    def desk_ok(x, y):
-        return (-0.55 < x < 1.45 and 0.85 < y < 1.85 and not (-0.15 < x < 0.85 and y < 1.62)
+    def desk_ok(x, y):  # wholly on the top (human, C4 v8 review: sheets bent over its edges looked about to fall)
+        return (-0.24 < x < 1.24 and 0.935 < y < 1.665 and not (0.06 < x < 0.86 and y < 1.62)  # laptop, forearms
                 and math.hypot(x + 0.05, y - 1.45) > 0.065 and math.hypot(x + 0.2, y - 1.5) > 0.06
                 and math.hypot(x - 1.05, y - 1.5) > 0.085)  # the jars, the lamp's foot
 
     floor = Heap(-2.4, 1.6, 0.0, 2.4, mound, floor_ok)
     desk = Heap(-0.6, 1.5, 0.8, 1.9, desk_top, desk_ok)
+    tops = {}  # each desk stack's top sheet
     for k in range(340):
         lit = k % 26 == 0  # a few: 13
         sh, verts = paper_sheet(f"base.sheet{k}", lit_m if lit else grey, 0.21, 0.297, rnd, curl=0.4)
         for _ in range(60):
             pick = rnd.random()
-            if pick < 0.18:
-                cx, cy = rnd.choice(((-0.3, 1.3), (1.05, 1.2)))
-                if desk.lay(sh, verts, cx + rnd.gauss(0, 0.05), cy + rnd.gauss(0, 0.07), rnd.uniform(0, math.tau)):
+            if pick < 0.12:  # two squared-up stacks, long side along the desk's depth
+                # Pressed nearly flat under the sheets above: at full curl, each one's raised edges rested on the
+                # last one's and the stack's edges climbed into a bowl, its top sheets tipped up as if to slide off.
+                cx, cy = rnd.choice(((-0.07, 1.12), (1.04, 1.15)))
+                if desk.lay(sh, [(vx, vy, 0.12 * lift) for vx, vy, lift in verts], cx + rnd.gauss(0, 0.012),
+                            cy + rnd.gauss(0, 0.015), rnd.gauss(0, 0.08) + rnd.choice((0.0, math.pi))):
+                    tops[cx] = sh
                     break
             elif pick < 0.6:  # over the heap, until it is covered
                 if floor.lay(sh, verts, -0.85 + rnd.gauss(0, 0.45), 1.85 + rnd.gauss(0, 0.3), rnd.uniform(0, math.tau)):
@@ -2303,6 +2457,33 @@ def basement():
         if lit:
             out["sheets_glow"].append(sh)
     out["glow"] = glow
+    # The stacks' top sheets are advisories for disclosed CVEs found with AI (human, 2026-10-25), from
+    # config/ticket_cves.json like the drift's tickets: a heading, the ID, what it is and who found it, in lettering
+    # that lies on the sheet, over printed body type that starts lower down. Each reads the right way up from the
+    # maintainer's chair: a sheet laid the other way round is turned end for end, its heights with it.
+    cves = json.loads((K.ROOT / "config" / "ticket_cves.json").read_text())["cves"]
+    picks = random.Random(SEEDS["main"] + 8).sample(cves, len(tops))
+    top_m, ink = mat_print("base.paper_top", rows=24, v1=0.6), K.mat_ink("base.ink", "pencil")
+    NX, NY = 12, 16  # paper_sheet's grid
+    for (cx, sh), c in zip(sorted(tops.items()), picks):
+        me = sh.data
+        if math.cos(sh.rotation_euler.z) < 0:
+            zs = [v.co.z for v in me.vertices]
+            for j in range(NY + 1):
+                for i in range(NX + 1):
+                    me.vertices[j * (NX + 1) + i].co.z = zs[(NY - j) * (NX + 1) + NX - i]
+            sh.rotation_euler.z -= math.pi
+        if sh in out["sheets_glow"]:
+            out["sheets_glow"].remove(sh)
+        me.materials[0] = top_m
+        me.materials.append(ink)
+        zs = [v.co.z for v in me.vertices]
+        lines = [("SECURITY ADVISORY", 0.0075, -0.09, 0.128), (c["id"], 0.016, -0.09, 0.108),
+                 (c["label"], 0.0085, -0.09, 0.088), (f"found by {c['found_by']}", 0.0068, -0.09, 0.073)]
+        letters = print_on_sheet(sh, lines, 0.21, 0.297, NX, NY)
+        for (vi, _, _), z in zip(letters, sheet_lettering_z(zs, letters, NX, NY)):
+            me.vertices[vi].co.z = z
+        sh["cve"] = c["id"]
     # The mail slot in the ceiling: a lit opening, a frame and a flap on a hinge ("flap" 0 shut .. 1 swung down).
     # Folded tickets push through it, crease first, and drop to the desk (human, C4 review: the flat sheets of the
     # first version didn't read as coming through the slot).

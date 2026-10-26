@@ -694,3 +694,41 @@ The human's notes are logged in `log/human_interventions.md` (15:05, 17:20, 17:4
   - The keyboard is full under the hands at N17.
 - **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v7_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v7_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v10_superseded_review-fixes/`. frames_v7 is a frame sequence, so it is not archived.
 - **Status:** v8 sent to the human for review (R1).
+
+## 2026-10-25T23:10 — C4 v8 review fixes: desk stacks with real CVEs, the bank, the music box, the quilt's cloth and the end flicker
+
+The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:40). Code: `scenes/blender/sets/nursery.py`, `scenes/blender/animate.py`. Test stills are in the session scratchpad.
+
+1. **Basement desk stacks:**
+   - The two desk piles had their centres past the desk's ends, and each sheet bent down over the edge. They looked about to slide off.
+   - Now they are two squared-up stacks wholly on the top: left front at (-0.07, 1.12), right at (1.04, 1.15), clear of the laptop, the forearms, the jars and the lamp. They take 12% of the sheets, down from 18%.
+   - Each sheet's curl is pressed to 12% on the desk. At full curl, each sheet's raised edges rested on the last one's, so the stack's edges climbed into a bowl and the top sheets tipped up.
+2. **Real CVEs on the stacks' top sheets (human, 21:40):**
+   - Each top sheet is an advisory: "SECURITY ADVISORY", the ID, the label and "found by …", from `config/ticket_cves.json` (seed main+8). This render has CVE-2025-43434 (WebKit, Big Sleep) and CVE-2026-2789 (Firefox, Claude).
+   - The lettering is mesh that lies on the sheet, over body type that starts lower down.
+   - A sheet laid the other way round is turned end for end, its heights with it, so both read upright from the chair.
+3. **The mobile's bank:**
+   - Its pediment was a three-sided cone, a pyramid from the side, and its columns stood on a slab with nothing behind them. The mobile turns, so this showed.
+   - It is now a felt temple: two steps, a walled hall, four columns with caps and feet before each face, an entablature, and a gable roof (a triangular prism) with a coin in each pediment.
+4. **The music box (still the kit's, recognisably):**
+   - The kit's 60 drum pins sat in a fixed scatter that matched no note. They are removed.
+   - `nursery.drum_pins` (from `animate.music_box`) gives every one of the 1,149 music-box notes a pin at its tooth, placed so it meets the tooth's tip as the tooth plucks and glows. Each pin shows for one drum turn, appearing round the drum's back 224° before its note. The drum always carries the coming notes over its top.
+   - This is one object of points with geometry nodes, which instance a pin on each point between its t0 and t1.
+   - The crank gets its arm, a boss and a handle pin. The kit's blue knob is the grip, and the crank turns with the drum.
+   - Added: flanged brass drum ends, a spur gear and the copper spindle, a fan governor at the back that whirls 24 times per drum turn, and three screws on the comb.
+5. **The quilt's cloth:**
+   - Each fold is held at one point, the middle of its lip, not by a strip along the hinge. The hinge's turn carries that point up and over, and the rest falls free.
+   - The "blown downward" flicker had two causes:
+     - **Mass:** 0.25 kg per vertex, about 180 kg a fold, which the springs couldn't carry. The cloth collapsed into strands and kept slipping, with about 250 vertices a fold moving 1–3 cm every frame after it landed.
+     - **Colliders:** it hovered on 1 cm collider shells, and lay on the probe's pulsing parts and the probe's overlapping arm parts.
+   - Now:
+     - mass 0.02 kg per vertex, and bending 10, so it lies open in broad quilt folds instead of crumpling;
+     - collision distance 2 mm and collider shells 3 mm;
+     - colliders are the crib and the probe's shell only, and the arms lie on top of the fold;
+     - the simulation runs from N38 + 0.15 s to + 3.5 s.
+   - Measured over the last 1.3 s of the simulation: 3 and 2 vertices still move more than 5 mm a frame, against about 250 before.
+   - Starting the cloth at the push's start balled the folds up on the arms coming out from under them, so it starts at N38 + 0.15 s as before.
+6. **The end flicker:**
+   - A crawling dark line along the crib's head end (in the v7 and v8 flicker maps) was the 1–2 px slot between the blanket's end and the headboard. The ray peel found the blanket's rim, the mattress and then the end board.
+   - The mattress now runs to the end boards, 1 mm short of each. The slot shows mattress, not the drop to the floor.
+- **Status:** committed; the full v9 render is next.

@@ -98,8 +98,13 @@ def melody():
 def music_box(S):
     box = S["dresser_musicbox"]
     evs = A.events("music_box")
-    A.comb(box, evs, lo=min(e["pitch"] for e in evs), hi=max(e["pitch"] for e in evs))
+    lo, hi = min(e["pitch"] for e in evs), max(e["pitch"] for e in evs)
+    A.comb(box, evs, lo=lo, hi=hi)
     keys(box, "drum", [(0.0, 0.0, "LINEAR"), (DUR, DUR / 6.0, "LINEAR")])  # one turn every 6 s
+    # A pin on the drum for every note, meeting its tooth as it plays (the tooth as A.comb picks it).
+    import nursery
+    nursery.drum_pins(box, [(int(min(max(round((e["pitch"] - lo) / (hi - lo) * 17), 0), 17)), e["t"]) for e in evs],
+                      6.0, A.FPS)
     slot = bpy.data.objects["dresser.coinslot"]
     t = SHOT["N36"] + 1.6  # the camera settles on the slot at N36 + 1.2
     visible(slot, SHOT["N35"])
@@ -409,14 +414,21 @@ def probe(S):
     keys(cr, "glint", [(0.0, 0.6, "CONSTANT"), (t - 0.6, 0.7), (t + 0.3, 0.0)])
     # Out, the glint's bead is a black dot, no longer hidden under the fold's lip once the fold falls away.
     visible(bpy.data.objects[f"{cr.name}.glint"], None, t + 0.35)
-    # Two thirds of the way over (open about 0.4), the folds turn to cloth and fall onto the blanket (human, C4 v7
-    # review: opened, they kept the mound's shape round the probe).
+    # Two thirds of the way over (open about 0.4), the folds turn to cloth, each held at the middle of its lip,
+    # which the hinge's turn carries on over (human, C4 v7 review: opened, they kept the mound's shape round the
+    # probe; C4 v8 review: held by one point each, not a bar). Any earlier and the arms, still coming out from under
+    # them, snagged and balled them up.
     folds = S["crib"]["folds"]
-    skip = set(folds) | {o for o in cr.children_recursive if "glint" in o.name}
+    # The crib and the probe's shell only: not the glint, nor the probe's sound waves, halo, iris and lens, which
+    # pulse with the song, nor its arms, whose overlapping parts it caught between; on them the front fold never came
+    # to rest (human, C4 v8 review: it flickered as if blown downward). The arms lie on top of it.
+    skip = set(folds) | {o for o in cr.children_recursive
+                         if any(k in o.name for k in ("glint", ".wave", ".halo", ".iris", ".lens", ".led", ".bezel",
+                                                      ".upper", ".fore", ".joint", ".finger"))}
     colliders = [o for o in cr.children_recursive if o.type == "MESH" and o not in skip]
-    # They have fallen and settled 2 s later; the simulation stops there and holds its last frame (resting on the
-    # breathing blanket, the cloth never quite comes to rest: it kept a centimetre's shimmer).
-    nursery.quilt_cloth(folds, colliders, A.frame(t + 0.15), A.frame(t + 2.15))
+    # They have fallen and settled by N38 + 3.5 s; the simulation stops there and holds its last frame (resting on
+    # the breathing blanket, the cloth never quite comes to rest).
+    nursery.quilt_cloth(folds, colliders, A.frame(t + 0.15), A.frame(t + 3.5))
 
 
 def all_(S):
