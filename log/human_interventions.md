@@ -184,3 +184,14 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** While the C4 v8 fixes were in progress, the human asked for real CVEs on the top sheets of the basement desk's stacks.
 - **Note from the human:** "the top of the desk stacks also need real CVEs on them"
 - **Rule:** R1 (a correction to a render, with a reason).
+
+## 2026-10-26T02:20 — C4 v9 review: music box turning, floor-ticket CVEs, the post-filter, one broken window — R1
+
+- **What:** On reviewing C4 v9, the human asked for four changes:
+  - the music box doesn't appear to be rotating;
+  - put real CVEs on the tickets on the basement floor as well;
+  - run the audio through the post-filter (`~/Code/music-deslop`). This is a direction to the agent, which can reach the post-filter on this machine. It is not an R4 run by the human;
+  - only the window at "windows are never quite mended" should be broken, so the earlier windows don't spoil the line.
+- **Note from the human:** "the music box doesn't appear to be rotating / put the CVEs on the tickets on the floor of the basement as well / go ahead and run the audio through the postfilter if you haven't already (doesn't sound like you have; it's in ~/Code/music-deslop) / on second thought, let's only have the window at "windows are never quite mended" be broken so as not to spoil the line"
+- **Rule:** R1 (rejecting parts of a render, with reasons).
+- **Also:** the v10 render started after the solidify fix was stopped, since all four changes affect it. Its partial frames are left in place and not used.
