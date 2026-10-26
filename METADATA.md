@@ -3,10 +3,10 @@
 YouTube metadata for the main video and the two vertical cuts, ready to paste at upload. Written by the agent (C6); the human uploads (R4).
 
 **Before uploading:**
-- **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 35, the count when its overlay was rendered (2026-10-26).
+- **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 37, the count when its overlay was rendered (2026-10-26).
 - **Licence.** This repo has no licence files yet. The description below uses Sandbox Rhapsody's terms (video and assets CC BY-NC-SA 4.0, code MIT). Confirm them, or change both lines, and the agent will add the licence files to match.
 - **Links between the videos.** Fill in `<MAIN VIDEO URL>` in each short's footer once the main video is up. If the windows cut goes out first (it has to be out before Patch Tuesday, 2026-11-10), link to the repo for now and add the main video's link later. In YouTube Studio, also set each short's **Related video** to the main video.
-- **The bridge cut is 3:18.6, over YouTube's 3:00 limit for Shorts.** Uploaded as is, it becomes an ordinary vertical video, not a Short. See its section for the choice.
+- **The bridge cut is 3:27.1, over YouTube's 3:00 limit for Shorts.** Uploaded as is, it becomes an ordinary vertical video, not a Short. See its section for the choice.
 
 **Release order (brief):** after Sandbox Rhapsody (https://www.youtube.com/watch?v=zq79yQ3164w), which introduces the series' probe. Release the windows cut before Patch Tuesday, 2026-11-10.
 
@@ -14,7 +14,7 @@ YouTube metadata for the main video and the two vertical cuts, ready to paste at
 
 ## Main video (16:9, 3840×2160)
 
-**File:** `deliverables/not_yet_main.mp4` (C6; 6:22.3)
+**File:** `deliverables/not_yet_main.mp4` (C6; 6:31.1). It ends on the human's closing note (6:23–6:31).
 
 ### Title
 
@@ -35,7 +35,7 @@ AI-generated satire about real events.
 
 A lullaby sung to an AI model too capable at finding security flaws to release: one slow, continuous push through a glass nursery where that model sleeps, while the stars on the wall keep multiplying and a light comes on down the street. Keeping one model asleep doesn't keep the street dark.
 
-Every frame, note and word was made by AI: the song by Suno, the words by Claude, the animation and edit by Claude Code. A human only approved or rejected work, fixed sync and technical failures, and ran tools the agents couldn't reach. Each of those 35 interventions is logged, along with every prompt and production step:
+Every frame, note and word was made by AI: the song by Suno, the words by Claude, the animation and edit by Claude Code. A human only approved or rejected work, fixed sync and technical failures, and ran tools the agents couldn't reach. Each of those 37 interventions is logged, along with every prompt and production step:
 https://github.com/Derivative-Work/not-yet
 
 Conflict of interest: Claude is made by Anthropic, whose model is the one in the crib. The words were audited by Gemini, ChatGPT and GLM. Their audits scroll past at the end, verbatim.
@@ -91,7 +91,7 @@ Audited by: Gemini (Google, a Glasswing partner), ChatGPT (OpenAI, whose model h
 Music: Suno V6 (take 8289b42f), post-filtered with music-deslop (checkpoint M6f 10k)
 Animation and edit: Claude Code with Opus 5.5 (Blender, HTML overlays, ffmpeg)
 Pen scratch: "scribble" (Pixabay sound effect 6144), Pixabay Content License
-Type: Inter, JetBrains Mono and Instrument Serif (SIL OFL)
+Type: Oooh Baby (captions), Inter, JetBrains Mono and Instrument Serif (SIL OFL)
 
 Video and assets: CC BY-NC-SA 4.0 · Code: MIT
 Satire. Not affiliated with or endorsed by any company named here.
@@ -119,7 +119,7 @@ Not Yet, Sleep Little Secret, AI music video, AI generated, AI satire, AI safety
 | License | Standard YouTube License. YouTube's only Creative Commons option is CC BY, which would drop the NC-SA terms; the description states the licence instead. |
 | Thumbnail | `deliverables/not_yet_thumbnail.jpg` (1920×1080): 2:35.33 (frame 4660), chosen by the human. It shows the crib rail, the taped and cracked window, the crack lit down the road, the neighbour's amber window, the moon and the mobile among the stars, and never the probe. |
 | Chapters | From the description (first chapter at 0:00; each over 10 s). |
-| End screen | The credits run 6:05–6:22, one centred line at a time. The end screen can cover the last 5–20 s (from 6:02 at most). Keep its elements in the corners, clear of the centred lines and the repo link. |
+| End screen | The credits run 6:05–6:22, one centred line at a time, then the human's note 6:23–6:31, centred. The end screen can cover the last 5–20 s (from 6:11 at most). Keep its elements in the corners, clear of the centred text and the repo link. |
 | Comments | Open. |
 | Visibility | Unlisted for a check pass, then public. |
 
@@ -129,6 +129,7 @@ Not Yet, Sleep Little Secret, AI music video, AI generated, AI satire, AI safety
 
 **What they have in common:**
 - Reframed from the 4K render (`config/reframe.json`), with burned-in captions and their own SRT, timed from the first frame.
+- Each ends on the human's closing note, over black and silence (7.2 s).
 - Settings as the main video: Music; not made for kids; altered/synthetic content: yes; English captions from the cut's SRT; Standard YouTube License. Related video: the main video.
 - No custom thumbnail (Shorts pick a frame in the app) and no chapters or end screen.
 
@@ -151,7 +152,7 @@ Video and assets CC BY-NC-SA 4.0. Satire; not affiliated with any company named.
 
 ### 1. The windows (Chorus 1), before Patch Tuesday
 
-34.6–64.7 s of the song, **30.1 s**. File `deliverables/not_yet_short_windows.mp4`, captions `deliverables/not_yet_short_windows.srt`. It opens with the "AI-generated satire" label. The camera passes the sticky note and the crib, with the taped window in frame throughout. The pane cracks on "never", then the one cut to the window from outside and the push back in, with picture and music fading out together. No fact card.
+34.6–64.7 s of the song, then the human's note: **38.6 s**. File `deliverables/not_yet_short_windows.mp4`, captions `deliverables/not_yet_short_windows.srt`. It opens with the "AI-generated satire" label. The camera passes the sticky note and the crib, with the taped window in frame throughout. The pane cracks on "never", then the one cut to the window from outside and the push back in, with picture and music fading out together. No fact card; the human's note follows.
 
 **Title:**
 ```
@@ -165,11 +166,11 @@ AI-generated satire about real events. A lullaby for an AI model kept from the p
 
 ### 2. The bridge, through the facts
 
-130.82–329.42 s, **3:18.6**. File `deliverables/not_yet_short_bridge.mp4`, captions `deliverables/not_yet_short_bridge.srt`. From "Hush, can you hear it? A light down the street" through verse 4, the final chorus, the reveal and the CRT line, then the 11 fact cards.
+130.82–329.42 s, then the human's note: **3:27.1**. File `deliverables/not_yet_short_bridge.mp4`, captions `deliverables/not_yet_short_bridge.srt`. From "Hush, can you hear it? A light down the street" through verse 4, the final chorus, the reveal and the CRT line, then the 11 fact cards and the human's note.
 
-**Length.** The brief asks for the bridge through the CRT line and then the fact card. That runs 3:18.6, over YouTube's 3:00 limit for Shorts. The human decides one of:
+**Length.** The brief asks for the bridge through the CRT line and then the fact card. With the human's note that runs 3:27.1, over YouTube's 3:00 limit for Shorts. The human decides one of:
 - **(a)** Upload as is, as an ordinary vertical video (it won't show in the Shorts feed).
-- **(b)** Cut it to fit: end 0.5 s after the eighth fact card leaves (2:57.7), dropping the last three cards (the stated reason for withholding, "a private club", and the Fable twin), which stay in the main video.
+- **(b)** Cut it to fit: end after the seventh fact card (PHP2Shell), then the note (2:59.4). The last four cards (sites offline, the stated reason for withholding, "a private club", the Fable twin) stay in the main video.
 
 **Title:**
 ```
