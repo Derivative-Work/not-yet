@@ -882,3 +882,18 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - Flicker QC: 30,819 blobs in 8,202 runs (v10: 30,754 in 8,149). The large runs (frames 2,750–2,910 and 5,160–5,400) are the same as before.
 - **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v10_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v10_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v13_superseded_review-fixes/`. Frame sequences are not archived.
 - Sent to the human for review.
+
+## 2026-10-26T10:05 — Smoothing (C4 v11 review), a shared cloth bake and the 4K shadow pool (C5 prep)
+
+- **Smoothing** (human: "still seeing some unsmoothed geometry, particularly at the door"):
+  - The door's rings (frame ring, bead, chrome rim, handwheel) were tori at Blender's default 48 x 12 segments, a 15 cm chord on the 1.2 m rim. Chrome showed every kink.
+  - `nursery.torus` now scales its segments with size: major max(48, R x 240), minor 12..32.
+  - The door slab goes from 128 to 256 sides. With the new `crisp` option its cap edges are hard, which removes the dark falloff toward the rim of its face. Other cylinders keep round caps, so the bolts and knobs still read as domes (crisp caps made them flat discs).
+  - `animatic.build` runs the kit's smooth-by-angle (35 degrees), as Sandbox Rhapsody did at its C5. It covers 735 flat-shaded meshes and skips the blanket and its colliders: their normals steer the single-sided collisions.
+  - Checked: 4K frame 900 before/after (the rings round, the bolts domed), and all 39 anchors against v14. Only the door shots change visibly.
+- **The cloth does not repeat between runs.** Two anchor runs of the committed code fold the blanket differently at N39-N40. This was found while checking the smoothing, which isn't the cause. C5's separate runs (the windows span, the rest, any resume, the anchors) would each fold it differently.
+  - New `animatic.py --cloth-cache DIR`: the first run bakes, then writes each cloth's result before thickness and subdivision as a PC2 point cache. Every run swaps the Cloth modifier for a Mesh Cache reading it.
+  - Checked: two anchor runs sharing a cache match pixel for pixel at N38-N40, and the blanket sits where it should.
+  - `scripts/render_final.sh` passes `--cloth-cache renders/c5/cloth` to every run.
+- **4K shadows:** the final profile hit "Shadow buffer full" (549 warnings over 7 frames at 36 s; none at draft720). `config/render_profiles.json` final gets `shadow_pool_mb: 2048`, applied by `animatic.py`.
+- **Final-profile speed** (first measurement, before these fixes): 3.4 s/frame at 36 s, 6.1 s/frame at 210 s (the music box). Re-timing with the fixes is running.

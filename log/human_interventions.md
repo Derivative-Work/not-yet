@@ -214,3 +214,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **Note from the human:** "I was only able to retrieve the "blocked" ones -- see attached"
 - **Rule:** R4 (running an interface the agent has no access to).
 - **Kept:** `reference/sources/2026-10-26/` (local, not published), indexed with hashes in `reference/sources/2026-10-26.tsv`.
+
+## 2026-10-26T09:40 — C4 v11 review: unsmoothed geometry, particularly at the door — R1
+
+- **What:** While reviewing C4 v11, the human reported faceted, unsmoothed geometry, worst on the vault door.
+- **Note from the human:** "still seeing some unsmoothed geometry, particularly at the door"
+- **Rule:** R1 (a correction to a render, with a reason).

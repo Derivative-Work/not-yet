@@ -315,11 +315,15 @@ def boxes_obj(name, mat, extents):
     return o
 
 
-def cyl(name, mat, loc, r, depth, parent=None, rot=(0, 0, 0), verts=32, smooth=True):
+def cyl(name, mat, loc, r, depth, parent=None, rot=(0, 0, 0), verts=32, smooth=True, crisp=False):
+    """crisp: hard cap edges. Without it the caps shade round, which reads as a dome on small studs and knobs (the
+    vault bolts) but as a dark falloff toward the rim of a wide flat face (the door slab)."""
     o = K.mesh_obj(name, bpy.ops.mesh.primitive_cylinder_add, mat, parent, radius=r, depth=depth, vertices=verts,
                    location=loc, rotation=rot)
     if smooth:
         K.smooth(o)
+        if crisp:
+            o.data.set_sharp_from_angle(angle=math.radians(35.0))
     return o
 
 
@@ -331,8 +335,10 @@ def sphere(name, mat, loc, r, parent=None, segs=24):
 
 
 def torus(name, mat, loc, R, r, parent=None, rot=(0, 0, 0)):
+    """Segments scale with size (human, C4 v11 review: the door's rings read faceted; Blender's default 48 x 12 is a
+    15 cm chord on the 1.2 m door rim, and chrome shows every kink)."""
     o = K.mesh_obj(name, bpy.ops.mesh.primitive_torus_add, mat, parent, major_radius=R, minor_radius=r, location=loc,
-                   rotation=rot)
+                   rotation=rot, major_segments=max(48, round(R * 240)), minor_segments=max(12, min(32, round(r * 800))))
     K.smooth(o)
     return o
 
@@ -856,7 +862,8 @@ def vault_door(room):
     K.prop(root, "note_peel", 0.0)
     K.drive(hinge, "rotation_euler", 2, root, "open", "-0.3491 * x")
     out["door"] = root
-    slab = cyl("door.slab", pastel, (R, 0, 0), R - 0.01, 0.16, hinge, rot=(math.pi / 2, 0, 0), verts=128)
+    slab = cyl("door.slab", pastel, (R, 0, 0), R - 0.01, 0.16, hinge, rot=(math.pi / 2, 0, 0), verts=256,
+                crisp=True)
     torus("door.rim", chrome, (R, -0.08, 0), R - 0.03, 0.03, hinge, rot=(math.pi / 2, 0, 0))
     for k in range(10):  # locking bolts round the rim
         a = k * math.tau / 10
