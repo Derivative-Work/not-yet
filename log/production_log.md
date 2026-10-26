@@ -1042,3 +1042,16 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 
 - `git remote add origin https://github.com/Derivative-Work/not-yet.git`, then `git push -u origin main`. That pushed the rewritten history: 72 commits, a 6.7 MiB pack, no file over 1 MB. The largest file is a Suno page capture.
 - The repository is still **private** (the human's setting). `assets/screens` on GitHub holds only the sidecar JSON.
+
+## 2026-10-26T19:34 — README (human, R1)
+
+- `README.md`, after Sandbox Rhapsody's:
+  - what the video is, and the satire label;
+  - the human's closing note;
+  - where to watch (the main video is out 2026-10-27, so the link goes in then; the windows cut 2026-11-10; Sandbox Rhapsody);
+  - the making-of record: the drafting chat, the audits, the brief, the logs, the prompts, the timing map and style spec, `METADATA.md`;
+  - the files (the manifest; what is kept local and never published);
+  - rebuilding, in order, with the versions used;
+  - the licences;
+  - the credits: words and audits with the conflict of interest, Suno, the music-deslop post-filter and its training data (as in Sandbox Rhapsody: same checkpoint), the probe rig, the pen scratch, the tools, the fonts.
+- Every path it links was checked to exist. `shots/` is empty in this project (no `pipeline.md`), so it isn't linked.
