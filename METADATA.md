@@ -1,14 +1,12 @@
 # Upload metadata
 
-YouTube metadata for the main video and the two vertical cuts, ready to paste at upload. Written by the agent (C6); the human uploads (R4).
+YouTube metadata for the main video and the windows cut, ready to paste at upload. Written by the agent (C6); the human uploads (R4).
 
 **Before uploading:**
 - **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 37, the count when its overlay was rendered (2026-10-26).
-- **Licence.** This repo has no licence files yet. The description below uses Sandbox Rhapsody's terms (video and assets CC BY-NC-SA 4.0, code MIT). Confirm them, or change both lines, and the agent will add the licence files to match.
-- **Links between the videos.** Fill in `<MAIN VIDEO URL>` in each short's footer once the main video is up. If the windows cut goes out first (it has to be out before Patch Tuesday, 2026-11-10), link to the repo for now and add the main video's link later. In YouTube Studio, also set each short's **Related video** to the main video.
-- **The bridge cut is 3:27.1, over YouTube's 3:00 limit for Shorts.** Uploaded as is, it becomes an ordinary vertical video, not a Short. See its section for the choice.
+- **The main video's link.** Fill in `<MAIN VIDEO URL>` in the windows cut's footer once the main video is up. In YouTube Studio, also set the windows cut's **Related video** to the main video.
 
-**Release order (brief):** after Sandbox Rhapsody (https://www.youtube.com/watch?v=zq79yQ3164w), which introduces the series' probe. Release the windows cut before Patch Tuesday, 2026-11-10.
+**Release plan (human, 2026-10-26):** the main video on the morning of 2026-10-27, after the .NET out-of-band security updates (https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/); then the windows cut on the next scheduled Patch Tuesday, 2026-11-10. Both come after Sandbox Rhapsody (https://www.youtube.com/watch?v=zq79yQ3164w), which introduces the series' probe (brief). The licences (video and assets CC BY-NC-SA 4.0, code MIT) are confirmed by the human and in the repo (`LICENSE`, `LICENSE-media.md`).
 
 ---
 
@@ -164,7 +162,10 @@ Video and assets CC BY-NC-SA 4.0. Satire; not affiliated with any company named.
 AI-generated satire about real events. A lullaby for an AI model kept from the public because it's too good at finding security flaws, while the patches take time. In October 2026, a flaw in PHP that researchers found with AI models sent sites offline around the world while operators patched (CNN; Digital Watch). The first chorus of Not Yet, an AI-made music video.
 ```
 
-### 2. The bridge, through the facts
+### 2. The bridge, through the facts (not being released for now)
+
+**Held** (human, 2026-10-26: "just the windows short is fine for now"). Not assembled for C6; the notes below stand if it goes out later.
+
 
 130.82–329.42 s, then the human's note: **3:27.1**. File `deliverables/not_yet_short_bridge.mp4`, captions `deliverables/not_yet_short_bridge.srt`. From "Hush, can you hear it? A light down the street" through verse 4, the final chorus, the reveal and the CRT line, then the 11 fact cards and the human's note.
 

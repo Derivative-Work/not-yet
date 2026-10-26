@@ -258,3 +258,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** On the line "…and windows are never quite mended.", the human asked for the "w" of "windows" to flicker between a capital and a lowercase letter.
 - **Note from the human:** "oh also on the "windows are never quite mended", make the "w" flicker between capital W and lowercase"
 - **Rule:** R1 (a correction at a checkpoint). This is an exception: a creative choice made by the human.
+
+## 2026-10-26T19:15 — Licences confirmed; the bridge cut held; the release dates set — R1
+
+- **What:** The human confirmed the licences proposed in `METADATA.md` (video and assets CC BY-NC-SA 4.0, code MIT). They held the bridge cut for now: only the windows cut goes with the main video. They set the release plan: the main video on the morning of 2026-10-27, given Microsoft's .NET out-of-band security updates, then the windows cut on the next scheduled Patch Tuesday (2026-11-10).
+- **Note from the human:** "yes, those licenses are correct. just the windows short is fine for now. I now plan on releasing the main video *tomorrow morning* given https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/, then the Windows short on the next scheduled Patch Tuesday"
+- **Rule:** R1 (approval, and a decision on what is released when).

@@ -998,3 +998,11 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - `deliverables/`: the SRTs and the thumbnail (`assemble.py thumbnail`, frame 4660, 1920×1080, 148 KB) are in git. The videos are git-ignored (`deliverables/*.mp4`) and `scripts/manifest.sh` now lists `deliverables`.
 - `METADATA.md` updated for the notes (27a77ca): the count is 37, the main video is 6:31.1 and ends on the note, the shorts are 38.6 s and 3:27.1, the bridge's option (b) now ends after card 7 (2:59.4), and the end-screen window starts at 6:11.
 - Rebuild running (scratchpad `c6_chain.sh`): overlays and assembly for the windows short, the bridge short, then the main video.
+
+## 2026-10-26T19:08 — Licences added; release plan; the bridge cut held; main video first
+
+- **Licences** (human, R1): `LICENSE` (MIT, copied from Sandbox Rhapsody), `LICENSES/CC-BY-NC-SA-4.0.txt` (copied; sha256 e66c269d…, the same as Sandbox Rhapsody's), and `LICENSE-media.md`, written for this project. It says what the licence covers, and what it doesn't: the code; the four OFL fonts, Oooh Baby included; the Pixabay pen scratch; Anthropic's page on the N33 screen; and the fact-card sources, which are never published.
+- **Release plan** (human, R1): the main video on the morning of 2026-10-27, then the windows cut on Patch Tuesday, 2026-11-10. `METADATA.md` now reflects it: the main video goes first, so the windows cut's footer can link it; the licence item is closed.
+- **Bridge cut held** (human, R1): not assembled for C6. Its stopped overlay render's temporary parts were removed; its overlay and video from before the notes are in `archive/`. `METADATA.md` keeps its notes, marked held.
+- **Main video first:** the rebuild chain was stopped during the bridge overlay. The main video's overlay and assembly now run alone (scratchpad `c6_main.sh`).
+- **Windows cut rebuilt** with the notes: `deliverables/not_yet_short_windows.mp4` (overlay 1,157 frames in 52 s).
