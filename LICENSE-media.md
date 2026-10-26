@@ -28,7 +28,8 @@ The code is under the MIT licence instead: see [LICENSE](LICENSE).
   mixed into the video, but the file itself is not ours to relicense.
 - **The page on the shop screen** (`assets/screens/n33_model_page.png`): Anthropic's "Claude Fable 5 and Claude
   Mythos 5" (https://www.anthropic.com/news/claude-fable-5-mythos-5), captured 2026-10-26 and shown in verse 4 as a
-  real screen (brief). It is Anthropic's, not covered here.
+  real screen (brief). It is Anthropic's, not covered here, and not in this repository (human, 2026-10-26): the
+  sidecar `n33_model_page.json` gives its URL and capture time, and `scripts/capture_page.mjs` recaptures it.
 - **Fact-card sources** (`reference/sources/`): other publishers' pages, saved for the fact check and never
   published; [reference/sources/2026-10-26.tsv](reference/sources/2026-10-26.tsv) lists each one's URL and hash.
 

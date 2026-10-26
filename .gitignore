@@ -38,3 +38,7 @@ reference/sources/*/
 
 # The upload-ready videos (large; listed in MANIFEST.sha256). The SRTs and thumbnail are small and kept in git.
 deliverables/*.mp4
+
+# The N33 screen capture: Anthropic's page, not ours to publish (human, 2026-10-26). Kept locally only; its URL and
+# capture time are in the sidecar JSON (in git), and scripts/capture_page.mjs recaptures it.
+assets/screens/*.png

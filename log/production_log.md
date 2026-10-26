@@ -1029,3 +1029,11 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - **Output:** `audio/post/cards_audio.wav`, 140.32 s, 48 kHz 24-bit, peak −3.1 dBFS, −23.9 LUFS. The master over the same span is −18.4 LUFS; the difference is the missing vocals, and the quieter bed suits reading.
 - **Placement** (`config/audio.json` `cards`, `assemble.py main`): from 248.16 s, the fact card. The song has died away (−68 dB at 246 s) and the CRT line opens in silence, then the instrumental comes in on its downbeat with the first card. It fades out by 388.5 s, under the human's note, and the video ends at 391.07 s. Checked the join in a test mix.
 - **Main video:** its overlay is still rendering; the assembly that follows picks up the bounce.
+
+## 2026-10-26T19:31 — Anthropic's page taken out of the repository's history (human, R1); end screen; first push
+
+- **Why:** the human asked for Anthropic's page (`assets/screens/n33_model_page.png`, the N33 screen capture) to stay out of the public repo. The GitHub repository was empty and private, so nothing had been published.
+- **History:** backed up first (`cache/git/history_before_screen_removal_20261026.bundle`, verified, with a copy of the PNG; `cache/` is git-ignored). Then `git filter-branch --index-filter 'git rm --cached --ignore-unmatch assets/screens/n33_model_page.png' -- --all`: 71 commits rewritten, so every hash from 92ad27a on has changed. The backup ref was deleted, and no commit now holds the file.
+- **Locally:** the PNG is restored on disk and git-ignored (`assets/screens/*.png`). Its sidecar JSON (URL and capture time) stays in git, and `scripts/capture_page.mjs` recaptures it. `LICENSE-media.md` says so. It isn't in the manifest, which lists only published files.
+- **History check before the first push:** every path ever committed was listed, and every committed file was scanned for credentials and personal data. The only matches were public page captures (a Stripe publishable key and site scripts in the Suno page captures, a session ID inside a link in a search result in the drafting chat). No secrets.
+- **End screen** (`METADATA.md`, human-approved): from 6:23, over the note; Sandbox Rhapsody bottom left, Subscribe bottom right.

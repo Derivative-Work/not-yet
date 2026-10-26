@@ -117,7 +117,7 @@ Not Yet, Sleep Little Secret, AI music video, AI generated, AI satire, AI safety
 | License | Standard YouTube License. YouTube's only Creative Commons option is CC BY, which would drop the NC-SA terms; the description states the licence instead. |
 | Thumbnail | `deliverables/not_yet_thumbnail.jpg` (1920×1080): 2:35.33 (frame 4660), chosen by the human. It shows the crib rail, the taped and cracked window, the crack lit down the road, the neighbour's amber window, the moon and the mobile among the stars, and never the probe. |
 | Chapters | From the description (first chapter at 0:00; each over 10 s). |
-| End screen | The credits run 6:05–6:22, one centred line at a time, then the human's note 6:23–6:31, centred. The end screen can cover the last 5–20 s (from 6:11 at most). Keep its elements in the corners, clear of the centred text and the repo link. |
+| End screen | From 6:23 to the end (7.6 s), over the human's note (approved by the human, 2026-10-26). Elements: the Sandbox Rhapsody video (https://www.youtube.com/watch?v=zq79yQ3164w) bottom left, Subscribe bottom right. The note is centred and three lines tall, so the corners are clear; starting earlier would put the elements over the credits and the repo link (6:05–6:22). Once the windows cut is up (2026-11-10), it can be added as a third element. |
 | Comments | Open. |
 | Visibility | Unlisted for a check pass, then public. |
 
