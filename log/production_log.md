@@ -861,3 +861,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - Tested end to end on the windows short with the v10 frames: 30.1 s, 1080x1920, HEVC + AAC.
 - `marked` 14.1.4 added (pinned) for the screen and bookend Markdown.
 - **Status:** v11 is rendering. Still to do: the final-profile speed test once the GPU is free, then the C5 render after v11 is approved.
+
+## 2026-10-26T09:20 — Fact check: the blocked sources read (C5 prep)
+
+- Read the four pages the human retrieved (R4). Findings are in the addendum to `docs/fact_check_2026-10-26.md`:
+  - Dark Reading confirms the correction to fact 3 (26,153 is the total generated; the ledger held 2,736). Card 3 is unchanged.
+  - Digital Watch and CNN support cards 7 and 8. Their credits are restored as the brief has them, and card 8 goes back to the brief's "worldwide" (CNN: "shut down globally").
+  - OpenAI's own post claims it "led a coalition", with "PHP's maintainers led the fixes and release". The end card's "whose model helped find PHP2Shell" is unchanged.
+  - The FBI (AP) and the NSA (CNN, Digital Watch) both advised taking sites offline. No card names an agency.
+- Re-opened AP (adn.com) to check the FBI attribution.
+- `overlays/cards.json` updated, `overlays/cues.json` regenerated (`overlay_cues.py --draft`): facts 248.56–328.82 s, end 382.32 s. Stills of cards 7 and 8 checked.
+- Pages saved to `reference/sources/2026-10-26/` (git-ignored, never published; `.gitignore` updated), with URL and hash in `reference/sources/2026-10-26.tsv`.

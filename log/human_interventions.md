@@ -207,3 +207,10 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human approved everything in C4 except the two v10-review fixes, which the v11 animatic (rendering) is expected to resolve, and asked the agent to start on the end cards and everything else the final render needs.
 - **Note from the human:** "While that's rendering, start working on the end cards and everything else needed for the final render (i.e. treat everything else as approved, and I expect this animatic to resolve the remaining issues)"
 - **Rule:** R1 (approval of a checkpoint).
+
+## 2026-10-26T09:15 — The fact check's blocked sources, retrieved in a browser — R4
+
+- **What:** The agent's fetches of four cited sources were refused (Dark Reading 403, Digital Watch 403, CNN 451, OpenAI 403). The human opened them in a browser and sent each page as HTML and PDF. The two dead links (404) could not be retrieved.
+- **Note from the human:** "I was only able to retrieve the "blocked" ones -- see attached"
+- **Rule:** R4 (running an interface the agent has no access to).
+- **Kept:** `reference/sources/2026-10-26/` (local, not published), indexed with hashes in `reference/sources/2026-10-26.tsv`.

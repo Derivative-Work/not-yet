@@ -31,3 +31,7 @@ node_modules/
 models/
 *.pt
 *.safetensors
+
+# Other publishers' pages saved as fact-check evidence (the human retrieved them, R4): kept locally, never published;
+# reference/sources/*.tsv (in git) lists each one's URL and hash.
+reference/sources/*/

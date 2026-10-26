@@ -10,8 +10,8 @@
   {"text": "Anthropic says the limit is now how fast bugs can be verified, disclosed and patched.", "source": "Anthropic"},
   {"text": "Mozilla found and fixed 271 vulnerabilities in a single Firefox release while testing the model.", "source": "Anthropic"},
   {"text": "Node.js maintainers report “an incredible amount of AI slop” in vulnerability reports.", "source": "HeroDevs"},
-  {"text": "In August 2026, researchers using OpenAI and Google models found PHP2Shell, flaws in the language behind about 70% of websites whose server-side language is known.", "source": "Wiz; AP"},
-  {"text": "When the fix shipped on October 21, government sites from Britain to Japan went offline while operators patched.", "source": "AP"},
+  {"text": "In August 2026, researchers using OpenAI and Google models found PHP2Shell, flaws in the language behind about 70% of websites whose server-side language is known.", "source": "Digital Watch; CNN"},
+  {"text": "When the fix shipped on October 21, sites went offline worldwide while operators patched.", "source": "CNN; Digital Watch"},
   {"text": "Anthropic's stated reason for withholding: without safeguards, such models would make exploiting flawed software cheaper for almost anyone.", "source": "SecurityAffairs"},
   {"text": "Critics call the arrangement “a private club.”", "source": "SecurityPal, citing Georgia Tech's Internet Governance Project"},
   {"text": "Mythos Preview's successor is the same underlying model as Claude Fable, which Anthropic sells publicly with added safeguards.", "source": "Anthropic"}
