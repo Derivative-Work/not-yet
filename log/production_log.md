@@ -955,3 +955,25 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - The two superseded encodes are in `archive/deliverables/` (`…_superseded_bt601-matrix-srgb-tag.mp4`, whose name records the first suspicion; its matrix was fine, only the tag was wrong; and `…_superseded_explicit-scale-darker.mp4`).
 - **Output:** `deliverables/not_yet_short_windows.mp4`: 30.1 s, 1080×1920, HEVC (BT.709 tagged) and AAC 320k, −17.5 LUFS integrated, −3.9 dBFS true peak.
   - Checked in frames: the label, the four captions, the whole window from the first frame, the crack on "never", the outside shot, the push in, and the fade.
+
+## 2026-10-26T18:49 — C6: upload metadata (METADATA.md)
+
+- **The request** (human, R1): the upload-ready render and `METADATA.md`. Modelled on Sandbox Rhapsody's.
+- **Main video:**
+  - Title: recommended (65 characters) plus two alternatives.
+  - Description (4,491 of 5,000 characters):
+    - the satire label first;
+    - the premise, and how it was made, with the 35 logged interventions and the repo link;
+    - the conflict-of-interest line and the audits;
+    - the link to Sandbox Rhapsody (release order, brief);
+    - chapters from the timing map's sections and the cues (facts 4:08, audit log 5:29, credits 6:05);
+    - the 11 fact cards verbatim with their credits, and the source URLs from `docs/fact_check_2026-10-26.md` and `reference/sources/2026-10-26.tsv`;
+    - the end card's credits, plus the pen scratch and the typefaces;
+    - the licence and a no-affiliation line.
+  - Tags (373 of 500 characters).
+  - Settings: Music; not made for kids; synthetic content disclosed; the SRT; Standard Licence; the thumbnail (frame 4660); end-screen placement clear of the centred credits.
+- **Vertical cuts:** a title and description each, shared tags, and a shared footer with a `<MAIN VIDEO URL>` placeholder.
+- **Open for the human** (listed at the top of the file):
+  - **Licence:** this repo has no licence files. The description uses Sandbox Rhapsody's terms (CC BY-NC-SA 4.0 and MIT), to be confirmed.
+  - **Link order:** the windows cut may go out before the main video (Patch Tuesday, 2026-11-10).
+  - **Bridge cut length:** 3:18.6 is over YouTube's 3:00 Shorts limit. Either upload it as an ordinary vertical video, or end it after fact card 8 (2:57.7).
