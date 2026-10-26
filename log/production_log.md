@@ -805,3 +805,12 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - The floor CVE sheets show at N14–N16.
 - **Archived (superseded by v10):** `archive/renders/c4/c4_animatic_v9_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v9_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v12_superseded_review-fixes/`. Frame sequences are not archived.
 - **Status:** sent to the human for review.
+
+## 2026-10-26 — C4 v10 review fixes: the taped window back; the music box turns the right way
+
+1. **Window** (`animate.hall_window`): the hiding of the tape and the old crack until the N10 cut is removed. The hall windows are taped over an old crack from the start again (the brief's N09), and the new crack grows on "never" as before. Checked: tape and old crack render at frame 300.
+2. **Music box direction** (`animate.music_box`, `nursery.drum_pins`):
+   - "drum" is now keyed backwards (0 to -DUR/6, the range's min widened to match). The comb-side face of the drum rises, so each pin comes up under its tooth and lifts the tip, as the tooth's pluck shows it. The crank turns clockwise seen from its end, as a hand-cranked box does. The governor follows.
+   - `drum_pins` takes a negative `turn_s` for a backwards drum and swaps its show window (136 degrees before the note, 224 after), so pins still appear and vanish at the same hidden point at the drum's back.
+   - Checked: a pin for a note at N36 + 3 s climbs from (y -0.0135, z -0.0174) to the tooth tip at the note (-0.0182, -0.0123 from the axle; the tip angle is -124 degrees) and on upward.
+- **Status:** committed; the full v11 render follows.

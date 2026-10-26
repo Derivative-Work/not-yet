@@ -17,8 +17,7 @@ What drives what (brief, "Running devices", shot list and texture pass; config/i
   night-light   clicks on at N04 (before "twenty-seven-year", never on it)
   moon          the moonlight clock: the back window's patch creeps from the window's base (N02) to the crib (N38)
   growth chart  marks appear by N05, more by N22, the last near the top by N37
-  hall window   whole until the cut to it (N10), where it is taped over an old crack; the new hairline crack grows on
-                "never", on the front window and the back one, and stays
+  hall window   the new hairline crack grows on "never" (N10), on the front window and the back one, and stays
   ticket        falls from the mobile through the floor to the basement desk (N14); from then on tickets flutter down
                 in gusts onto the drift against the glass, a small drift by N29, a snowbank by N37; some slide
                 down it when the next gust lands
@@ -103,12 +102,14 @@ def music_box(S):
     A.comb(box, evs, lo=lo, hi=hi)
     # The kit declares "drum" as 0..1 (one turn), and Blender clamps an animated property to its range: the drum
     # turned once in the first 6 s and then stood still (human, C4 v9 review: "doesn't appear to be rotating").
-    box.id_properties_ui("drum").update(max=DUR / 6.0 + 1.0)
-    keys(box, "drum", [(0.0, 0.0, "LINEAR"), (DUR, DUR / 6.0, "LINEAR")])  # one turn every 6 s
+    # It turns backwards (human, C4 v10 review: "rotating the wrong way"): the comb-side face rises, so each pin comes
+    # up under its tooth and lifts the tip as A.comb shows it, and the crank turns clockwise seen from its end.
+    box.id_properties_ui("drum").update(min=-DUR / 6.0 - 1.0)
+    keys(box, "drum", [(0.0, 0.0, "LINEAR"), (DUR, -DUR / 6.0, "LINEAR")])  # one turn every 6 s
     # A pin on the drum for every note, meeting its tooth as it plays (the tooth as A.comb picks it).
     import nursery
     nursery.drum_pins(box, [(int(min(max(round((e["pitch"] - lo) / (hi - lo) * 17), 0), 17)), e["t"]) for e in evs],
-                      6.0, A.FPS)
+                      -6.0, A.FPS)
     slot = bpy.data.objects["dresser.coinslot"]
     t = SHOT["N36"] + 1.6  # the camera settles on the slot at N36 + 1.2
     visible(slot, SHOT["N35"])
@@ -244,13 +245,6 @@ def growth_chart(S):
 def hall_window(S):
     for c in (S["crack_new"], S["crack_new_back"]):  # the back window keeps the same state (continuity)
         keys(c, "grow", [(0.0, 0.0), (word("L08", "never") - 0.1, 0.0), (word("L08", "never") + 1.4, 1.0)])
-    # Whole until the line: the tape and the old crack appear on the cut to the window ("...and" | "windows are
-    # never quite mended", N10), so no broken window gives the line away before it (human, C4 v9 review).
-    import camera_path
-    cut = SHOT[camera_path.CUT[0]] + camera_path.CUT[1]
-    for name in ("hallwin", "window"):
-        for part in ("tape0", "tape1", "crack_old"):
-            visible(bpy.data.objects[f"{name}.{part}"], cut)
 
 
 def ticket(S):

@@ -1595,12 +1595,14 @@ def dresser(name, loc, rot_z=0.0, parent=None):
 
 def drum_pins(mb, plucks, turn_s, fps):
     """Studs the music box's drum (sr_kit.music_box `mb`) with a pin per note: `plucks` is [(tooth, t)], the drum
-    turns once every `turn_s` seconds. Each pin sits where it meets its tooth's tip at t, and shows for one turn of
-    the drum, from when it comes round the drum's back (out of sight) 224 degrees before its note to 136 degrees
-    after, so the drum always carries the next turn's notes, arriving over its top. One object of points (the angle
-    is in the point), a pin instanced on each while it shows (geometry nodes)."""
+    turns once every `turn_s` seconds (negative: "drum" runs backwards). Each pin sits where it meets its tooth's tip
+    at t, and shows for one turn of the drum, from when it comes round the drum's back (out of sight) to when it
+    gets back there, so the drum always carries the next turn's notes. One object of points (the angle is in the
+    point), a pin instanced on each while it shows (geometry nodes)."""
     a_w = math.atan2(-0.0207, -0.014)  # where a pin meets the tips: in the axle's (y, z), the angle from +Z to +Y
-    before, after = 224 / 360 * turn_s, 136 / 360 * turn_s
+    before, after = 224 / 360 * abs(turn_s), 136 / 360 * abs(turn_s)  # forwards, a pin arrives over the drum's top
+    if turn_s < 0:  # backwards, up from under the comb: the same hidden point at the back
+        before, after = after, before
     me = bpy.data.meshes.new(f"{mb.name}.notes")
     pts, t0, t1 = [], [], []
     for k, t in plucks:

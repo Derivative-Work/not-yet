@@ -195,3 +195,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **Note from the human:** "the music box doesn't appear to be rotating / put the CVEs on the tickets on the floor of the basement as well / go ahead and run the audio through the postfilter if you haven't already (doesn't sound like you have; it's in ~/Code/music-deslop) / on second thought, let's only have the window at "windows are never quite mended" be broken so as not to spoil the line"
 - **Rule:** R1 (rejecting parts of a render, with reasons).
 - **Also:** the v10 render started after the solidify fix was stopped, since all four changes affect it. Its partial frames are left in place and not used.
+
+## 2026-10-26T06:30 — C4 v10 review: the taped window back from the start; the music box turns the wrong way — R1
+
+- **What:** On reviewing C4 v10, the human reversed the v9-review window change (the taped, cracked window is back from the start, as the brief's N09 has it) and reported that the music box's drum turns the wrong way.
+- **Note from the human:** "Fair, I did like the taped window from the beginning; thanks for showing me but put it back please. Also the music box is rotating the wrong way"
+- **Rule:** R1 (rejecting parts of a render, with reasons).
