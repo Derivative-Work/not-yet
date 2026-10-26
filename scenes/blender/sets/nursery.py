@@ -974,6 +974,10 @@ def crib(name, loc, rot_z=0.0, parent=None, glint=True, nest=None, cover=None, q
     for i in range(nx):
         for j in range(ny):
             bm.faces.new((vs[i, j], vs[i + 1, j], vs[i + 1, j + 1], vs[i, j + 1]))
+    # solidify offsets along face normals, which faces.new leaves unset: without normal_update the two layers lay
+    # in each other and the blanket's underside showed through its top edge-on, a line crawling along the head end
+    # (QC 2026-10-26, v9 flicker map; human, C4 v8 review: "flickering at the end").
+    bm.normal_update()
     bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.015)
     me = bpy.data.meshes.new(f"{name}.blanket")
     bm.to_mesh(me)
@@ -1251,6 +1255,7 @@ def mobile(name, loc, parent=None):
     bm = bmesh.new()
     pts = [(0, 0, 0.055), (0.07, 0, 0.045), (0.05, 0, 0.03), (0.07, 0, 0.015), (0, 0, 0.01)]
     bm.faces.new([bm.verts.new(p) for p in pts])
+    bm.normal_update()  # solidify needs face normals (see crib)
     bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.004)
     me = bpy.data.meshes.new(f"{name}.flag")
     bm.to_mesh(me)
@@ -1319,6 +1324,7 @@ def rocking_chair(name, loc, rot_z=0.0, parent=None):
     for i in range(n):
         for j in range(3):
             bm.faces.new((rows[i][j], rows[i][j + 1], rows[i + 1][j + 1], rows[i + 1][j]))
+    bm.normal_update()  # solidify needs face normals (see crib)
     bmesh.ops.solidify(bm, geom=bm.faces[:], thickness=0.012)
     me = bpy.data.meshes.new(f"{name}.blanket")
     bm.to_mesh(me)

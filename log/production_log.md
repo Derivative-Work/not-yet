@@ -751,3 +751,11 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Spot checks (anchor sheet):** the mobile's bank reads as a temple, the desk stacks are flat on the desk, the music box shows its crank, gear and governor, and the quilt folds lie open at N39–N40.
 - **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v8_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v8_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v11_superseded_review-fixes/`. frames_v8 is a frame sequence, so it is not archived.
 - **Status:** v9 sent to the human for review (R1), with the end-flicker cause noted. The solidify fix and a v10 render are next.
+
+## 2026-10-26T02:05 — Fix: zero-thickness felt (blanket, pennant, chair throw); the end flicker
+
+- **Change** (`scenes/blender/sets/nursery.py`): added `bm.normal_update()` before each of the three `bmesh.ops.solidify` calls (the crib blanket, the mobile's pennant, the rocking chair's knitted throw). Without face normals, solidify laid both layers in place. With them, the blanket is 15 mm thick (6,674 distinct vertex positions, up from 3,397 coincident pairs). It sinks into the mattress below, out of sight.
+- **Check:**
+  - I rendered frames 6,936–7,005 at draft720 into the scratchpad. In the temporal map of 6,939–7,000, pixels over 12 levels fell from 10,257 to 303, and only 8 remain in the head-end region (v9: 9,949). The crawling line is gone.
+  - Cloth jitter over the last 40 frames: no vertex moves more than 5 mm a frame (v9: 2–3), max 11 mm and 5 mm. The quilt still falls open and lies open.
+- **Status:** committed; the full v10 render is next.
