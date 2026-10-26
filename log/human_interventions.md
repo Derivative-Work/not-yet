@@ -220,3 +220,15 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** While reviewing C4 v11, the human reported faceted, unsmoothed geometry, worst on the vault door.
 - **Note from the human:** "still seeing some unsmoothed geometry, particularly at the door"
 - **Rule:** R1 (a correction to a render, with a reason).
+
+## 2026-10-26T10:50 — C4 v11 approved; the thumbnail chosen differently — R1
+
+- **What:** The human approved C4 v11 apart from the smoothing (fixed in 5797417, which shows in the C5 frames). They asked for a thumbnail that shows the crib, the broken window and the cracks outside, keeping the amber window, instead of the brief's N29 frame, which never shows the amber window.
+- **Note from the human:** "v11 is otherwise good. [...] Off the top of my head the best thumbnail frame would be one that shows the crib, the broken window, and the cracks outside - see if one like this exists or find a better one. Keep the amber window"
+- **Rule:** R1 (approval of a checkpoint, and a correction with a reason).
+
+## 2026-10-26T10:50 — The public repository named — R4
+
+- **What:** The human created and named the production log's public repository (GitHub, which the agent has no access to) for the end card's last line.
+- **Note from the human:** "Repo is https://github.com/Derivative-Work/not-yet"
+- **Rule:** R4 (running an interface the agent has no access to).

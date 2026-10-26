@@ -2047,8 +2047,8 @@
    "Audited by: Gemini (Google, a Glasswing partner), ChatGPT (OpenAI, whose model helped find PHP2Shell), GLM",
    "Music: Suno (take 8289b42f), post-filtered with music-deslop",
    "Animation and edit: Claude Code",
-   "Human interventions: 29",
-   "Full production log: [repo URL]"
+   "Human interventions: 33",
+   "Full production log: https://github.com/Derivative-Work/not-yet"
   ],
   "off": 381.818
  },
@@ -2072,5 +2072,5 @@
    "doc": "Chorus 1, N07 to just before N11; opens with the label; no fact card"
   }
  ],
- "repo_url_missing": true
+ "repo_url_missing": false
 }

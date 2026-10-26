@@ -909,3 +909,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - 6.1 s/frame at 210 s (the music box);
   - 5.6 s/frame at 222 s (the crib).
   - About 2 min to build each run. Estimate for 7,019 frames: about 9 h, with the windows span (about 950 frames) first at about 1 h.
+
+## 2026-10-26T10:55 — C4 approved; repo URL and thumbnail set (C5 prep)
+
+- **C4 v11 approved** by the human, apart from the smoothing, which is fixed and shows in the C5 frames.
+- **Repo URL:** `config/release.json` `repo_url` is https://github.com/Derivative-Work/not-yet. `overlays/cues.json` is regenerated without `--draft`: the end card's last line is "Full production log: https://github.com/Derivative-Work/not-yet", with 33 interventions.
+  - The count is read when the cues are generated. Regenerate them just before C6 assembly so it includes the C5 and C6 approvals.
+- **Thumbnail** (the human: the crib, the broken window and the cracks outside, keeping the amber window):
+  - Scanned the v11 frames from 147 s to 233 s, then 154.6–155.8 s in 0.13 s steps.
+  - Chose 155.33 s (frame 4660, N28): the crib rail, the taped and cracked back window, the crack lit down the road, the neighbor's amber window, the moon and the mobile among the stars.
+  - Rejected 208.0 s: the probe's LED shows in the crib (brief: never the probe).
+  - `thumbnail_t` is 155.33. `assemble.py thumbnail` takes it from the C5 frames.
