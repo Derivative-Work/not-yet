@@ -238,3 +238,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human rejected the windows short's 9:16 crop: from 39 s to 52 s it followed the sticky note and the crib, so the taped window was never wholly in frame.
 - **Note from the human:** "assuming the windows short is coming from the crop you sent earlier, it's not going to read right because the full window is never in frame"
 - **Rule:** R1 (rejection, with a reason).
+
+## 2026-10-26T19:00 — C5 approved; C6 assembly started before the 4K flicker check finished — R1
+
+- **What:** After the C5 progress report (all 7,019 frames and 39 anchors rendered and checked against v11; the 4K flicker check still running) and the re-cropped windows short, the human told the agent to make the upload-ready render and the upload metadata now, with the QC carrying on in the background.
+- **Note from the human:** "go ahead and make the upload-ready render and METADATA.md now (keep doing your QC in the background)"
+- **Rule:** R1 (approval of a checkpoint).

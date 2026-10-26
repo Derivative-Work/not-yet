@@ -938,3 +938,9 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **`config/reframe.json` windows keys up to 52 s:** 34.6 s 0.64, 38.0 s 0.70, 41.0 s 0.65, 44.4 s 0.585, 47.0 s 0.56, 51.98 s 0.565. 55.6 s moves from 0.70 to 0.715 so the outside shot keeps the tape's right arm.
   - Every frame from 34.6 s to 52 s now shows the moon, the taped and cracked pane and the town below. The sticky note is in frame at the start and again from about 46 s. The crib is in frame throughout.
 - Checked with 9:16 crops of the C5 frames at 34.6–55.6 s. The bridge short is unchanged.
+
+## 2026-10-26T19:00 — C5 approved (human, R1); C6 started
+
+- The human approved going on to the upload-ready render and `METADATA.md` (see `log/human_interventions.md`). The 4K flicker check (`scripts/qc_flicker.py`, at 2,000 of 7,019 frames at 18:27) carries on in the background, and its result is logged when it ends.
+- **C5 checks so far:** 7,019 frames and 39 anchors, none empty. No shadow-buffer warnings. The blanket at N38–N40 matches between the anchor run and the frames run (no pixel more than 1 level apart). Frames and anchors are within 0.2–6 levels of v11/v14 on average, from the samples and the motion blur. The door is smooth. Thumbnail frame 4660 is as chosen.
+  - Each run logs one "Failed to create GPU texture" error at startup, as the approved draft runs did. The main run logged two more next to frame 5577, which matches v11 and its neighbours.
