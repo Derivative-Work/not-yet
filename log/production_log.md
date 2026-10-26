@@ -732,3 +732,22 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
    - A crawling dark line along the crib's head end (in the v7 and v8 flicker maps) was the 1–2 px slot between the blanket's end and the headboard. The ray peel found the blanket's rim, the mattress and then the end board.
    - The mattress now runs to the end boards, 1 mm short of each. The slot shows mattress, not the drop to the floor.
 - **Status:** committed; the full v9 render is next.
+
+## 2026-10-26T01:15 — C4 v9: full draft720 re-render with the v8 review fixes; v8 outputs archived
+
+- **Commands:**
+  - `blender -b --factory-startup --python scenes/blender/animatic.py -- --out renders/c4/frames_v9 --profile draft720` (7,019 frames in 6,021 s, 0.86 s/frame)
+  - `... -- --out renders/c4/anchors_v12 --profile draft720 --anchors` (39 stills)
+  - `.venv/bin/python -I scripts/animatic_assemble.py renders/c4/frames_v9 1 renders/c4/c4_animatic_v9.mp4` (1280x720, 30 fps, 252.17 s)
+  - `.venv/bin/python -I scripts/contact_sheet.py renders/c4/anchors_v12 renders/c4/c4_anchor_sheet_v9.jpg 6`
+  - `.venv/bin/python -I scripts/qc_flicker.py renders/c4/frames_v9 renders/qc/flicker_v9`
+- **Flicker QC:**
+  - 32,199 blobs in 8,552 runs (v8: 31,817 in 8,128). The large runs (frames 2,750–2,910 and 5,160–5,430) are unchanged.
+  - The quilt (6,600–6,800) has only small runs, under 210 px each. They are the binding's edge turning as the camera moves past the lying folds, not jitter.
+  - **The end flicker is not fixed.** In the temporal map of frames 6,940–7,000, the crawling line along the crib's head end is still there and longer, because the quilt no longer covers part of it.
+    - A ray cast at frame 6,970 shows the first surface along it is the blue blanket's underside (back-facing), at its head-end edge.
+    - Cause: `bmesh.ops.solidify` offsets along face normals, and faces made with `bm.faces.new` have none until `bm.normal_update()`. The blanket's two layers are coincident (0 mm apart at all 3,397 vertex pairs), so its top and underside fight wherever it is seen edge-on.
+    - The mattress change in the v8 fixes was not the cause. The same bug affects the mobile's pennant and the rocking chair's knitted throw.
+- **Spot checks (anchor sheet):** the mobile's bank reads as a temple, the desk stacks are flat on the desk, the music box shows its crank, gear and governor, and the quilt folds lie open at N39–N40.
+- **Archived (superseded, review fixes):** `archive/renders/c4/c4_animatic_v8_superseded_review-fixes.mp4`, `archive/renders/c4/c4_anchor_sheet_v8_superseded_review-fixes.jpg`, `archive/renders/c4_anchors_v11_superseded_review-fixes/`. frames_v8 is a frame sequence, so it is not archived.
+- **Status:** v9 sent to the human for review (R1), with the end-flicker cause noted. The solidify fix and a v10 render are next.
