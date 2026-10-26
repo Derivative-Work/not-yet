@@ -820,3 +820,44 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - C4 is approved apart from the v10-review fixes now rendering as v11 (human, R1). C5 preparation starts alongside: the shop display's real pages (N33, N34), the 2D overlay (captions, N41 CRT line, N42 fact card, N43 audit-log bookend, N44 end card), the SRT, the vertical reframes, the thumbnail and the final render and assembly scripts.
 - The live brief was re-read (rev 30); its changes since the rev 27 mirror are already in `docs/brief.md` (the windows vertical cut).
 - The fact-card source check (brief: re-open every source before rendering) is running as a separate research pass; it writes `docs/fact_check_2026-10-26.md`.
+
+## 2026-10-26T08:30 — C5 preparation: fact check, shop screen, overlay, cards, SRT, reframes, final render and assembly scripts
+
+- **Fact-card source check** (brief: before rendering, re-open every source): `docs/fact_check_2026-10-26.md`, done by a research subagent on 2026-10-26.
+  - Of the brief's 10 facts, 5 were confirmed and 5 corrected; none were cut.
+    - VulnCheck's 26,153 was Anthropic's claimed total, not the ledger count; the card now uses Anthropic's dashboard figures, dated Oct 2, 2026.
+    - Mozilla's 271 are "vulnerabilities".
+    - "AI-report flooding" is now Node.js maintainers, quoted.
+    - PHP2Shell was found in August, not October; sites went offline "from Britain to Japan", not worldwide.
+    - "Same underlying model" holds via Mythos 5, Mythos Preview's successor.
+  - The end card's "OpenAI, which led the PHP2Shell work" is OpenAI's own claim, so the line is now "whose model helped find PHP2Shell".
+  - Six cited URLs failed to open (404/403/451), and their credits moved to sources that did open. The final lines are in `overlays/cards.json` (`facts_checked_on` 2026-10-26).
+- **N33/N34, the shop screen** (`overlays/screen.{json,html,mjs}`):
+  - **N33:** the real page, Anthropic's "Claude Fable 5 and Claude Mythos 5", captured 2026-10-26 to `assets/screens/n33_model_page.png` (`scripts/capture_page.mjs`; sidecar JSON with URL and time). It scrolls from the title to "Today we're launching Claude Fable 5: a Mythos-class model that we've made safe for general use."
+  - **N34:** the three auditors' raw outputs, rendered from `log/audits/*_raw.md`, each scrolled to its mistake and marked with a highlighter in the note's yellow (no red):
+    - Gemini: "appear to refer to either very recent, hypothetical, or fictionalized…"
+    - ChatGPT: "the hypothetical system in the song…"
+    - GLM: "the song's one hallucination-shaped factoid", held longest.
+  - The camera holds the screen only from N33 to about N34 + 6.1 s (stills at 196–199 s), so Gemini and ChatGPT get 1.7 s each and GLM the rest.
+  - The frames go to `renders/screen/` (524 frames at 2064x1200). `nursery.shop_twin` maps them onto the screen as an image sequence when they exist, and keeps the placeholder label otherwise. Checked in Blender stills at 189.5 s and 194 s.
+- **Overlay** (`scripts/overlay_cues.py` → `overlays/cues.json`; `overlays/overlay.html`; `overlays/render.mjs`, after Sandbox Rhapsody's):
+  - Captions as the style spec describes: Inter in comfort, words brightening 40→100%, verse 4 in the light weight. N34's three check marks, in a paper-coloured pen stroke, as each flag is marked.
+  - The label.
+  - **N41:** the CRT line opening, 247.16–248.16 s.
+  - **N42:** 11 fact cards, 4–8.5 s each by length, 248.56–330.03 s.
+  - **N43:** the real audit log scrolling (Gemini's and ChatGPT's resolution tables and Claude's GLM review, verbatim from `log/audits/`), then "Check every word with a voice from away." alone, 331.03–365.53 s.
+  - **N44:** the end card, one line at a time, ending at 383.03 s.
+  - The main video is 383.5 s. The cards are rendered from the page in Chrome; checked in stills at 0.5x and in a vertical short.
+  - **The end card's repo URL is not known yet.** `config/release.json` `repo_url` is null, and `overlay_cues.py` refuses a final build until it is set (`--draft` shows a placeholder).
+- **SRT** (`scripts/make_srt.py`): the main video plus each short, from the same caption timing.
+- **Vertical reframes:**
+  - `config/reframe.json` holds window-centre keys per short, set from the v10 frames with `scripts/reframe_sheet.py`:
+    - windows: the sticky note and crib, then the taped pane and crack after the N10 cut, then the glass room;
+    - bridge: the street window, crack and town, the vault and rope, the shop window, crib and screen, the music box, the probe.
+  - To be re-checked on the C5 frames.
+- **Thumbnail:** the brief asks for N29's frame with an amber window on the hill, but no N29 frame shows that window. `config/release.json` `thumbnail_t` is 162.44 s, N29's widest view of the room.
+- **Final render** (`scripts/render_final.sh`): the windows short's span first, then the whole move, both into `renders/c5/frames` with `animatic.py --resume` (new: keep existing frames, placeholders claim frames in progress), then the anchors and the C5 sheet.
+- **Assembly** (`scripts/assemble.py`): `main`, `short:windows`, `short:bridge` and `thumbnail`, with NVENC HEVC BT.709 and AAC 320k. It refuses to overwrite.
+  - Tested end to end on the windows short with the v10 frames: 30.1 s, 1080x1920, HEVC + AAC.
+- `marked` 14.1.4 added (pinned) for the screen and bookend Markdown.
+- **Status:** v11 is rendering. Still to do: the final-profile speed test once the GPU is free, then the C5 render after v11 is approved.

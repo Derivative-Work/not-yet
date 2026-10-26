@@ -1,0 +1,5 @@
+{
+ "_doc": "Release values the end card needs (overlays/cards.json). repo_url: the public repository of this production log; null until the human names it (the final assembly stops on a null). thumbnail_t: the song time of the thumbnail frame (brief: the N29 frame, the glass room in the dark hall, walls crowded with stars; never the probe). 162.44 s, inside N29's span, is its widest view of the room; no N29 frame shows the amber hill window.",
+ "repo_url": null,
+ "thumbnail_t": 162.44
+}

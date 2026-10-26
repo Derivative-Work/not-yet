@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Code-animated music video; JS overlays rendered with Puppeteer.",
   "dependencies": {
+    "marked": "14.1.4",
     "puppeteer": "24.43.1"
   }
 }

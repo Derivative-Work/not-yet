@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Not Yet overlay</title>
+<!-- The 2D overlay, from overlays/cues.json (scripts/overlay_cues.py): lyric captions (style spec, "Captions"), N34's
+     check marks, the opening label, and after the song the N41 CRT line, the N42 fact cards, the N43 audit-log
+     bookend and the N44 end card, white on black. render.mjs sets the size and calls draw(t) per frame; transparent
+     except the cards. The bookend's tables are HTML (marked) over the canvas; everything else is drawn on it. -->
+<style>
+@font-face { font-family: "Inter"; src: url("../assets/fonts/Inter[opsz,wght].ttf"); font-weight: 100 900; }
+@font-face { font-family: "JetBrains Mono"; src: url("../assets/fonts/JetBrainsMono[wght].ttf"); font-weight: 100 900; }
+@font-face { font-family: "Instrument Serif"; src: url("../assets/fonts/InstrumentSerif-Italic.ttf"); font-style: italic; }
+html, body { margin: 0; background: transparent; overflow: hidden; }
+canvas { display: block; position: absolute; left: 0; top: 0; }
+#book { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; display: none; color: #f1f4ee; }
+#book .col { position: absolute; left: 50%; width: calc(var(--u) * 3000px); margin-left: calc(var(--u) * -1500px);
+             font: 400 calc(var(--u) * 50px)/1.45 "Inter"; }
+#book.v .col { width: 92%; margin-left: -46%; font-size: calc(var(--u) * 50px); }
+#book h2 { font: 600 calc(var(--u) * 66px)/1.2 "Inter"; margin: 2.2em 0 0.7em; color: #dfe9f7; }
+#book table { border-collapse: collapse; width: 100%; }
+#book th { text-align: left; font-weight: 600; color: #dfe9f7; border-bottom: 2px solid #8d97a6; padding: 0.35em 0.6em; }
+#book td { vertical-align: top; border-bottom: 1px solid #3a3d44; padding: 0.45em 0.6em; }
+#book p, #book li { margin: 0.4em 0; }
+#book strong { color: #dfe9f7; }
+#book a { color: inherit; text-decoration: none; }
+#book code { font-family: "JetBrains Mono"; font-size: 0.92em; }
+</style>
+<script src="../node_modules/marked/lib/marked.umd.js"></script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="book"><div class="col"></div></div>
+<script>
+const cv = document.getElementById("c");
+const g = cv.getContext("2d");
+const book = document.getElementById("book"), col = book.querySelector(".col");
+let C, W, H, V, u, SH = null, T0 = 0;  // cues, size, vertical?, unit (1 at 2160 px on the short side), short, its start
+
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = x => x * x * (3 - 2 * x);
+const ramp = (t, on, off, fin = 0.4, fout = 0.4) => clamp((t - on) / fin) * clamp((off - t) / fout);
+
+async function setup(cues, w, h, shortId) {
+  C = cues; W = w; H = h; V = h > w; u = Math.min(w, h) / 2160;
+  cv.width = w; cv.height = h;
+  book.style.setProperty("--u", u);
+  if (V) book.classList.add("v");
+  SH = shortId ? C.shorts.find(s => s.id === shortId) : null;
+  T0 = SH ? SH.from : 0;
+  col.innerHTML = C.bookend.sections.map(s => `<h2>${s.title}</h2>` + marked.parse(s.md)).join("");
+  await Promise.all(['500 72px "Inter"', '300 72px "Inter"', '400 72px "Inter"', '600 72px "Inter"',
+                     '500 60px "JetBrains Mono"', 'italic 72px "Instrument Serif"'].map(f => document.fonts.load(f)));
+  await document.fonts.ready;
+  return document.fonts.check('500 72px "Inter"') && document.fonts.check('500 60px "JetBrains Mono"');
+}
+
+function wrap(words, maxW) {
+  const lines = [[]];
+  for (const w of words) {
+    const cur = lines[lines.length - 1];
+    if (cur.length && g.measureText([...cur, w].map(x => x.w ?? x).join(" ")).width > maxW) lines.push([w]); else cur.push(w);
+  }
+  if (lines.length === 2) {  // balance two lines
+    const all = lines.flat(), m = a => g.measureText(a.map(x => x.w ?? x).join(" ")).width;
+    let best = null;
+    for (let k = 1; k < all.length; k++) {
+      const a = m(all.slice(0, k)), b = m(all.slice(k));
+      if (a <= maxW && b <= maxW && (!best || Math.max(a, b) < best[0])) best = [Math.max(a, b), k];
+    }
+    if (best) return [all.slice(0, best[1]), all.slice(best[1])];
+  }
+  return lines;
+}
+
+function shadowed(fn) {
+  g.save();
+  g.shadowColor = "rgba(0,0,0,0.8)"; g.shadowBlur = 18 * u; g.shadowOffsetY = 2 * u;
+  fn(); fn();
+  g.restore();
+}
+
+// Each word brightens from 40% to full as it is sung, no pop (style spec); the line fades in and out.
+function drawCaption(t) {
+  const c = C.captions.find(c => t >= c.on && t < c.off);
+  if (!c) return false;
+  const a = ramp(t, c.on, c.off, 0.25, 0.35);
+  const px = (V ? 74 : 72) * u;
+  g.font = `${c.thin ? 300 : 500} ${Math.round(px)}px "Inter"`;
+  g.textBaseline = "alphabetic";
+  const lines = wrap(c.words, V ? W * 0.84 : W * 0.7);
+  const lh = px * 1.3, base = V ? H * 0.74 : H - 120 * u;
+  const space = g.measureText(" ").width;
+  let ends = [];
+  lines.forEach((ln, i) => {
+    const y = base - (lines.length - 1 - i) * lh;
+    const wid = g.measureText(ln.map(w => w.w).join(" ")).width;
+    let x = (W - wid) / 2;
+    for (const w of ln) {
+      const k = clamp((t - w.t) / Math.max(0.15, w.e - w.t));
+      g.fillStyle = `rgba(255,227,176,${a * (0.4 + 0.6 * k)})`;
+      shadowed(() => g.fillText(w.w, x, y));
+      x += g.measureText(w.w).width + space;
+    }
+    ends.push([x, y]);
+  });
+  if (c.id === C.checks.line) drawChecks(t, ends[ends.length - 1], px, a);
+  return true;
+}
+
+// N34: a tick in a different hand (paper, a quick pen stroke) after the line as each auditor's flag is marked.
+function drawChecks(t, [x, y], px, a) {
+  C.checks.at.forEach((tc, k) => {
+    const p = clamp((t - tc) / 0.35);
+    if (p <= 0) return;
+    const s = px * 0.62, x0 = x + px * 0.35 + k * s * 1.25, y0 = y - px * 0.28;
+    const pts = [[x0, y0 - s * 0.05], [x0 + s * 0.32, y0 + s * 0.3], [x0 + s * 0.98, y0 - s * 0.62]];
+    const L1 = Math.hypot(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]), L2 = Math.hypot(pts[2][0] - pts[1][0], pts[2][1] - pts[1][1]);
+    const d = p * (L1 + L2);
+    g.save();
+    g.strokeStyle = `rgba(239,232,218,${a})`; g.lineWidth = 7 * u; g.lineCap = "round"; g.lineJoin = "round";
+    g.shadowColor = "rgba(0,0,0,0.7)"; g.shadowBlur = 12 * u;
+    g.beginPath(); g.moveTo(...pts[0]);
+    if (d <= L1) g.lineTo(pts[0][0] + (pts[1][0] - pts[0][0]) * d / L1, pts[0][1] + (pts[1][1] - pts[0][1]) * d / L1);
+    else { g.lineTo(...pts[1]); const e = (d - L1) / L2; g.lineTo(pts[1][0] + (pts[2][0] - pts[1][0]) * e, pts[1][1] + (pts[2][1] - pts[1][1]) * e); }
+    g.stroke();
+    g.restore();
+  });
+}
+
+function drawLabel(t) {
+  const L = SH ? (SH.label ? { text: SH.label, on: T0 + SH.label_s[0], off: T0 + SH.label_s[1] } : null) : C.label;
+  if (!L || t < L.on || t > L.off) return false;
+  const a = ramp(t, L.on, L.off, 0.8, 0.8);
+  g.font = `500 ${Math.round(54 * u)}px "Inter"`;
+  g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillStyle = `rgba(241,244,238,${a})`;
+  shadowed(() => g.fillText(L.text, W / 2, V ? H * 0.42 : H / 2));
+  g.textAlign = "left";
+  return true;
+}
+
+function black() { g.fillStyle = C.palette.void; g.fillRect(0, 0, W, H); }
+
+// N41: a point stretches to a line across the black, which opens vertically into a soft glow and fades: a CRT
+// turning on (Sandbox Rhapsody's SIGTERM collapse, reversed).
+function drawCRT(t) {
+  const { on, off } = C.crt;
+  if (t < on || t >= off) return false;
+  black();
+  const k = (t - on) / (off - on);
+  g.save();
+  g.globalCompositeOperation = "lighter";
+  if (k < 0.3) {
+    const w = W * ease(k / 0.3), h = 3 * u;
+    g.shadowColor = "#dfe9f7"; g.shadowBlur = 30 * u;
+    g.fillStyle = "#f4f8ff";
+    g.fillRect((W - w) / 2, (H - h) / 2, w, h);
+  } else {
+    const q = (k - 0.3) / 0.7, h = Math.max(3 * u, H * 0.92 * ease(clamp(q / 0.6)));
+    const a = (1 - ease(q)) * 0.9;
+    const gr = g.createLinearGradient(0, (H - h) / 2, 0, (H + h) / 2);
+    gr.addColorStop(0, "rgba(223,233,247,0)"); gr.addColorStop(0.5, `rgba(223,233,247,${a})`); gr.addColorStop(1, "rgba(223,233,247,0)");
+    g.fillStyle = gr;
+    g.fillRect(0, (H - h) / 2, W, h);
+  }
+  g.restore();
+  return true;
+}
+
+function textBlock(lines, font, px, y0, lh, color) {
+  g.font = font; g.textAlign = "center"; g.textBaseline = "alphabetic"; g.fillStyle = color;
+  lines.forEach((ln, i) => g.fillText(ln, W / 2, y0 + i * lh));
+  g.textAlign = "left";
+}
+
+function wrapText(text, maxW) { return wrap(text.split(" "), maxW).map(l => l.join(" ")); }
+
+function drawFact(t) {
+  const f = C.facts.find(f => t >= f.on - 0.5 && t < f.off + 0.5);
+  if (t < C.crt.off || t >= C.facts[C.facts.length - 1].off + 0.6) return false;
+  black();
+  if (!f) return true;
+  const a = ramp(t, f.on - 0.5, f.off + 0.5, 0.5, 0.5);
+  const px = (V ? 70 : 66) * u;
+  g.font = `400 ${Math.round(px)}px "Inter"`;
+  const lines = wrapText(f.text, V ? W * 0.82 : W * 0.6);
+  const lh = px * 1.38, sp = 40 * u, total = lines.length * lh + 1.6 * sp;
+  const y0 = H / 2 - total / 2 + px;
+  textBlock(lines, g.font, px, y0, lh, `rgba(241,244,238,${a})`);
+  g.font = `400 ${Math.round(sp)}px "Inter"`;
+  textBlock([`Source: ${f.source}`], g.font, sp, y0 + lines.length * lh + sp * 0.9, 0, `rgba(141,151,166,${a})`);
+  return true;
+}
+
+// N43: the audit log scrolls up from below the frame at a steady rate, then its last line holds alone.
+function drawBook(t) {
+  const B = C.bookend;
+  if (t < B.on - 0.6 || t >= B.off + 0.6) { book.style.display = "none"; return false; }
+  black();
+  const s1 = B.on + B.scroll_s;
+  if (t < s1) {
+    book.style.display = "block";
+    const hgt = col.offsetHeight, y = H * 0.9 - (hgt + H * 0.1) * clamp((t - B.on) / B.scroll_s);
+    col.style.top = y + "px";
+    book.style.opacity = ramp(t, B.on - 0.6, s1 + 0.4, 0.6, 0.6);
+    return true;
+  }
+  book.style.display = "none";
+  const a = ramp(t, s1, B.off + 0.6, 0.6, 0.8);
+  const px = (V ? 58 : 60) * u;
+  g.font = `500 ${Math.round(px)}px "JetBrains Mono"`;
+  const lines = wrapText(B.last, V ? W * 0.86 : W * 0.8);
+  textBlock(lines, g.font, px, H / 2 - (lines.length - 1) * px * 0.7 + px * 0.35, px * 1.4, `rgba(255,227,176,${a})`);
+  return true;
+}
+
+// N44: one line at a time, then the block fades.
+function drawEnd(t) {
+  const E = C.end_card;
+  if (t < E.on - 0.6 || t >= E.off + 1.0) return false;
+  black();
+  const px = (V ? 52 : 54) * u, lh = px * 1.95;
+  g.font = `400 ${Math.round(px)}px "Inter"`;
+  const rows = E.lines.map(l => wrapText(l, V ? W * 0.86 : W * 0.7));
+  const n = rows.reduce((s, r) => s + r.length, 0);
+  let y = H / 2 - (n - 1) * lh / 2 + px * 0.35;
+  const out = clamp((E.off + 1.0 - t) / 1.0);
+  rows.forEach((r, k) => {
+    const a = clamp((t - (E.on + k * E.step)) / 0.6) * out;
+    textBlock(r, g.font, px, y, lh, `rgba(241,244,238,${a})`);
+    y += r.length * lh;
+  });
+  return true;
+}
+
+// Draw song time t (or a short's time from its start); false when the frame is empty.
+function draw(t) {
+  t += T0;
+  g.clearRect(0, 0, W, H);
+  let any = false;
+  if (t >= C.crt.on) {
+    any = drawCRT(t) || drawFact(t) || drawBook(t) || drawEnd(t);
+    if (!any) { black(); any = true; }  // the gaps between cards stay black
+    return any;
+  }
+  book.style.display = "none";
+  any = drawCaption(t) || any;
+  any = drawLabel(t) || any;
+  return any;
+}
+</script>
+</body>
+</html>

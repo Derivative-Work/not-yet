@@ -2776,8 +2776,25 @@ def shop_twin(shop):
                     K.mat_emission("shop.page", "commerce", 2.0, ph, "page", floor=0.0), ph, size=1,
                     rotation=(math.pi / 2, 0, -math.pi / 2))
     pl.scale = (0.86, 0.5, 1)
-    K.text("shop.screen_label", "[ real page, composited at C5 ]", 0.03, K.mat_ink("shop.ph_ink", "shadow"),
-           loc=(-0.002, 0, 0), rot=(math.pi / 2, 0, -math.pi / 2), parent=ph)
+    # The real pages (N33, N34): the screen's frames from overlays/screen.mjs, an image sequence on the page's
+    # emission when they have been rendered; the placeholder label otherwise (drafts).
+    rng = K.ROOT / "renders" / "screen" / "range.json"
+    if rng.exists():
+        r = json.loads(rng.read_text())
+        img = bpy.data.images.load(str(K.ROOT / "renders" / "screen" / f"f_{r['first']:05d}.png"))
+        img.source = "SEQUENCE"
+        nt = pl.active_material.node_tree
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = img
+        tex.interpolation = "Cubic"
+        iu = tex.image_user
+        iu.frame_start, iu.frame_offset, iu.frame_duration = r["first"], r["first"] - 1, r["last"] - r["first"] + 1
+        iu.use_auto_refresh = True
+        nt.links.new(tex.outputs["Color"], nt.nodes["Emission"].inputs["Color"])
+    else:
+        print("NOTE: no renders/screen/range.json; the shop screen shows its placeholder (run overlays/screen.mjs)")
+        K.text("shop.screen_label", "[ real page, composited at C5 ]", 0.03, K.mat_ink("shop.ph_ink", "shadow"),
+               loc=(-0.002, 0, 0), rot=(math.pi / 2, 0, -math.pi / 2), parent=ph)
     out["screen_ph"] = ph
     return out
 

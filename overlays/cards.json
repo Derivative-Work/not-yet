@@ -1,0 +1,37 @@
+{
+ "_doc": "The 2D cards after the song (brief, 'Bookends, fact card and cuts'), read by scripts/overlay_cues.py. Facts render only when facts_checked is true, set after the source check is logged (docs/fact_check_2026-10-26.md). Card lines are the check's proposed wording: cards 1 and 2 of its list merged back into the brief's first fact; the VulnCheck snapshot replaced by Anthropic's dashboard figures with their date. End-card values in {braces} are filled by overlay_cues.py: the intervention count from log/human_interventions.md, the repo URL from config/release.json.",
+ "label": {"text": "AI-generated satire", "on": 1.0, "off": 8.0},
+ "facts_checked": true,
+ "facts_checked_on": "2026-10-26",
+ "facts": [
+  {"text": "Anthropic's restricted model, Claude Mythos Preview, found a 27-year-old bug in OpenBSD, among thousands of high-severity vulnerabilities it says it found.", "source": "Anthropic; The Register"},
+  {"text": "Access went to a limited group of partners through Project Glasswing, with up to $100M in usage credits.", "source": "Anthropic; The Register"},
+  {"text": "By October 2, 2026, Anthropic counted 29,439 candidate findings: 6,157 disclosed, 516 patched.", "source": "Anthropic disclosure dashboard"},
+  {"text": "Anthropic says the limit is now how fast bugs can be verified, disclosed and patched.", "source": "Anthropic"},
+  {"text": "Mozilla found and fixed 271 vulnerabilities in a single Firefox release while testing the model.", "source": "Anthropic"},
+  {"text": "Node.js maintainers report “an incredible amount of AI slop” in vulnerability reports.", "source": "HeroDevs"},
+  {"text": "In August 2026, researchers using OpenAI and Google models found PHP2Shell, flaws in the language behind about 70% of websites whose server-side language is known.", "source": "Wiz; AP"},
+  {"text": "When the fix shipped on October 21, government sites from Britain to Japan went offline while operators patched.", "source": "AP"},
+  {"text": "Anthropic's stated reason for withholding: without safeguards, such models would make exploiting flawed software cheaper for almost anyone.", "source": "SecurityAffairs"},
+  {"text": "Critics call the arrangement “a private club.”", "source": "SecurityPal, citing Georgia Tech's Internet Governance Project"},
+  {"text": "Mythos Preview's successor is the same underlying model as Claude Fable, which Anthropic sells publicly with added safeguards.", "source": "Anthropic"}
+ ],
+ "bookend": {
+  "_doc": "N43: the real audit log, verbatim from log/audits (the drafting chat's resolution tables and Claude's review of GLM), scrolling, ending on the verse 4 line.",
+  "sections": [
+   {"title": "Audit 1: Gemini", "file": "log/audits/01_gemini.md", "from": "**Audit log**", "to": "**Still to check**"},
+   {"title": "Audit 2: ChatGPT", "file": "log/audits/02_chatgpt.md", "from": "**Audit log, second pass (ChatGPT)**", "to": "**One structural problem:**"},
+   {"title": "Audit 3: GLM", "file": "log/audits/03_glm.md", "from": "**Where it's wrong**", "to": "**Smaller points**"}
+  ],
+  "last": "Check every word with a voice from away."
+ },
+ "end_card": [
+  "Words: Claude, in conversation, revised after three audits",
+  "Conflict of interest: Claude is made by Anthropic, whose model is the one in the crib",
+  "Audited by: Gemini (Google, a Glasswing partner), ChatGPT (OpenAI, whose model helped find PHP2Shell), GLM",
+  "Music: Suno (take 8289b42f), post-filtered with music-deslop",
+  "Animation and edit: Claude Code",
+  "Human interventions: {interventions}",
+  "Full production log: {repo_url}"
+ ]
+}

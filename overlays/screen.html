@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Not Yet shop screen</title>
+<!-- The shop display's screen (N33, N34): the real public model page, then the three auditors' real outputs, each
+     scrolled to its flag or mistake and marked by a highlighter. Set up by overlays/screen.mjs from
+     overlays/screen.json; show(t) poses the page for song time t. No red (style spec): the highlighter is the
+     sticky note's yellow. -->
+<style>
+@font-face { font-family: "Inter"; src: url("../assets/fonts/Inter[opsz,wght].ttf"); font-weight: 100 900; }
+@font-face { font-family: "Inter"; src: url("../assets/fonts/Inter-Italic[opsz,wght].ttf"); font-weight: 100 900; font-style: italic; }
+@font-face { font-family: "JetBrains Mono"; src: url("../assets/fonts/JetBrainsMono[wght].ttf"); font-weight: 100 900; }
+html, body { margin: 0; overflow: hidden; background: #0b0d12; }
+#screen { position: relative; overflow: hidden; background: #0b0d12; }
+.panel { position: absolute; inset: 0; opacity: 0; overflow: hidden; background: #eef4f1; }
+.page img { width: 100%; display: block; position: absolute; left: 0; top: 0; }
+.bar { position: absolute; left: 0; right: 0; top: 0; height: 92px; background: #2a3442; color: #eef4f1; z-index: 2;
+       font: 600 34px "Inter"; display: flex; align-items: center; padding: 0 56px; gap: 28px; }
+.bar .meta { font: 400 28px "Inter"; color: #b9cbe8; }
+.bar .n { margin-left: auto; font: 500 26px "JetBrains Mono"; color: #b9cbe8; }
+.doc { position: absolute; left: 0; right: 0; top: 92px; bottom: 0; overflow: hidden; }
+.body { position: absolute; left: 50%; width: 1640px; margin-left: -820px; top: 0; color: #0a0c12;
+        font: 400 31px/1.5 "Inter"; }
+.body h1, .body h2, .body h3 { font-weight: 650; line-height: 1.25; margin: 1.1em 0 0.45em; }
+.body h1 { font-size: 46px; } .body h2 { font-size: 40px; } .body h3 { font-size: 35px; }
+.body p, .body li { margin: 0.4em 0; }
+.body blockquote { margin: 0.5em 0; padding-left: 26px; border-left: 6px solid #8d97a6; color: #3a3d44; }
+.body table { border-collapse: collapse; font-size: 26px; margin: 0.6em 0; }
+.body td, .body th { border: 1px solid #8d97a6; padding: 6px 12px; vertical-align: top; }
+.body code { font: 500 27px "JetBrains Mono"; }
+.body a { color: #2a3442; }
+mark { background: linear-gradient(90deg, #f2d64b 0, #f2d64b var(--w, 0%), transparent var(--w, 0%));
+       color: inherit; padding: 2px 0; }
+</style>
+<script src="../node_modules/marked/lib/marked.umd.js"></script>
+</head>
+<body>
+<div id="screen"></div>
+<script>
+let S, P = [], W, H;
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = x => x * x * (3 - 2 * x);
+const XFADE = 0.25;
+
+// cfg: screen.json with times resolved to song seconds and the raw markdown inlined (screen.mjs).
+async function setup(cfg) {
+  S = cfg; [W, H] = cfg.size;
+  const root = document.getElementById("screen");
+  root.style.width = W + "px"; root.style.height = H + "px";
+  const pg = document.createElement("div");
+  pg.className = "panel page";
+  const img = new Image();
+  img.src = cfg.page.image;
+  pg.appendChild(img);
+  root.appendChild(pg);
+  await img.decode();
+  P.push({ el: pg, from: cfg.page.from, to: cfg.page.to, img, kind: "page" });
+  cfg.audits.forEach((a, k) => {
+    const el = document.createElement("div");
+    el.className = "panel";
+    el.innerHTML = `<div class="bar">${a.name}<span class="meta">${a.version} · ${a.date}</span>` +
+                   `<span class="n">audit ${k + 1} of ${cfg.audits.length}</span></div><div class="doc"><div class="body"></div></div>`;
+    root.appendChild(el);
+    const body = el.querySelector(".body");
+    body.innerHTML = marked.parse(a.md);
+    if (!markFlag(body, a.flag)) throw new Error(`flag not found in ${a.file}: ${a.flag}`);
+    P.push({ el, from: a.from, to: a.to, body, mark: body.querySelector("mark"), kind: "audit", markAt: a.mark_at, markS: a.mark_s });
+  });
+  await document.fonts.ready;
+  return document.fonts.check('31px "Inter"');
+}
+
+// Wrap the first occurrence of `text` (exact, possibly across inline elements) in <mark>.
+function markFlag(body, text) {
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let all = "";
+  while (walker.nextNode()) { nodes.push([walker.currentNode, all.length]); all += walker.currentNode.data; }
+  const i = all.indexOf(text);
+  if (i < 0) return false;
+  const j = i + text.length;
+  const r = document.createRange();
+  for (const [n, off] of nodes) {
+    if (i >= off && i <= off + n.data.length) r.setStart(n, i - off);
+    if (j >= off && j <= off + n.data.length) { r.setEnd(n, j - off); break; }
+  }
+  const m = document.createElement("mark");
+  m.appendChild(r.extractContents());
+  r.insertNode(m);
+  return true;
+}
+
+function show(t) {
+  for (const p of P) {
+    const a = clamp((t - p.from) / XFADE) * clamp((p.to - t) / XFADE);
+    p.el.style.opacity = a;
+    if (a <= 0) continue;
+    const u = clamp((t - p.from) / (p.to - p.from));
+    if (p.kind === "page") {
+      const room = Math.max(0, p.img.naturalHeight * W / p.img.naturalWidth - H);
+      p.img.style.top = -Math.min(room, S.page.scroll_px) * ease(clamp((u - 0.15) / 0.75)) + "px";  // title, then down to its first line
+      continue;
+    }
+    // Scroll the flag from the lower part of the screen to its upper third, then mark it.
+    const top = p.mark.offsetTop, dh = H - 92;
+    const y0 = Math.max(0, top - dh * 0.72), y1 = Math.max(0, top - dh * 0.34);
+    p.body.style.top = -(y0 + (y1 - y0) * ease(clamp((t - p.from) / p.markAt))) + "px";
+    p.mark.style.setProperty("--w", (100 * clamp((t - p.from - p.markAt) / p.markS)).toFixed(2) + "%");
+  }
+}
+</script>
+</body>
+</html>

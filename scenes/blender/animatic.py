@@ -9,7 +9,7 @@ Modes:
               -> <out>/f_<frame>.png (frame numbers are the song's, at the video's fps)
 
 Usage: blender -b --factory-startup --python scenes/blender/animatic.py -- --out DIR [--profile NAME] [--size W H]
-       [--samples N] [--step K] [--from S] [--to S] [--anchors | --times S ...]
+       [--samples N] [--step K] [--from S] [--to S] [--resume] [--anchors | --times S ...]
 --size and --samples override the profile's; with neither, 640x360 at 8 samples.
 """
 import argparse
@@ -93,6 +93,8 @@ if __name__ == "__main__":
     ap.add_argument("--to", dest="t1", type=float, default=None)
     ap.add_argument("--anchors", action="store_true")
     ap.add_argument("--times", nargs="+", type=float)
+    ap.add_argument("--resume", action="store_true",
+                    help="keep frames already in --out (and claim each with a placeholder), so runs resume and share")
     args = ap.parse_args(sys.argv[sys.argv.index("--") + 1:])
     prof = PROFILES[args.profile] if args.profile else {"size": [640, 360], "samples": 8}
     scene, f_end = build(args.size or prof["size"], args.samples or prof["samples"], prof.get("motion_blur_steps", 1))
@@ -120,6 +122,8 @@ if __name__ == "__main__":
         f1 = min(A.frame(args.t1), f_end) if args.t1 is not None else f_end
         scene.frame_start, scene.frame_end, scene.frame_step = f0, f1, args.step
         scene.render.filepath = str(out / "f_")
+        scene.render.use_overwrite = not args.resume
+        scene.render.use_placeholder = args.resume
         t = time.time()
         bpy.ops.render.render(animation=True)
         n = len(range(f0, f1 + 1, args.step))
