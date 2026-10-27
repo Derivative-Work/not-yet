@@ -1102,3 +1102,11 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - Frames 5,220–5,343 and 4,016–4,034: flow misses at the crib bars' parallax and at a soft edge. Nothing visible in the frames.
 - No depth-fighting signature anywhere: no long run fixed in place on a static surface. Nothing to re-render; the C6 deliverables stand.
 - The background waiter that was watching for the end used `pgrep -f qc_flicker.py` and matched its own command line, so it never exited; stopped with TaskStop.
+
+## 2026-10-26T20:32 — The main video's link added (README, METADATA, release notes)
+
+- The human uploaded the main video and scheduled it (https://www.youtube.com/watch?v=1G2CS3i1cPE) and published GitHub Release v1.0 (see `log/human_interventions.md`).
+- `README.md` "Watch": the YouTube link, and a link to the v1.0 release for the files.
+- `METADATA.md`: the windows cut's footer now has the main video's link in place of `<MAIN VIDEO URL>`. The "before uploading" note says so; setting the windows cut's Related video in YouTube Studio is still left for its upload.
+- The v1.0 release notes: a "Watch" line with the YouTube link (`gh release edit`; the assets are unchanged).
+- Interventions are now 42 by `grep -c '^## '`; the end card and the uploaded description say 39, the count when the overlay was rendered.

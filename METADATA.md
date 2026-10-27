@@ -4,7 +4,7 @@ YouTube metadata for the main video and the windows cut, ready to paste at uploa
 
 **Before uploading:**
 - **Intervention count.** Update the number in the main description (`grep -c '^## ' log/human_interventions.md`). The end card says 39, the count when its overlay was rendered (2026-10-26).
-- **The main video's link.** Fill in `<MAIN VIDEO URL>` in the windows cut's footer once the main video is up. In YouTube Studio, also set the windows cut's **Related video** to the main video.
+- **The main video's link** is in the windows cut's footer (https://www.youtube.com/watch?v=1G2CS3i1cPE, uploaded and scheduled by the human). In YouTube Studio, also set the windows cut's **Related video** to the main video.
 
 **Release plan (human, 2026-10-26):** the main video on the morning of 2026-10-27, after the .NET out-of-band security updates (https://devblogs.microsoft.com/dotnet/dotnet-october-2026-oob-security-updates/); then the windows cut on the next scheduled Patch Tuesday, 2026-11-10. Both come after Sandbox Rhapsody (https://www.youtube.com/watch?v=zq79yQ3164w), which introduces the series' probe (brief). The licences (video and assets CC BY-NC-SA 4.0, code MIT) are confirmed by the human and in the repo (`LICENSE`, `LICENSE-media.md`).
 
@@ -140,7 +140,7 @@ Not Yet, Sleep Little Secret, AI music video, AI generated, AI satire, AI safety
 **Shared footer** (end of both descriptions):
 
 ```
-Full video, facts and sources: <MAIN VIDEO URL>
+Full video, facts and sources: https://www.youtube.com/watch?v=1G2CS3i1cPE
 Production log, with every prompt and every human intervention: https://github.com/Derivative-Work/not-yet
 Music: Suno · Words: Claude · Animation and edit: Claude Code
 Video and assets CC BY-NC-SA 4.0. Satire; not affiliated with any company named.

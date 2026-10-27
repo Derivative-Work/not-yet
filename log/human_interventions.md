@@ -282,3 +282,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human asked for the GitHub Release (as for Sandbox Rhapsody). Asked whether the session transcript should go in verbatim, given it contains their email address (from the context Claude Code adds) and the full text of the four articles they retrieved (Dark Reading, Digital Watch, CNN, OpenAI), they chose verbatim, over a redacted copy or leaving it out.
 - **Note from the human:** "yes make the release"; then, to the agent's question, "Verbatim".
 - **Rule:** R1 (approval, and a decision on what is published).
+
+## 2026-10-26T20:30 — Main video uploaded and scheduled on YouTube; GitHub Release v1.0 published — R4, R1
+
+- **What:** The human uploaded the main video to YouTube and scheduled it for the morning of 2026-10-27 (R4: YouTube is an interface the agent has no access to). They also published the draft GitHub Release, which created tag `v1.0` (R1: approving the release). The repository is still private.
+- **Note from the human:** "youtube link https://www.youtube.com/watch?v=1G2CS3i1cPE (release is scheduled)"
+- **Rule:** R4 (an interface the agent can't reach: YouTube) and R1 (approval: publishing the release).

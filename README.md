@@ -19,8 +19,10 @@ sources; [docs/fact_check_2026-10-26.md](docs/fact_check_2026-10-26.md) checks e
 
 ## Watch
 
-- **YouTube:** the main video comes out on 2026-10-27; the link goes here then. The vertical windows cut follows on
-  Patch Tuesday, 2026-11-10.
+- **YouTube:** https://www.youtube.com/watch?v=1G2CS3i1cPE (scheduled for the morning of 2026-10-27). The vertical
+  windows cut follows on Patch Tuesday, 2026-11-10.
+- **Files:** the videos, captions, music, stems and the session transcript are in the
+  [v1.0 release](https://github.com/Derivative-Work/not-yet/releases/tag/v1.0).
 - **Sandbox Rhapsody,** the video that introduces the probe: https://www.youtube.com/watch?v=zq79yQ3164w
 
 ## The making-of record
