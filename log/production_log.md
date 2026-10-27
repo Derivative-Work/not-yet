@@ -1091,3 +1091,14 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - All 12 files are on the draft, including the transcript archive and `SHA256SUMS.txt`, and the notes are updated to list the transcript.
 - GitHub's sha256 digest for every file matches the local file.
 - Still a draft on the private repo. The human publishes it and makes the repo public.
+
+## 2026-10-26T20:20 — C5 4K flicker check: no z-fighting
+
+- `.venv/bin/python -I scripts/qc_flicker.py renders/c5/frames <scratch>/qc_c5` on all 7,019 4K frames (3 h 25 min, run alongside C6), copied to `renders/qc/flicker_c5`.
+- **Result** (pixel counts scaled to 720p for comparison with `flicker_v11`): 72,276 px over the film (v11: 339,412), and 39 px after frame 6,600 (the blanket; v11: 711). 52,284 blobs in 21,845 runs. The 4K run has more, smaller runs because the 6 px minimum blob is smaller relative to the frame.
+- **The largest runs, looked at in their crops:**
+  - Frames 353–638: specular glints moving round the chrome rim of the door's gauge as the camera passes. Specular highlights, not depth fighting.
+  - Frames 2,515–2,904: the scrolling advisory feed on the desk screens (text that moves by design), where the optical flow can't follow the text edges.
+  - Frames 5,220–5,343 and 4,016–4,034: flow misses at the crib bars' parallax and at a soft edge. Nothing visible in the frames.
+- No depth-fighting signature anywhere: no long run fixed in place on a static surface. Nothing to re-render; the C6 deliverables stand.
+- The background waiter that was watching for the end used `pgrep -f qc_flicker.py` and matched its own command line, so it never exited; stopped with TaskStop.
