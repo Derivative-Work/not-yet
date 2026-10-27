@@ -1085,3 +1085,9 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - Manifest regenerated: 1,939 files.
 - **Upload:** the first batch stopped after four files on a retried duplicate (HTTP 422, "ReleaseAsset.name already exists" for the MP3). The rest go up one at a time (scratchpad `release_upload.sh`, which skips files already there).
 - **Left for the human:** publish the draft (which creates tag `v1.0` on `main`) and make the repo public. Then the release link goes in the README.
+
+## 2026-10-26T20:01 — Draft release v1.0 uploaded and checked
+
+- All 12 files are on the draft, including the transcript archive and `SHA256SUMS.txt`, and the notes are updated to list the transcript.
+- GitHub's sha256 digest for every file matches the local file.
+- Still a draft on the private repo. The human publishes it and makes the repo public.
