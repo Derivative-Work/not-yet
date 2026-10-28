@@ -66,7 +66,8 @@ has its exact inputs, outputs and checks; Python runs as `.venv/bin/python -I sc
    an RTX 5090).
 4. **Overlays:** `scripts/overlay_cues.py`, then `node overlays/render.mjs main` and
    `node overlays/render.mjs short:windows`; `scripts/make_srt.py` for the captions.
-5. **Assembly:** `scripts/assemble.py main`, `short:windows` and `thumbnail` → `deliverables/`.
+5. **Assembly:** `scripts/assemble.py main` and `short:windows` → `deliverables/`; `scripts/thumbnail.py` for
+   the thumbnail.
 
 ## Licences
 

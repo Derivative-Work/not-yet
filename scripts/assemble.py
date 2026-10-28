@@ -7,7 +7,8 @@ tracks (overlays/render.mjs) and the audio (config/audio.json: the post-filtered
 - short:<id> (1080x1920): the short's span (overlays/cues.json "shorts"), a 9:16 window of the frame whose centre
   follows config/reframe.json, scaled; its overlay; the master over the span. The windows short fades picture and
   music out together over its last 2.5 s (brief); both fade up over 0.4 s.
-- thumbnail: the N29 frame (brief) at config/release.json thumbnail_t, 1920x1080 JPEG.
+- thumbnail: the frame at config/release.json thumbnail_t, 1920x1080 JPEG. This is the original (C6) thumbnail;
+  scripts/thumbnail.py makes the current one (2026-10-28).
 Encoded with NVENC HEVC (BT.709, tagged), AAC 320k.
 
 Usage: .venv/bin/python -I scripts/assemble.py main|short:<id>|thumbnail [--frames DIR] [--overlay FILE] [--out FILE]

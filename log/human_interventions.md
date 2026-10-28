@@ -294,3 +294,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human reported that the current thumbnail (the N28 frame, 2:35.33) isn't performing well on YouTube. They asked for a new one showing the probe at the blanket reveal, with text that hints at the video, as Sandbox Rhapsody's titled thumbnail did. This overrides the brief ("Never the probe reveal"), knowingly: "yes, it spoils it a bit, but that seems to be the working formula for Sandbox".
 - **Note from the human:** "the current thumbnail does not seem to be performing well -- see if you can find another one. I'm thinking something along the lines of the probe at the blanket reveal, with text that hints at the video (yes, it spoils it a bit, but that seems to be the working formula for Sandbox)"
 - **Rule:** R1 (a correction after release). This is an exception: a creative choice made by the human, against the brief.
+
+## 2026-10-28 — Thumbnail B chosen — R1
+
+- **What:** Of the three thumbnail options, the human chose B: the probe at the blanket reveal with "TOO DANGEROUS TO RELEASE / so we sang it to sleep".
+- **Note from the human:** "go with B"
+- **Rule:** R1 (approval).

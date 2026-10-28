@@ -1123,3 +1123,11 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
   - B: "TOO DANGEROUS TO RELEASE" / "so we sang it to sleep";
   - C: "your eyes are still open…" (the line sung over this frame) / "NOT YET".
 - Waiting on the human's choice; the chosen one becomes a script and a deliverable, and the current thumbnail goes to `archive/`.
+
+## 2026-10-28 — Thumbnail B made the deliverable (human, R1)
+
+- `scripts/thumbnail.py` (new): option B as a script (frame 6662, the crop, the vignette and glow, the text), modelled on Sandbox Rhapsody's `scripts/thumbnail.py`. It refuses to overwrite an existing thumbnail.
+- **Archived:** the original thumbnail (N28, frame 4660) → `archive/deliverables/not_yet_thumbnail_superseded_n28-underperformed.jpg`.
+- **Output:** `deliverables/not_yet_thumbnail.jpg`, 1920 × 1080, 195 KB (under YouTube's 2 MB limit). Identical pixel for pixel to the option B the human chose.
+- `METADATA.md` (thumbnail row), `README.md` (rebuild step 5) and the `scripts/assemble.py` docstring point to the new script. Manifest updated.
+- **Left for the human:** upload it as the main video's thumbnail in YouTube Studio (R4). The v1.0 release still has the old thumbnail, under the name `not_yet_thumbnail.jpg`. The push to GitHub failed with a 403 (the agent's access to the repo has changed), so this commit and the last are local only.
