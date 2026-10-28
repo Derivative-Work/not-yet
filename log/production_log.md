@@ -1110,3 +1110,16 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - `METADATA.md`: the windows cut's footer now has the main video's link in place of `<MAIN VIDEO URL>`. The "before uploading" note says so; setting the windows cut's Related video in YouTube Studio is still left for its upload.
 - The v1.0 release notes: a "Watch" line with the YouTube link (`gh release edit`; the assets are unchanged).
 - Interventions are now 42 by `grep -c '^## '`; the end card and the uploaded description say 39, the count when the overlay was rendered.
+
+## 2026-10-28 — Thumbnail options at the blanket reveal (human, R1)
+
+- **Frames:** contact sheets of the 4K render, 6,600–7,018 every 18 frames, then 6,646–6,694 every 6. The blanket slides off the probe between 6,646 and 6,690. **Frame 6,662** (222.07 s, N38) was picked: the blanket is mid-fall and arcs over the sphere like a hood, the lens ring is lit, and both arms show. Earlier frames hide the lens behind the blanket; later ones lose the hood.
+- **Treatment (scratch, `thumb/try.py`):**
+  - Crop 3360 × 1890 from (0, 40) at 4K, so the probe sits right of centre with room on the left for text. Scaled to 1920 × 1080.
+  - A vignette centred on the probe (down to 40% at the edges) turns the bright room toward night. The probe's green light gets a soft glow (screen blend).
+  - Text in white with a blurred drop shadow: Inter Black for the headline, Oooh Baby (the caption face) for the lullaby line.
+- **Three options**, sent to the human with a sheet at 360 px wide (YouTube's list size):
+  - A: "NOT YET" / "sleep, little secret";
+  - B: "TOO DANGEROUS TO RELEASE" / "so we sang it to sleep";
+  - C: "your eyes are still open…" (the line sung over this frame) / "NOT YET".
+- Waiting on the human's choice; the chosen one becomes a script and a deliverable, and the current thumbnail goes to `archive/`.

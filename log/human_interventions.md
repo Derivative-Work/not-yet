@@ -288,3 +288,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human uploaded the main video to YouTube and scheduled it for the morning of 2026-10-27 (R4: YouTube is an interface the agent has no access to). They also published the draft GitHub Release, which created tag `v1.0` (R1: approving the release). The repository is still private.
 - **Note from the human:** "youtube link https://www.youtube.com/watch?v=1G2CS3i1cPE (release is scheduled)"
 - **Rule:** R4 (an interface the agent can't reach: YouTube) and R1 (approval: publishing the release).
+
+## 2026-10-28 — New thumbnail: the probe at the blanket reveal, with text — R1
+
+- **What:** The human reported that the current thumbnail (the N28 frame, 2:35.33) isn't performing well on YouTube. They asked for a new one showing the probe at the blanket reveal, with text that hints at the video, as Sandbox Rhapsody's titled thumbnail did. This overrides the brief ("Never the probe reveal"), knowingly: "yes, it spoils it a bit, but that seems to be the working formula for Sandbox".
+- **Note from the human:** "the current thumbnail does not seem to be performing well -- see if you can find another one. I'm thinking something along the lines of the probe at the blanket reveal, with text that hints at the video (yes, it spoils it a bit, but that seems to be the working formula for Sandbox)"
+- **Rule:** R1 (a correction after release). This is an exception: a creative choice made by the human, against the brief.
