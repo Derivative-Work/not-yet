@@ -300,3 +300,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** Of the three thumbnail options, the human chose B: the probe at the blanket reveal with "TOO DANGEROUS TO RELEASE / so we sang it to sleep".
 - **Note from the human:** "go with B"
 - **Rule:** R1 (approval).
+
+## 2026-10-29 — Repo access restored; the release's thumbnail swapped — R3, R1
+
+- **What:** The human restored the agent's push access to the GitHub repo, after a 403 (R3), and approved swapping the v1.0 release's thumbnail for the new one (R1).
+- **Note from the human:** "access is back, push and swap the release thumbnail"
+- **Rule:** R3 (a technical failure the agent couldn't fix: repo access) and R1 (approval).

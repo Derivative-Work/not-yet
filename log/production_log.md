@@ -1131,3 +1131,8 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 - **Output:** `deliverables/not_yet_thumbnail.jpg`, 1920 × 1080, 195 KB (under YouTube's 2 MB limit). Identical pixel for pixel to the option B the human chose.
 - `METADATA.md` (thumbnail row), `README.md` (rebuild step 5) and the `scripts/assemble.py` docstring point to the new script. Manifest updated.
 - **Left for the human:** upload it as the main video's thumbnail in YouTube Studio (R4). The v1.0 release still has the old thumbnail, under the name `not_yet_thumbnail.jpg`. The push to GitHub failed with a 403 (the agent's access to the repo has changed), so this commit and the last are local only.
+
+## 2026-10-29 — Pushed; the v1.0 release's thumbnail swapped
+
+- Pushed the two local commits (the thumbnail options, and thumbnail B).
+- **Release v1.0:** `not_yet_thumbnail.jpg` was replaced with the new thumbnail (`gh release upload --clobber`; sha256 `ebaad5f0…0ba3`). `SHA256SUMS.txt` was regenerated from the release's own copy, with only the thumbnail's line changed (sha256 `f27cf991…cf02`). GitHub's digests match the local files for both. The release notes' table says the thumbnail was replaced and where the original is. No other assets were touched.
