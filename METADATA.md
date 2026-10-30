@@ -129,7 +129,7 @@ Not Yet, Sleep Little Secret, AI music video, AI generated, AI satire, AI safety
 - Reframed from the 4K render (`config/reframe.json`), with burned-in captions and their own SRT, timed from the first frame.
 - Each ends on the human's closing note, over black and silence (7.2 s).
 - Settings as the main video: Music; not made for kids; altered/synthetic content: yes; English captions from the cut's SRT; Standard YouTube License. Related video: the main video.
-- No custom thumbnail (Shorts pick a frame in the app) and no chapters or end screen.
+- No chapters or end screen. The windows cut has a thumbnail to match the main video's (below).
 
 **Shared tags** (paste for both):
 
@@ -150,7 +150,7 @@ Video and assets CC BY-NC-SA 4.0. Satire; not affiliated with any company named.
 
 ### 1. The windows (Chorus 1), before Patch Tuesday
 
-34.6–64.7 s of the song, then the human's note: **38.6 s**. File `deliverables/not_yet_short_windows.mp4`, captions `deliverables/not_yet_short_windows.srt`. It opens with the "AI-generated satire" label. The camera passes the sticky note and the crib, with the taped window in frame throughout. The pane cracks on "never", then the one cut to the window from outside and the push back in, with picture and music fading out together. No fact card; the human's note follows.
+34.6–64.7 s of the song, then the human's note: **38.6 s**. Thumbnail `deliverables/not_yet_short_windows_thumbnail.jpg` (1080×1920, `scripts/thumbnail.py short:windows`): the taped, cracked pane from outside with the nursery behind (0:20.47 in the cut, frame 1652), with "ARE YOUR WINDOWS UP TO DATE?" and "…and windows are never quite mended", in the main thumbnail's type. YouTube takes a custom thumbnail for a Short only through the mobile app's upload flow, where the account offers it. Where it doesn't, choose the frame at 0:20 in the frame picker: the same picture without the text. File `deliverables/not_yet_short_windows.mp4`, captions `deliverables/not_yet_short_windows.srt`. It opens with the "AI-generated satire" label. The camera passes the sticky note and the crib, with the taped window in frame throughout. The pane cracks on "never", then the one cut to the window from outside and the push back in, with picture and music fading out together. No fact card; the human's note follows.
 
 **Title:**
 ```

@@ -306,3 +306,9 @@ Every human action: timestamp, what, why, and which production rule allows it. R
 - **What:** The human restored the agent's push access to the GitHub repo, after a 403 (R3), and approved swapping the v1.0 release's thumbnail for the new one (R1).
 - **Note from the human:** "access is back, push and swap the release thumbnail"
 - **Rule:** R3 (a technical failure the agent couldn't fix: repo access) and R1 (approval).
+
+## 2026-10-29 — A matching thumbnail for the windows short — R1
+
+- **What:** The human asked for a thumbnail for the windows short to match the new main thumbnail.
+- **Note from the human:** "make a matching thumbnail for the windows short"
+- **Rule:** R1 (a correction after release).

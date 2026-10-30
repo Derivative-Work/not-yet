@@ -1136,3 +1136,15 @@ The human's notes are logged in `log/human_interventions.md` (20:20, 20:45, 21:4
 
 - Pushed the two local commits (the thumbnail options, and thumbnail B).
 - **Release v1.0:** `not_yet_thumbnail.jpg` was replaced with the new thumbnail (`gh release upload --clobber`; sha256 `ebaad5f0…0ba3`). `SHA256SUMS.txt` was regenerated from the release's own copy, with only the thumbnail's line changed (sha256 `f27cf991…cf02`). GitHub's digests match the local files for both. The release notes' table says the thumbnail was replaced and where the original is. No other assets were touched.
+
+## 2026-10-29 — The windows short's thumbnail (human, R1)
+
+- **Frames:** sheets of the short's 9:16 crop (`config/reframe.json`) from 35 to 65 s, then from frames 1,530 to 1,672. **Frame 1,652** (55.07 s, 0:20.47 into the cut) was picked: the taped pane from outside, with the new crack (from "never", 51.97 s) spreading on both sides of the tape. The glass nursery with its vault door is behind it.
+- **Treatment:** `scripts/thumbnail.py short:windows`, added to the main thumbnail's script.
+  - The short's crop, exactly as `assemble.py` takes it, scaled to 1080 × 1920.
+  - A gradient darkens the bottom 38% (to 40%), so the text sits clear of the cracks.
+  - The same type as the main thumbnail (Inter Black, Oooh Baby, white with a blurred shadow), left-aligned at the bottom: "ARE YOUR WINDOWS UP TO DATE?" (the Patch Tuesday release and the human's closing note), then the line the crack grows on, "…and windows are never quite mended".
+  - Checked at 270 px wide.
+- **Output:** `deliverables/not_yet_short_windows_thumbnail.jpg`, 1080 × 1920, 189 KB.
+- **The main thumbnail still rebuilds byte for byte** after the script change (`cmp`).
+- `METADATA.md`: the windows cut's thumbnail, and a fallback for an account that can't upload a custom one for a Short (the frame at 0:20). Manifest updated.
